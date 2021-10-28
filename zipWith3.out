@@ -1,0 +1,8 @@
+        OCaml version 4.08.1
+
+val zipWith3 :
+  ('a -> 'b -> 'c -> 'd) -> 'a list -> 'b list -> 'c list -> 'd list = <fun>
+- : int list = []
+- : int list = [12; 15; 18]
+- : (int * char) list = [(7, 'a'); (5, 'b')]
+
