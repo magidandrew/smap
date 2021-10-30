@@ -9,6 +9,8 @@ rule tokenize = parse
 | ']'                   { RBRACKET }
 | '{'                   { LBRACE }
 | '}'                   { RBRACE }
+| '('                   { LPAREN }
+| ')'                   { RPAREN }
 
 (* operators  *)
 | '+'                   { PLUS }
@@ -22,6 +24,7 @@ rule tokenize = parse
 | "/="                  { DIVEQUAL }
 | ">>"                  { RSHIFT }
 | "<<"                  { LSHIFT }
+
 
 (* statement symbols *)
 | ';'                   { SEMICOLON }
@@ -56,7 +59,7 @@ rule tokenize = parse
 
 (* comparison operators *)
 | "=="                  { COMPEQ }
-| '<'                   { COMPLT }
+| "<"                   { COMPLT }
 | "<="                  { COMPLEQ }
 | '>'                   { COMPGT }
 | ">="                  { COMPGEQ }
@@ -75,6 +78,7 @@ rule tokenize = parse
 | "default"             { DEFAULT }
 | "break"               { BREAK }
 | "continue"            { CONTINUE }
+| "return"              { RETURN }
 
 (* literals *)
 | ['0'-'9']+ as lit     { LITERAL(int_of_string lit) }
