@@ -64,10 +64,16 @@ rule tokenize = parse
 | '>'                   { COMPGT }
 | ">="                  { COMPGEQ }
 | "!="                  { COMPNEQ }
-
 | "&&"                  { AND }
 | "||"                  { OR }
 | "!"                   { NOT }
+
+(* Overlap operator*)
+
+
+(* Accessor *)| "^^"                    { OVERLAP }
+| '.'                     { DOT }
+| "length"                { LENGTH }
 
 (* control flow *)
 | "if"                  { IF }
@@ -82,7 +88,9 @@ rule tokenize = parse
 
 (* literals *)
 | ['0'-'9']+ as lit     { LITERAL(int_of_string lit) }
-| ['a'-'z']+ as var_id  { VAR(var_id) }
+| ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']* as var_id  { VAR(var_id) }
+| ['a'-'z' 'A'-'Z']['!' '@' '#' '$' '%' '^' '&' '*' '(' ')' '[' ']' '{' '}' '\\' '/' '0'-'9' ',' '.' '+' '-' '*' ]* as over  { VAR(over) }
+
 (* float literal *)
 | "true"                { BLIT(true) }
 | "false"               { BLIT(false) }
