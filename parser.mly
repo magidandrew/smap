@@ -110,6 +110,8 @@ block:
 
 stmt: 
   expr SEMICOLON                                                                   {  Blank  }
+| BREAK SEMICOLON                                                                  {  Blank  }
+| CONTINUE SEMICOLON                                                               {  Blank  }
 | RETURN expr_opt SEMICOLON                                                        {  Blank  }
 | block                                                                            {  Blank  }
 | IF LPAREN expr RPAREN stmt %prec NOELSE                                          {  Blank  }
