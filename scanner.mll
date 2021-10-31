@@ -2,6 +2,10 @@
 (* what do we do with stlib functions like `print`? *)
 
 { open Parser }
+let letter = ['a'-'z' 'A'-'Z' ]
+let digit = ['0'-'9']
+let punc = ['.' ',' ':' ';' '!' '?' '-' '`' ''' '"' '(' ')' '?']
+let otherChar = ['@' '#' '$' '%' '^' '&' '*' '[' ']' '{' '}' '\\' '/' '+' '-' '*' '_' '>' '<' '=']
 
 rule tokenize = parse
 (* scoping *)
@@ -71,7 +75,8 @@ rule tokenize = parse
 (* Overlap operator*)
 
 
-(* Accessor *)| "^^"                    { OVERLAP }
+(* Accessor *)
+| "^^"                    { OVERLAP }
 | '.'                     { DOT }
 | "length"                { LENGTH }
 
@@ -86,14 +91,16 @@ rule tokenize = parse
 | "continue"            { CONTINUE }
 | "return"              { RETURN }
 
-(* literals *)
-| ['0'-'9']+ as lit     { LITERAL(int_of_string lit) }
-| ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']* as var_id  { VAR(var_id) }
-| ['a'-'z' 'A'-'Z']['!' '@' '#' '$' '%' '^' '&' '*' '(' ')' '[' ']' '{' '}' '\\' '/' '0'-'9' ',' '.' '+' '-' '*' ]* as over  { VAR(over) }
+(*identifiers *)
+| ['a'-'z' 'A'-'Z' '_']['a'-'z' 'A'-'Z' '0'-'9' '_']* as var_id  { ID(var_id) }
 
-(* float literal *)
-| "true"                { BLIT(true) }
-| "false"               { BLIT(false) }
+(* literals *)
+| ['''] ((letter | digit | punc | otherChar ) as c)['''] { CHAR_LIT(c)}                     (* char literal   *)
+| ['"'] (letter | digit | punc | otherChar )* ['"'] as s { STRING_LIT(s)}                   (* string literal *)
+| ['0'-'9']+ as lit                                      { INT_LIT(int_of_string lit) }     (* int literal    *)
+| ['0'-'9']* ['.'] ['0'-'9']+ as flit                    { FLOAT_LIT(float_of_string flit)} (* float literal  *)
+| "true"                                                 { BOOL_LIT(true) }
+| "false"                                                { BOOL_LIT(false) }
 
 (* EOF *)
 | eof                   { EOF }
@@ -106,3 +113,6 @@ and lineComment =
 and comment =
   parse "*/"            { tokenize lexbuf }
   | _                   { comment lexbuf}
+
+
+  (*| ['a'-'z' 'A'-'Z']['!' '@' '#' '$' '%' '^' '&' '*' '(' ')' '[' ']' '{' '}' '\\' '/' '0'-'9' ',' '.' '+' '-' '*' ]* as over  { VAR(over) }*)

@@ -21,11 +21,14 @@
 //comparison
 %token COMPEQ COMPLT COMPLEQ COMPGT COMPGEQ COMPNEQ
 
-//true false
-%token <bool> BLIT
-
-%token <int> LITERAL
-%token <string> VAR
+//literals
+%token <bool>   BOOL_LIT
+%token <int>    INT_LIT
+%token <char>   CHAR_LIT
+%token <float>  FLOAT_LIT
+%token <string> STRING_LIT
+//identifier
+%token <string> ID
 
 %left SEMICOLON
 %left IF ELSE THEN
@@ -62,16 +65,16 @@ expr:
 | expr COMPGT expr                                { Binop($1, $3) }
 | expr COMPGEQ expr                               { Binop($1, $3) }
 | expr COMPNEQ expr                               { Binop($1, $3) }
-| LITERAL                                         { Literal($1) }
-| VAR                                             { Var($1) }
-| VAR ASSIGN expr                                 { Assignment($1, $3) }
+| INT_LIT                                         { Blank        }
+| ID                                             { Id($1) }
+| ID ASSIGN expr                                 { Assignment($1, $3) }
 | expr COMMA expr                                 { Binop($1, $3)}        // Binop is a temporary solution.
 | expr OVERLAP expr PROBCOLON expr                { OverlapExec($1, $3, $5)}
-| PROB typ VAR ASSIGN list PROBCOLON list         { Prob($2, $3) }        //declaring a prob
-| typ VAR ASSIGN VAR DOT LENGTH                   { Prob($1, $2) }        // Assigning length to a variable   
-| PROB list typ VAR                               { Prob($3, $4) }   
-| VAR LBRACKET COMPLT RBRACKET ASSIGN expr SEMICOLON  {Assertassign($6)}       //Using Assertassign because it takes in one value; this is incorrect but we don't have to worry about matching it with ast   
-| VAR LBRACKET COMPGT RBRACKET ASSIGN expr SEMICOLON  {Assertassign($6)}       //Using Assertassign bc it takes in one value; this is incorrect but we don't have to worry about matching it with ast
+| PROB typ ID ASSIGN list PROBCOLON list         { Prob($2, $3) }        //declaring a prob
+| typ ID ASSIGN ID DOT LENGTH                   { Prob($1, $2) }        // Assigning length to a variable   
+| PROB list typ ID                               { Prob($3, $4) }   
+| ID LBRACKET COMPLT RBRACKET ASSIGN expr SEMICOLON  {Assertassign($6)}       //Using Assertassign because it takes in one value; this is incorrect but we don't have to worry about matching it with ast   
+| ID LBRACKET COMPGT RBRACKET ASSIGN expr SEMICOLON  {Assertassign($6)}       //Using Assertassign bc it takes in one value; this is incorrect but we don't have to worry about matching it with ast
 
 stmt_list:
   /* nothing */       { [] }
@@ -97,7 +100,7 @@ decls:
 | decls fdecl { (fst $1, ($2 :: snd $1)) }
 
 
-fdecl: typ VAR LPAREN formals_opt RPAREN              //we had to exclude the body arg 
+fdecl: typ ID LPAREN formals_opt RPAREN              //we had to exclude the body arg 
 LBRACE vdecl_list stmt_list RBRACE                    //it was giving a error
 {{ typ = $1; fname = $2; formals = List.rev $4;
   locals = List.rev $7; 
@@ -108,20 +111,20 @@ formals_opt:
 | formal_list { $1 }
 
 formal_list: 
-typ VAR    { [($1,$2)] }
-| formal_list COMMA typ VAR { ($3,$4) :: $1 }
+typ ID    { [($1,$2)] }
+| formal_list COMMA typ ID { ($3,$4) :: $1 }
 
 vdecl_list: 
 /* nothing */ { [] }
 | vdecl_list vdecl { $2 :: $1 } 
 
 vdecl: 
-typ VAR SEMICOLON { ($1, $2) }
+typ ID SEMICOLON { ($1, $2) }
 
 
 list:
-| LIST typ VAR ASSIGN LBRACE expr RBRACE SEMICOLON                                 {  }     
-| LIST typ VAR SEMICOLON                                                           {  }   
+| LIST typ ID ASSIGN LBRACE expr RBRACE SEMICOLON                                 {  }     
+| LIST typ ID SEMICOLON                                                           {  }   
 
 //check what is the prec used for
 

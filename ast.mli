@@ -10,13 +10,13 @@ type expr =
 |   Literal of int
 |   Assertassign of expr
 |   Assignment of string * expr
-|   Var of string
+|   Id of string
 |   Noexpr
 |   ShiftExec of expr * expr * expr
 |   OverlapExec of expr * expr * expr
 |   Endof of expr
 |   Prob of typ * string
-
+|   Blank
 
 type stmt = Block of stmt list
 | Expr of expr
