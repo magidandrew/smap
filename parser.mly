@@ -6,6 +6,7 @@
 %token LBRACKET RBRACKET LBRACE RBRACE LPAREN RPAREN
 
 // operators
+%token BITNOT BITAND BITOR XOR CONCAT
 %token PLUS MINUS TIMES DIVIDE RSHIFT LSHIFT
 %token ADDEQUAL MINUSEQUAL TIMESEQUAL DIVEQUAL WHILE FOR
 %token AND OR NOT OVERLAP DOT LENGTH
@@ -31,13 +32,15 @@
 %token <string> ID
 
 %left SEMICOLON
-%left IF ELSE THEN
+%left IF ELSE 
 %right ASSIGN
 
+%left CONCAT
 %left PLUS MINUS
 %left TIMES DIVIDE
 
-%left ADDEQUAL MINUSEQUAL TIMESEQUAL DIVEQUAL COMPEQ COMPLT COMPLEQ RSHIFT LSHIFT OVERLAP
+%right OVERLAP
+%left ADDEQUAL MINUSEQUAL TIMESEQUAL DIVEQUAL COMPEQ COMPLT COMPLEQ RSHIFT LSHIFT 
 %left COMPGT COMPGEQ COMPNEQ
 
 %left PROBCOLON COMMA DOT LENGTH
@@ -49,50 +52,82 @@
 
 
 expr:
+/* simple binary expressions */
   expr PLUS   expr                                { Binop($1, $3) }
 | expr MINUS  expr                                { Binop($1, $3) }
 | expr TIMES  expr                                { Binop($1, $3) }
 | expr DIVIDE expr                                { Binop($1, $3) }
-| expr ADDEQUAL expr                              { Binop($1, $3) }
-| expr MINUSEQUAL expr                            { Binop($1, $3) }
-| expr TIMESEQUAL expr                            { Binop($1, $3) }
-| expr DIVEQUAL expr                              { Binop($1, $3) }
-| expr RSHIFT expr PROBCOLON expr                 { ShiftExec($1, $3, $5) }
-| expr LSHIFT expr PROBCOLON expr                 { ShiftExec($1, $3, $5) }
 | expr COMPEQ expr                                { Binop($1, $3) }
 | expr COMPLT expr                                { Binop($1, $3) }
 | expr COMPLEQ expr                               { Binop($1, $3) }
 | expr COMPGT expr                                { Binop($1, $3) }
 | expr COMPGEQ expr                               { Binop($1, $3) }
 | expr COMPNEQ expr                               { Binop($1, $3) }
-| INT_LIT                                         { Blank        }
-| ID                                             { Id($1) }
-| ID ASSIGN expr                                 { Assignment($1, $3) }
-| expr COMMA expr                                 { Binop($1, $3)}        // Binop is a temporary solution.
-| expr OVERLAP expr PROBCOLON expr                { OverlapExec($1, $3, $5)}
-| PROB typ ID ASSIGN list PROBCOLON list         { Prob($2, $3) }        //declaring a prob
-| typ ID ASSIGN ID DOT LENGTH                   { Prob($1, $2) }        // Assigning length to a variable   
-| PROB list typ ID                               { Prob($3, $4) }   
+/* literal expressions */
+| INT_LIT                                         { Blank         }
+| BOOL_LIT                                        { Blank         }
+| STRING_LIT                                      { Blank         }
+| FLOAT_LIT                                       { Blank         }
+| CHAR_LIT                                        { Blank         }
+/* identifier */
+| ID                                              { Var($1) }
+/* assignment expressions*/
+| ID ASSIGN expr                                  { Assignment($1, $3) }
+| ID ADDEQUAL expr                                { Blank  }
+| ID MINUSEQUAL expr                              { Blank   }
+| ID TIMESEQUAL expr                              { Blank   }
+| ID DIVEQUAL expr                                { Blank  }
+/* List expressions*/
+| expr CONCAT expr                                { Blank                }
+| expr OVERLAP expr PROBCOLON                     { Blank                }
+| expr RSHIFT expr                                { Blank                }
+| expr LSHIFT expr                                { Blank                }
+| expr RSHIFT expr PROBCOLON expr                 { Blank                }
+| expr LSHIFT expr PROBCOLON expr                 { Blank                }
+| PROB typ ID ASSIGN list PROBCOLON list          { Prob($2, $3) }        //declaring a prob
+| typ ID ASSIGN ID DOT LENGTH                     { Prob($1, $2) }        // Assigning length to a variable   
+| PROB list typ ID                                { Prob($3, $4) }   
 | ID LBRACKET COMPLT RBRACKET ASSIGN expr SEMICOLON  {Assertassign($6)}       //Using Assertassign because it takes in one value; this is incorrect but we don't have to worry about matching it with ast   
 | ID LBRACKET COMPGT RBRACKET ASSIGN expr SEMICOLON  {Assertassign($6)}       //Using Assertassign bc it takes in one value; this is incorrect but we don't have to worry about matching it with ast
+
+expr_list:
+  expr                  { [$1] }
+| expr_list COMMA expr  { $3 :: $1 }
+
+
+
 
 stmt_list:
   /* nothing */       { [] }
 | stmt_list stmt      { $2 :: $1 }
 
+block:
+| LBRACE stmt_list RBRACE {Blank}
 
 stmt: 
   expr SEMICOLON                                                                   {  }
 | expr PROBCOLON                                                                   {  }
-| expr COMMA                                                                       {  }
+| expr COMMA                                                                       {  } 
 | WHILE LPAREN expr RPAREN stmt                                                    {  }
-| IF LPAREN expr RPAREN stmt ELSE stmt                                             {  }
-| IF LPAREN expr RPAREN stmt ELIF stmt                                             {  }
-| FOR LPAREN expr_opt SEMICOLON expr_opt SEMICOLON expr_opt SEMICOLON RPAREN stmt  {  }
-| WHILE LPAREN expr RPAREN stmt                                                    {  }
-| IF LPAREN expr RPAREN stmt ELSE stmt                                             {  }
-| IF LPAREN expr RPAREN stmt ELIF stmt                                             {  }
+| IF LPAREN expr RPAREN block ELSE block                                             {  }
+| IF LPAREN expr RPAREN block ELIF block                                            {  }
+| FOR LPAREN expr_opt SEMICOLON expr_opt SEMICOLON expr_opt SEMICOLON RPAREN block  {  }
+| WHILE LPAREN expr RPAREN block                                                    {  }
+| IF LPAREN expr RPAREN block ELSE block                                            {  }
+| IF LPAREN expr RPAREN block ELIF block                                            {  }
+| block                                                                            {  }
+| SWITCH LPAREN expr RPAREN LBRACE case_block RBRACE                                {  }
 
+
+case:
+| CASE expr PROBCOLON stmt_list {}
+
+case_list:
+| /*nothing */   { []       }
+| case_list case { $2 :: $1 }
+
+case_block:
+| case_list DEFAULT PROBCOLON stmt_list {}
 
 decls: 
   /* nothing */ { ([], []) }

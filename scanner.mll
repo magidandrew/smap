@@ -28,6 +28,11 @@ rule tokenize = parse
 | "/="                  { DIVEQUAL }
 | ">>"                  { RSHIFT }
 | "<<"                  { LSHIFT }
+| '~'                   { BITNOT }
+| '&'                   { BITAND }
+| '|'                   { BITOR  }
+| '^'                   { XOR    }
+| "++"                  { CONCAT }
 
 
 (* statement symbols *)

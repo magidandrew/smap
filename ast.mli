@@ -10,7 +10,7 @@ type expr =
 |   Literal of int
 |   Assertassign of expr
 |   Assignment of string * expr
-|   Id of string
+|   Var of string
 |   Noexpr
 |   ShiftExec of expr * expr * expr
 |   OverlapExec of expr * expr * expr
