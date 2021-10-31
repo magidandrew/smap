@@ -31,8 +31,9 @@
 //identifier
 %token <string> ID
 
+
+
 %left SEMICOLON
-%left IF ELSE 
 %right ASSIGN
 
 %left CONCAT
@@ -45,8 +46,13 @@
 
 %left PROBCOLON COMMA DOT LENGTH
 
-%start expr
-%type <Ast.expr> expr
+%nonassoc ELIF
+%nonassoc ELSE
+%nonassoc NOELSE
+%right NOT
+
+%start stmt
+%type <Ast.expr> stmt
 
 %%
 
@@ -95,39 +101,38 @@ expr_list:
 | expr_list COMMA expr  { $3 :: $1 }
 
 
-
-
 stmt_list:
   /* nothing */       { [] }
 | stmt_list stmt      { $2 :: $1 }
 
 block:
-| LBRACE stmt_list RBRACE {Blank}
+| LBRACE stmt_list RBRACE { Blank }
 
 stmt: 
-  expr SEMICOLON                                                                   {  }
-| expr PROBCOLON                                                                   {  }
-| expr COMMA                                                                       {  } 
-| WHILE LPAREN expr RPAREN stmt                                                    {  }
-| IF LPAREN expr RPAREN block ELSE block                                             {  }
-| IF LPAREN expr RPAREN block ELIF block                                            {  }
-| FOR LPAREN expr_opt SEMICOLON expr_opt SEMICOLON expr_opt SEMICOLON RPAREN block  {  }
-| WHILE LPAREN expr RPAREN block                                                    {  }
-| IF LPAREN expr RPAREN block ELSE block                                            {  }
-| IF LPAREN expr RPAREN block ELIF block                                            {  }
-| block                                                                            {  }
-| SWITCH LPAREN expr RPAREN LBRACE case_block RBRACE                                {  }
+  expr SEMICOLON                                                                   {  Blank  }
+| RETURN expr_opt SEMICOLON                                                        {  Blank  }
+| block                                                                            {  Blank  }
+| IF LPAREN expr RPAREN stmt %prec NOELSE                                          {  Blank  }
+| IF LPAREN expr RPAREN stmt ELSE stmt                                             {  Blank  }
+| IF LPAREN expr RPAREN stmt ELIF stmt elif_list ELSE stmt                         {  Blank  }
+| FOR LPAREN expr_opt SEMICOLON expr_opt SEMICOLON expr_opt SEMICOLON RPAREN stmt  {  Blank  }
+| WHILE LPAREN expr RPAREN stmt                                                    {  Blank  }
+| SWITCH LPAREN expr RPAREN LBRACE case_block RBRACE                               {  Blank  }
 
+
+elif_list:
+| /*nothing*/         {[]}
+| ELIF stmt elif_list  {$2 :: $3}
 
 case:
-| CASE expr PROBCOLON stmt_list {}
+| CASE expr PROBCOLON stmt_list { Blank }
 
 case_list:
 | /*nothing */   { []       }
 | case_list case { $2 :: $1 }
 
 case_block:
-| case_list DEFAULT PROBCOLON stmt_list {}
+| case_list DEFAULT PROBCOLON stmt_list { Blank }
 
 decls: 
   /* nothing */ { ([], []) }
