@@ -47,7 +47,7 @@ _alsoOkay //ok
 The following identifiers are reserved for use as keywords:
 
 ```
-bool break case char default continue if elif else float for fn int list prob return string switch true false void while
+bool break case char default continue if elif else float for fn int list prob return string switch true false void while .length
 ```
 
 ### Primitive Types and their Constants
@@ -613,3 +613,7 @@ switch(val){
 ```
 
 `switch` must contain at least the `default` case. Without the `break` statement, execution flow continues down to the next case statement.
+
+### Grammar
+
+We define the grammar using productions and rules in the `parser.mly`.
