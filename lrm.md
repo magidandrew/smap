@@ -409,7 +409,7 @@ expr1 >> expr2 : expr3
 #### End Deletion Operator
 
 `<<` and `>>` are binary operators that allow deletions from the beginning or end of a list (see *Lists* for usage and examples).
-  
+
 #### Overlap Operator
 
 The overlap operator, `^^ : ,...,` is designed specifically for string manipulation and takes in three or more expressions, with expressions after the third separated by commas. It groups left to right and follows the form:
@@ -615,4 +615,4 @@ switch(val){
 
 ### Grammar
 
-We define the grammar using productions and rules in the `parser.mly`.
+We define the grammar using productions and rules in the `parser.mly`. The parser can be found here: [https://github.com/magidandrew/smap/blob/iteration2/parser.mly](https://github.com/magidandrew/smap/blob/iteration2/parser.mly).
