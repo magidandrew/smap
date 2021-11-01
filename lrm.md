@@ -50,33 +50,33 @@ The following identifiers are reserved for use as keywords:
 bool break case char default continue if elif else float for fn int list prob return string switch true false void while .length
 ```
 
-### Primitive Types and their Constants
+### Primitive Types and their Literals
 
-####  Integer Constants
+####  Integer Literals
 
 A sequence of digits in decimal format. Cannot start with a 0.
 
-####  Bool Constants
+####  Bool Literals
 
 Either `true` or `false`, implemented as integers 0 or 1.
 
-#### Float Constants
+#### Float Literals
 
 A sequence of digits in decimal format containing a single `.` for the decimal point.
 
-#### Character Constants
+#### Character Literals
 
 A text character in single quotes, for example `'a'`. Escape characters `'\n'`, `\\`, `'\''`, `'\"'`, represent new line, regular slash, single quote, and double quote, respectively. 
 
-#### String Constants
+#### String Literals
 
-A sequence of characters in double quotes, for example, `"hello"`. String constants are implemented as lists of `char`s. See section 7 for details on implementation.
+A sequence of characters in double quotes, for example, `"hello"`. String literals are implemented as lists of `char`s. See section 7 for details on implementation.
 
 ### Lists
 
 A list is a collection of a homogenous and mutable type of data, i.e. all of the objects inside the list would be of the same type. A list is also dynamically sized, i.e. the list size is mutable. 
 
-There are multiple ways to initialize a list. Lists are defined by the `list` keyword followed by the singular type that the list will contain. Lists can be created with an initial set of data which is Lists can be created with an initial set of data or be empty and can have elements added to them dynamically. 
+There are multiple ways to initialize a list. Lists are defined by the `list` keyword followed by the singular type that the list will contain. Lists can be created with an initial set of data or be empty and can have elements added to them dynamically. 
 
 ```
 // Creating a list
@@ -184,7 +184,7 @@ The probability distribution does not need to sum to 1 during initialization. SM
 
 #### `.length`
 
-The 'length' of a probability type returns the number of elements of the list. 
+The 'length' of a probability type returns the length of its lists. 
 
 ```
 prob int aNum = [0.25, 0.25, 0.5 ] : [7, 5]; // truncated and normalized to [0.5, 0.5] : [7, 5] during init
@@ -406,14 +406,13 @@ expr1 >> expr2 : expr3
 //       expr2 is an expression of type int
 //       expr3 is an expression of type <type>
 ```
-
-#### Overlap Operator
-
-The overlap operator, `^^ : ,...,` is designed specifically for string manipulation and takes in three or more expressions, with expressions after the third separated by commas. It groups left to right and follows the form:
-
 #### End Deletion Operator
 
 `<<` and `>>` are binary operators that allow deletions from the beginning or end of a list (see *Lists* for usage and examples).
+  
+#### Overlap Operator
+
+The overlap operator, `^^ : ,...,` is designed specifically for string manipulation and takes in three or more expressions, with expressions after the third separated by commas. It groups left to right and follows the form:
 
  ```
  expr1 ^^ expr2 : expr3 //minimum number of expressions needed
