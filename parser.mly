@@ -51,75 +51,94 @@
 %nonassoc NOELSE
 %right NOT
 
-%start stmt
-%type <Ast.expr> stmt
+%start program
+%type <Ast.program> program
 
 %%
 
 
 expr:
 /* simple binary expressions */
-  expr PLUS   expr                                { Binop($1, $3) }
-| expr MINUS  expr                                { Binop($1, $3) }
-| expr TIMES  expr                                { Binop($1, $3) }
-| expr DIVIDE expr                                { Binop($1, $3) }
-| expr COMPEQ expr                                { Binop($1, $3) }
-| expr COMPLT expr                                { Binop($1, $3) }
-| expr COMPLEQ expr                               { Binop($1, $3) }
-| expr COMPGT expr                                { Binop($1, $3) }
-| expr COMPGEQ expr                               { Binop($1, $3) }
-| expr COMPNEQ expr                               { Binop($1, $3) }
+  expr PLUS   expr                                { Binop($1, $3)        }
+| expr MINUS  expr                                { Binop($1, $3)        }
+| expr TIMES  expr                                { Binop($1, $3)        }
+| expr DIVIDE expr                                { Binop($1, $3)        }
+| expr COMPEQ expr                                { Binop($1, $3)        }
+| expr COMPLT expr                                { Binop($1, $3)        }
+| expr COMPLEQ expr                               { Binop($1, $3)        }
+| expr COMPGT expr                                { Binop($1, $3)        }
+| expr COMPGEQ expr                               { Binop($1, $3)        }
+| expr COMPNEQ expr                               { Binop($1, $3)        }
 /* literal expressions */
-| INT_LIT                                         { Blank         }
-| BOOL_LIT                                        { Blank         }
-| STRING_LIT                                      { Blank         }
-| FLOAT_LIT                                       { Blank         }
-| CHAR_LIT                                        { Blank         }
+| INT_LIT                                         { Blank                }
+| BOOL_LIT                                        { Blank                }
+| STRING_LIT                                      { Blank                }
+| FLOAT_LIT                                       { Blank                }
+| CHAR_LIT                                        { Blank                }
+| LBRACKET expr_list_opt RBRACKET                 { Blank                }  
 /* identifier */
-| ID                                              { Var($1) }
+| ID                                              { Var($1)              }
 /* assignment expressions*/
-| ID ASSIGN expr                                  { Assignment($1, $3) }
-| ID ADDEQUAL expr                                { Blank  }
-| ID MINUSEQUAL expr                              { Blank   }
-| ID TIMESEQUAL expr                              { Blank   }
-| ID DIVEQUAL expr                                { Blank  }
+| ID ASSIGN expr                                  { Assignment($1, $3)   }
+| ID ADDEQUAL expr                                { Blank                }
+| ID MINUSEQUAL expr                              { Blank                }
+| ID TIMESEQUAL expr                              { Blank                }
+| ID DIVEQUAL expr                                { Blank                }
 /* List expressions*/
+| ID LBRACKET COMPLT RBRACKET ASSIGN expr         { Blank                }       
+| ID LBRACKET COMPGT RBRACKET ASSIGN expr         { Blank                } 
 | expr CONCAT expr                                { Blank                }
-| expr OVERLAP expr PROBCOLON                     { Blank                }
+| expr OVERLAP expr PROBCOLON clear_elt_list      { Blank                }
 | expr RSHIFT expr                                { Blank                }
 | expr LSHIFT expr                                { Blank                }
 | expr RSHIFT expr PROBCOLON expr                 { Blank                }
-| expr LSHIFT expr PROBCOLON expr                 { Blank                }
-| PROB typ ID ASSIGN list PROBCOLON list          { Prob($2, $3) }        //declaring a prob
-| typ ID ASSIGN ID DOT LENGTH                     { Prob($1, $2) }        // Assigning length to a variable   
-| PROB list typ ID                                { Prob($3, $4) }   
-| ID LBRACKET COMPLT RBRACKET ASSIGN expr SEMICOLON  {Assertassign($6)}       //Using Assertassign because it takes in one value; this is incorrect but we don't have to worry about matching it with ast   
-| ID LBRACKET COMPGT RBRACKET ASSIGN expr SEMICOLON  {Assertassign($6)}       //Using Assertassign bc it takes in one value; this is incorrect but we don't have to worry about matching it with ast
+| expr LSHIFT expr PROBCOLON expr                 { Blank                } 
 
 expr_list:
   expr                  { [$1] }
 | expr_list COMMA expr  { $3 :: $1 }
 
+expr_opt:
+                       { Noexpr }
+| expr                { Blank }
+
+expr_list_opt:
+                        { Blank }
+| expr_list             { Blank}
+
+
+clear_elt_list:
+  clear_elt                 { [$1] }
+| clear_elt_list COMMA clear_elt  { $3 :: $1 }
+
+clear_elt:
+| ID                                              { Var($1)              }
+| INT_LIT                                         { Blank                }
+| BOOL_LIT                                        { Blank                }
+| STRING_LIT                                      { Blank                }
+| FLOAT_LIT                                       { Blank                }
+| CHAR_LIT                                        { Blank                }
+| LBRACKET expr_list_opt RBRACKET                 { Blank                }  
 
 stmt_list:
-  /* nothing */       { [] }
-| stmt_list stmt      { $2 :: $1 }
+  /* nothing */       { Block([])  }
+| stmt_list stmt      {Block([Dummy])  }
 
 block:
-| LBRACE stmt_list RBRACE { Blank }
+| LBRACE stmt_list RBRACE { Dummy  }
 
 stmt: 
-  expr SEMICOLON                                                                   {  Blank  }
-| BREAK SEMICOLON                                                                  {  Blank  }
-| CONTINUE SEMICOLON                                                               {  Blank  }
-| RETURN expr_opt SEMICOLON                                                        {  Blank  }
-| block                                                                            {  Blank  }
-| IF LPAREN expr RPAREN stmt %prec NOELSE                                          {  Blank  }
-| IF LPAREN expr RPAREN stmt ELSE stmt                                             {  Blank  }
-| IF LPAREN expr RPAREN stmt ELIF stmt elif_list ELSE stmt                         {  Blank  }
-| FOR LPAREN expr_opt SEMICOLON expr_opt SEMICOLON expr_opt SEMICOLON RPAREN stmt  {  Blank  }
-| WHILE LPAREN expr RPAREN stmt                                                    {  Blank  }
-| SWITCH LPAREN expr RPAREN LBRACE case_block RBRACE                               {  Blank  }
+  expr SEMICOLON                                                                   {  Dummy  }
+| BREAK SEMICOLON                                                                  { Dummy   }
+| CONTINUE SEMICOLON                                                               {  Dummy  }
+| RETURN expr_opt SEMICOLON                                                        {  Dummy   }
+| block                                                                            {  Dummy   }
+| IF LPAREN expr RPAREN stmt %prec NOELSE                                          {  Dummy   }
+| IF LPAREN expr RPAREN stmt ELSE stmt                                             {  Dummy   }
+| IF LPAREN expr RPAREN stmt ELIF stmt elif_list ELSE stmt                         {  Dummy   }
+| FOR LPAREN expr_opt SEMICOLON expr_opt SEMICOLON expr_opt SEMICOLON RPAREN stmt  {  Dummy   }
+| WHILE LPAREN expr RPAREN stmt                                                    {  Dummy   }
+| SWITCH LPAREN expr RPAREN LBRACE case_block RBRACE                               {  Dummy   }
 
 
 elif_list:
@@ -136,16 +155,22 @@ case_list:
 case_block:
 | case_list DEFAULT PROBCOLON stmt_list { Blank }
 
+program: decls EOF { $1 }
+
+
 decls: 
   /* nothing */ { ([], []) }
 | decls vdecl { (($2 :: fst $1), snd $1) } 
 | decls fdecl { (fst $1, ($2 :: snd $1)) }
 
 
-fdecl: typ ID LPAREN formals_opt RPAREN              //we had to exclude the body arg 
-LBRACE vdecl_list stmt_list RBRACE                    //it was giving a error
-{{ typ = $1; fname = $2; formals = List.rev $4;
-  locals = List.rev $7; 
+fdecl: typ_name ID LPAREN formals_opt RPAREN              
+LBRACE vdecl_list stmt_list RBRACE                    
+{{ typ_name = $1; 
+   fname = $2; 
+   formals = List.rev $4;
+   locals = List.rev $7; 
+   body = $8;
   }}
 
 formals_opt: 
@@ -153,40 +178,63 @@ formals_opt:
 | formal_list { $1 }
 
 formal_list: 
-typ ID    { [($1,$2)] }
-| formal_list COMMA typ ID { ($3,$4) :: $1 }
+typ_name ID    { [($1,$2)] }
+| formal_list COMMA typ_name ID { ($3,$4) :: $1 }
 
 vdecl_list: 
 /* nothing */ { [] }
 | vdecl_list vdecl { $2 :: $1 } 
 
 vdecl: 
-typ ID SEMICOLON { ($1, $2) }
+typ_name ID SEMICOLON { ($1, $2) }
 
 
-list:
-| LIST typ ID ASSIGN LBRACE expr RBRACE SEMICOLON                                 {  }     
-| LIST typ ID SEMICOLON                                                           {  }   
 
-//check what is the prec used for
 
-expr_opt:
-/* nothing */         { Noexpr }
-| expr                { Endof($1) }
-
+/*
 args_opt:
-  /* nothing */          { [] }
-| args_list              { List.rev $1 }
-
+          { [] }
+| args_list              { List.rev $1 }*/
+/*
 args_list:
   expr                  { [$1] }
-| args_list COMMA expr  { $3 :: $1 }
+| args_list COMMA expr  { $3 :: $1 }*/
+
+/*typ_decl:
+| typ                     {[$1]}
+| typ typ_decl           {$1::$2}*/
 
 /* DECLARATIONS */
-typ: 
+typ_spec: 
   INT     { Int } 
 | BOOL    { Bool }
 | FLOAT   { Float } 
 | VOID    { Void }
 | CHAR    { Char }
 | STRING  { String }
+
+
+typ_qual:
+| PROB    { Prob}
+| LIST    { List }
+
+typ_name:
+| spec_qual_list     {$1}
+
+spec_qual_list:
+| typ_spec spec_qual_list_opt {$1::$2}
+| typ_qual spec_qual_list_opt {$1::$2}
+
+spec_qual_list_opt:
+| /*nothing*/    {[]}
+| spec_qual_list {$1}
+
+/*
+| typ_decl ID                                     { Blank                }
+| expr PROBCOLON expr                             { Blank  }        //declaring a prob
+| expr DOT LENGTH                                 { Blank  }        // getting length 
+
+
+
+
+*/

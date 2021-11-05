@@ -1,8 +1,11 @@
 type operator = Add | Sub | Mul | Div
 
-type typ = Int | Bool | Float | Void | Char | String
+type typ = Int | Bool | Float | Void | Char | String | Prob| List
+(*type typ_decl = WithQualifiers of typ * typ_decl | SingleType of typ*)
 
-type bind = typ * string
+type typ_name = typ list
+
+type bind = typ_name * string
 
 
 type expr =
@@ -15,7 +18,6 @@ type expr =
 |   ShiftExec of expr * expr * expr
 |   OverlapExec of expr * expr * expr
 |   Endof of expr
-|   Prob of typ * string
 |   Blank
 
 type stmt = Block of stmt list
@@ -24,10 +26,14 @@ type stmt = Block of stmt list
 | If of expr * stmt * stmt
 | For of expr * expr * expr * stmt
 | While of expr * stmt
+| Dummy
 
 
-type func_decl = { typ : typ; 
+type func_decl = { typ_name : typ_name; 
                    fname : string;
                    formals : bind list; 
                    locals : bind list; 
+                   body : stmt;
                  }
+
+type program = bind list * func_decl list
