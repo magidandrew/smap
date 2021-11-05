@@ -93,7 +93,8 @@ expr:
 | expr LSHIFT expr                                { Blank                }
 | expr RSHIFT expr PROBCOLON expr                 { Blank                }
 | expr LSHIFT expr PROBCOLON expr                 { Blank                } 
-
+/*function call expression*/
+| ID LPAREN args_opt RPAREN                       { Blank                }
 expr_list:
   expr                  { [$1] }
 | expr_list COMMA expr  { $3 :: $1 }
@@ -119,6 +120,7 @@ clear_elt:
 | FLOAT_LIT                                       { Blank                }
 | CHAR_LIT                                        { Blank                }
 | LBRACKET expr_list_opt RBRACKET                 { Blank                }  
+| ID LPAREN args_opt RPAREN                       { Blank                }
 
 stmt_list:
   /* nothing */       { Block([])  }
@@ -191,18 +193,16 @@ typ_name ID SEMICOLON { ($1, $2) }
 
 
 
-/*
+
 args_opt:
           { [] }
-| args_list              { List.rev $1 }*/
-/*
+| args_list              { List.rev $1 }
+
 args_list:
   expr                  { [$1] }
-| args_list COMMA expr  { $3 :: $1 }*/
+| args_list COMMA expr  { $3 :: $1 }
 
-/*typ_decl:
-| typ                     {[$1]}
-| typ typ_decl           {$1::$2}*/
+
 
 /* DECLARATIONS */
 typ_spec: 
