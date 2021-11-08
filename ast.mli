@@ -27,7 +27,7 @@ type expr =
 |   Length of expr
 |   FunCall of string * expr list
 |   Noexpr
-|   Blank
+|   Blank (*filler AST node until we make a real one*)
 
 
 type probInit = expr * expr
@@ -36,21 +36,29 @@ type init =
 | Regular of expr
 | Prob_Init of probInit
 
-type assign = string * assign_op * init
-
+type assign_expr = expr * assign_op * init
 
 
 type vdecl = 
   PlainDecl of bind
-| InitDecl of bind * assign
+| InitDecl of bind * assign_expr
 
 type stmt = Block of stmt list
 | Expr of expr
+| Assign_stmt of assign_expr
 | Return of expr
-| If of expr * stmt * stmt
+| If of expr * stmt
+| If_Else of expr * stmt * stmt
+| If_Elif of expr * stmt * stmt * stmt list    (*probably shouldn't use tuples here... fix soon?*)
+| If_Elif_Else of expr * stmt * stmt * stmt list * stmt
 | For of expr * expr * expr * stmt
 | While of expr * stmt
-| Dummy
+| Break
+| Continue
+| Elif of expr * stmt (*only use inside an if statement, never alone!*)
+| Dummy (*filler AST node until we make a real one*)
+
+
 
 
 type func_decl = { typ_name : typ_name; 

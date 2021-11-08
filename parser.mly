@@ -127,7 +127,7 @@ identifier:
 
 /* assignment expressions */
 assign_expr:
-| identifier ASSIGN init            { ($1,Assign, $3)      }
+| identifier ASSIGN init            { ($1, Assign, $3)     }
 | identifier ADDEQUAL init          { ($1, PlusEqual,$3)   }
 | identifier MINUSEQUAL init        { ($1, MinusEqual, $3) }
 | identifier TIMESEQUAL init        { ($1, TimesEqual, $3) }
@@ -156,15 +156,15 @@ args_list:
 /* STATEMENTS *********************************************************************************************/
 
 stmt: /* statements end with either a semicolon or a block */
-  expr SEMICOLON                                                                   {  Dummy   }
-| assign_expr SEMICOLON                                                            {  Dummy   }
-| BREAK SEMICOLON                                                                  {  Dummy   }
-| CONTINUE SEMICOLON                                                               {  Dummy   }
-| RETURN expr_opt SEMICOLON                                                        {  Dummy   }
+  expr SEMICOLON                                                                   {  Expr($1)   }
+| assign_expr SEMICOLON                                                            {  Assign_stmt($1)   }
+| BREAK SEMICOLON                                                                  {  Break   }
+| CONTINUE SEMICOLON                                                               {  Continue   }
+| RETURN expr_opt SEMICOLON                                                        {  Return($2)   }
 | IF LPAREN expr RPAREN block                                                      {  Dummy   }
 | IF LPAREN expr RPAREN block ELSE block                                           {  Dummy   }
-| IF LPAREN expr RPAREN block ELIF block elif_list                                 {  Dummy   }
-| IF LPAREN expr RPAREN block ELIF block elif_list ELSE block                      {  Dummy   }
+| IF LPAREN expr RPAREN block ELIF LPAREN expr RPAREN  block elif_list             {  Dummy   }
+| IF LPAREN expr RPAREN block ELIF LPAREN expr RPAREN  block elif_list ELSE block  {  Dummy   }
 | FOR LPAREN expr_opt SEMICOLON expr_opt SEMICOLON expr_opt SEMICOLON RPAREN block {  Dummy   }
 | WHILE LPAREN expr RPAREN block                                                   {  Dummy   }
 
@@ -176,8 +176,8 @@ stmt_list:
 | stmt_list stmt      {Block([Dummy])  }
 
 elif_list:
-| /*nothing*/           { []     }        /* zero or more elif statements*/
-| ELIF block elif_list  {$2 :: $3}
+| /*nothing*/           { []     }         /* zero or more elif statements*/
+| ELIF LPAREN expr RPAREN block elif_list  {[Dummy]}
 
 
 program: decls EOF { $1 }                  /* a program consists of declarations and the EOF token*/
@@ -211,7 +211,7 @@ vdecl_list:
 
 vdecl:                                                      /*      a variable declaration consists of   */
 typ_decl ID SEMICOLON { PlainDecl ($1, $2) }                /*      a type declaration and identifier,   */
-| typ_decl ID ASSIGN init SEMICOLON { InitDecl (($1, $2),($2, Assign, $4))}  /* and optional initializer */
+| typ_decl ID ASSIGN init SEMICOLON { InitDecl (($1, $2),(Id($2), Assign, $4))}  /* and optional initializer */
 
 
 /* TYPE DECLARATIONS **************************************************************************************/
@@ -219,11 +219,11 @@ typ_decl:                               /* A type decl is composed of a list of 
 | spec_qual_list     {$1}
 
 typ_spec: 
-  INT     { Int } 
-| BOOL    { Bool }
-| FLOAT   { Float } 
-| VOID    { Void }
-| CHAR    { Char }
+  INT     { Int    } 
+| BOOL    { Bool   }
+| FLOAT   { Float  } 
+| VOID    { Void   }
+| CHAR    { Char   }
 | STRING  { String }
 
 typ_qual:
