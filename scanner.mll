@@ -68,22 +68,19 @@ rule tokenize = parse
 
 (* comparison operators *)
 | "=="                  { COMPEQ }
-| "<"                   { COMPLT }
+| '<'                   { COMPLT }
 | "<="                  { COMPLEQ }
-| '>'                   { COMPGT }
+| ">"                   { COMPGT }
 | ">="                  { COMPGEQ }
 | "!="                  { COMPNEQ }
 | "&&"                  { AND }
 | "||"                  { OR }
-| "!"                   { NOT }
-
-(* Overlap operator*)
-
+| '!'                   { NOT }
 
 (* Accessor *)
-| "^^"                    { OVERLAP }
-| '.'                     { DOT }
-| "length"                { LENGTH }
+(* if we put dot and length together, "length" doesn't have to be a keyword!*)
+| ".length"               { LENGTH  } 
+| '#'                     { OCTOTHORPE}
 
 (* control flow *)
 | "if"                  { IF }
@@ -120,4 +117,4 @@ and comment =
   | _                   { comment lexbuf}
 
 
-  (*| ['a'-'z' 'A'-'Z']['!' '@' '#' '$' '%' '^' '&' '*' '(' ')' '[' ']' '{' '}' '\\' '/' '0'-'9' ',' '.' '+' '-' '*' ]* as over  { VAR(over) }*)
+ 
