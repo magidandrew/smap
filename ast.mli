@@ -1,4 +1,4 @@
-type operator = Add | Sub | Mul | Div
+type operator = Add | Sub | Mul | Div | PlusEqual | MinusEqual | TimesEqual | DivEqual | Assign
 
 type typ = Int | Bool | Float | Void | Char | String | Prob| List
 (*type typ_decl = WithQualifiers of typ * typ_decl | SingleType of typ*)
@@ -7,18 +7,22 @@ type typ_name = typ list
 
 type bind = typ_name * string
 
-
 type expr =
     Binop of expr * expr
 |   Literal of int
 |   Assertassign of expr
-|   Assignment of string * expr
 |   Var of string
 |   Noexpr
 |   ShiftExec of expr * expr * expr
 |   OverlapExec of expr * expr * expr
 |   Endof of expr
 |   Blank
+
+type assign = string * operator * expr
+
+type vdecl = 
+  PlainDecl of bind
+| InitDecl of bind * assign
 
 type stmt = Block of stmt list
 | Expr of expr
@@ -32,8 +36,8 @@ type stmt = Block of stmt list
 type func_decl = { typ_name : typ_name; 
                    fname : string;
                    formals : bind list; 
-                   locals : bind list; 
+                   locals : vdecl list; 
                    body : stmt;
                  }
 
-type program = bind list * func_decl list
+type program = vdecl list * func_decl list

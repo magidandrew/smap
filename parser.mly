@@ -78,49 +78,37 @@ expr:
 | LBRACKET expr_list_opt RBRACKET                 { Blank                }  
 /* identifier */
 | ID                                              { Var($1)              }
-/* assignment expressions*/
-| ID ASSIGN expr                                  { Assignment($1, $3)   }
-| ID ADDEQUAL expr                                { Blank                }
-| ID MINUSEQUAL expr                              { Blank                }
-| ID TIMESEQUAL expr                              { Blank                }
-| ID DIVEQUAL expr                                { Blank                }
 /* List expressions*/
 | ID LBRACKET COMPLT RBRACKET ASSIGN expr         { Blank                }       
 | ID LBRACKET COMPGT RBRACKET ASSIGN expr         { Blank                } 
 | expr CONCAT expr                                { Blank                }
-| expr OVERLAP expr PROBCOLON clear_elt_list      { Blank                }
 | expr RSHIFT expr                                { Blank                }
 | expr LSHIFT expr                                { Blank                }
 | expr RSHIFT expr PROBCOLON expr                 { Blank                }
 | expr LSHIFT expr PROBCOLON expr                 { Blank                } 
 /*function call expression*/
 | ID LPAREN args_opt RPAREN                       { Blank                }
+
+/* assignment expressions*/
+assign_expr:
+| ID ASSIGN expr                                  { ($1, Assign, $3)      }
+| ID ADDEQUAL expr                                { ($1, PlusEqual, $3)                  }
+| ID MINUSEQUAL expr                              { ($1, MinusEqual, $3)                 }
+| ID TIMESEQUAL expr                              { ($1, TimesEqual, $3)                 }
+| ID DIVEQUAL expr                                { ($1, DivEqual, $3)                }
+
+
 expr_list:
   expr                  { [$1] }
 | expr_list COMMA expr  { $3 :: $1 }
 
+expr_list_opt:
+                        { Blank }
+| expr_list             { Blank }
+
 expr_opt:
                        { Noexpr }
 | expr                { Blank }
-
-expr_list_opt:
-                        { Blank }
-| expr_list             { Blank}
-
-
-clear_elt_list:
-  clear_elt                 { [$1] }
-| clear_elt_list COMMA clear_elt  { $3 :: $1 }
-
-clear_elt:
-| ID                                              { Var($1)              }
-| INT_LIT                                         { Blank                }
-| BOOL_LIT                                        { Blank                }
-| STRING_LIT                                      { Blank                }
-| FLOAT_LIT                                       { Blank                }
-| CHAR_LIT                                        { Blank                }
-| LBRACKET expr_list_opt RBRACKET                 { Blank                }  
-| ID LPAREN args_opt RPAREN                       { Blank                }
 
 stmt_list:
   /* nothing */       { Block([])  }
@@ -130,40 +118,30 @@ block:
 | LBRACE stmt_list RBRACE { Dummy  }
 
 stmt: 
-  expr SEMICOLON                                                                   {  Dummy  }
-| BREAK SEMICOLON                                                                  { Dummy   }
-| CONTINUE SEMICOLON                                                               {  Dummy  }
+  expr SEMICOLON                                                                   {  Dummy   }
+| assign_expr SEMICOLON                                                            {  Dummy   }
+| BREAK SEMICOLON                                                                  {  Dummy   }
+| CONTINUE SEMICOLON                                                               {  Dummy   }
 | RETURN expr_opt SEMICOLON                                                        {  Dummy   }
-| block                                                                            {  Dummy   }
-| IF LPAREN expr RPAREN stmt %prec NOELSE                                          {  Dummy   }
-| IF LPAREN expr RPAREN stmt ELSE stmt                                             {  Dummy   }
-| IF LPAREN expr RPAREN stmt ELIF stmt elif_list ELSE stmt                         {  Dummy   }
-| FOR LPAREN expr_opt SEMICOLON expr_opt SEMICOLON expr_opt SEMICOLON RPAREN stmt  {  Dummy   }
-| WHILE LPAREN expr RPAREN stmt                                                    {  Dummy   }
-| SWITCH LPAREN expr RPAREN LBRACE case_block RBRACE                               {  Dummy   }
+| IF LPAREN expr RPAREN block                                                      {  Dummy   }
+| IF LPAREN expr RPAREN block ELSE block                                           {  Dummy   }
+| IF LPAREN expr RPAREN block ELIF block elif_list                                 {  Dummy   }
+| IF LPAREN expr RPAREN block ELIF block elif_list ELSE block                      {  Dummy   }
+| FOR LPAREN expr_opt SEMICOLON expr_opt SEMICOLON expr_opt SEMICOLON RPAREN block {  Dummy   }
+| WHILE LPAREN expr RPAREN block                                                   {  Dummy   }
 
 
 elif_list:
-| /*nothing*/         {[]}
-| ELIF stmt elif_list  {$2 :: $3}
+| /*nothing*/            {[]}
+| ELIF block elif_list  {$2 :: $3}
 
-case:
-| CASE expr PROBCOLON stmt_list { Blank }
-
-case_list:
-| /*nothing */   { []       }
-| case_list case { $2 :: $1 }
-
-case_block:
-| case_list DEFAULT PROBCOLON stmt_list { Blank }
 
 program: decls EOF { $1 }
 
-
 decls: 
   /* nothing */ { ([], []) }
-| decls vdecl { (($2 :: fst $1), snd $1) } 
-| decls fdecl { (fst $1, ($2 :: snd $1)) }
+| decls vdecl { (($2 :: fst $1), snd $1) } /* global var declarations */
+| decls fdecl { (fst $1, ($2 :: snd $1)) } /* function definitions    */
 
 
 fdecl: typ_name ID LPAREN formals_opt RPAREN              
@@ -188,7 +166,9 @@ vdecl_list:
 | vdecl_list vdecl { $2 :: $1 } 
 
 vdecl: 
-typ_name ID SEMICOLON { ($1, $2) }
+typ_name ID SEMICOLON { PlainDecl ($1, $2) }
+| typ_name assign_expr SEMICOLON { match $2 with
+                                   | (a,_,_) -> InitDecl(($1,a),$2)}
 
 
 
