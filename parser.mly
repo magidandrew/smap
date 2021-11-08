@@ -36,22 +36,23 @@
 /* OPERATOR PRECEDENCE ************************************************************************************/
 
 %left SEMICOLON
-%right ASSIGN
+%right ASSIGN 
 
-%left CONCAT
+
+%left CONCAT 
 %left PLUS MINUS
 %left TIMES DIVIDE
 
 %left ADDEQUAL MINUSEQUAL TIMESEQUAL DIVEQUAL COMPEQ COMPLT COMPLEQ RSHIFT LSHIFT 
 %left COMPGT COMPGEQ COMPNEQ
 %left BITOR BITAND BITNOT XOR
-%left OCTOTHORPE
+%left OCTOTHORPE 
 
-%left PROBCOLON COMMA LENGTH
+%left COMMA LENGTH PROBCOLON
 
 %nonassoc ELIF
 %nonassoc ELSE
-%nonassoc NOELSE
+%nonassoc CAST
 %right NOT
 
 %start program
@@ -77,63 +78,80 @@ expr:
 | expr BITAND expr         { Binop($1, BitAnd, $3)     }
 | expr BITOR expr          { Binop($1, BitOr, $3)      }
 | expr XOR    expr         { Binop($1, Xor, $3)        }
-/* unary expressions     */
-| MINUS expr                                      { Blank                }
-| BITNOT expr                                      { Blank                }
-| NOT expr                                      { Blank                }
-| expr NOT                                      { Blank                }
-| expr OCTOTHORPE                                      { Blank                }
+/* unary expressions     */                     /* what is our syntax for negative numbers? */
+| LPAREN MINUS expr RPAREN                      { Unop(Neg, $3)            } 
+| BITNOT expr                                   { Unop(BitNot, $2)         }
+| NOT expr                                      { Unop(Not, $2)            }
+| expr NOT                                      { Unop(Bang, $1)           }
+| expr OCTOTHORPE                               { Unop(Octothorpe, $1)     }
+| LPAREN typ_decl RPAREN expr   %prec CAST      { Cast($2, $4)             } /* added this in for now. Hoping precedence is correct*/
 /* literal expressions    */
-| INT_LIT                                         { Blank                }
-| BOOL_LIT                                        { Blank                }
-| STRING_LIT                                      { Blank                }
-| FLOAT_LIT                                       { Blank                }
-| CHAR_LIT                                        { Blank                }
-| LBRACKET expr_list_opt RBRACKET                 { Blank                }  
+| INT_LIT                                       { Int_lit ($1)             }
+| BOOL_LIT                                      { Bool_lit($1)             }
+| STRING_LIT                                    { String_lit($1)           } 
+| FLOAT_LIT                                     { Float_lit ($1)           }
+| CHAR_LIT                                      { Char_lit($1)             }
+| list_lit                                      { $1                       }
 /* identifiers            */
-| identifier                                      { $1}
+| identifier                                    { $1                       }
 /* List expressions       */
-| ID LBRACKET COMPLT RBRACKET ASSIGN expr         { Blank                } /* add head */      
-| ID LBRACKET COMPGT RBRACKET ASSIGN expr         { Blank                } /* add tail */
-| expr CONCAT expr                                { Blank                }
-| expr RSHIFT expr PROBCOLON expr                 { Blank                }
-| expr LSHIFT expr PROBCOLON expr                 { Blank                } 
-| ID LENGTH                                       { Blank }                /* also for prob types */
+| ID LBRACKET COMPLT RBRACKET ASSIGN expr       { ListAddHead($1,$6)       } /* add head */      
+| ID LBRACKET COMPGT RBRACKET ASSIGN expr       { ListAddTail($1,$6)       } /* add tail */
+| expr CONCAT expr                              { Binop($1, Concat, $3)    }
+| expr RSHIFT expr PROBCOLON expr               { ListRightShift($1,$3,$5) }
+| expr LSHIFT expr PROBCOLON expr               { ListLeftShift($1,$3,$5)  } 
+| expr LENGTH                                   { Length($1)               } /* also for prob types */
 /*function call expression */
-| ID LPAREN args_opt RPAREN                       { Blank                }
+| ID LPAREN args_opt RPAREN                     { FunCall ($1,$3)          }
+/* parentheses around an expression*/
+| LPAREN expr RPAREN                            { $2                       }
+
+/* need to distinguish probability initialization from others' because of normalization requirement*/
+/* any prob type bound to a name doesn't need special treatment here because it has already been   */
+/* intialized and therefore normalized. (prob types with names count as inits of type Regular)*/
+
+init:                            /* used in variable declaration rule and assignment expressions */
+| expr      { Regular($1)  }     /* common case, includes prob types with names        */
+| prob_init { Prob_Init($1)}     /* special case, unnamed prob types about to be bound */
+
+prob_init:
+| expr PROBCOLON expr               { ($1,$3)              } 
+
+list_lit:
+| LBRACKET expr_list_opt RBRACKET   { List_lit($2)         }
 
 /* identifier */
 identifier:
-| ID                                               {Id($1)}             /* regular identifier      */
-| ID LBRACKET expr RBRACKET                        {ListElement($1,$3)} /* indexing a list element */
+| ID                                { Id($1)               } /* regular identifier      */
+| ID LBRACKET expr RBRACKET         { ListElement($1,$3)   } /* indexing a list element */
 
 /* assignment expressions */
 assign_expr:
-| identifier ASSIGN expr                                  { ($1, Assign, $3)      }
-| identifier ADDEQUAL expr                                { ($1, PlusEqual, $3)                  }
-| identifier MINUSEQUAL expr                              { ($1, MinusEqual, $3)                 }
-| identifier TIMESEQUAL expr                              { ($1, TimesEqual, $3)                 }
-| identifier DIVEQUAL expr                                { ($1, DivEqual, $3)                }
+| identifier ASSIGN init            { ($1,Assign, $3)      }
+| identifier ADDEQUAL init          { ($1, PlusEqual,$3)   }
+| identifier MINUSEQUAL init        { ($1, MinusEqual, $3) }
+| identifier TIMESEQUAL init        { ($1, TimesEqual, $3) }
+| identifier DIVEQUAL init          { ($1, DivEqual, $3)   }
 
-expr_opt:                            /* zero or one expressions */
-                      { Noexpr }
-| expr                { Blank  }
+expr_opt:                               /* zero or one expressions */
+                        { Noexpr     }
+| expr                  { Blank      }
 
-expr_list_opt:                       /* zero or more expressions */
-                        { Blank }
-| expr_list             { Blank }
+expr_list_opt:                          /* zero or more expressions */
+                        { []          }
+| expr_list             { $1          }
 
-expr_list:                           /* one or more expressions */
-  expr                  { [$1] }
-| expr_list COMMA expr  { $3 :: $1 }
+expr_list:                              /* one or more expressions */
+  expr                  { [$1]        }
+| expr_list COMMA expr  { $3 :: $1    }
 
 args_opt: 
-                     { []          } /* zero or more arguments */
-| args_list          { List.rev $1 }
+                        { []          } /* zero or more arguments */
+| args_list             { List.rev $1 }
 
 args_list:
-  expr                  { [$1]     } /* one argument           */
-| args_list COMMA expr  { $3 :: $1 } /* more than one argument */
+  expr                  { [$1]        } /* one argument           */
+| args_list COMMA expr  { $3 :: $1    } /* more than one argument */
 
 /* STATEMENTS *********************************************************************************************/
 
@@ -193,7 +211,7 @@ vdecl_list:
 
 vdecl:                                                      /*      a variable declaration consists of   */
 typ_decl ID SEMICOLON { PlainDecl ($1, $2) }                /*      a type declaration and identifier,   */
-| typ_decl ID ASSIGN expr SEMICOLON { InitDecl (($1, $2),($2, Assign, $4))}  /* and optional initializer */
+| typ_decl ID ASSIGN init SEMICOLON { InitDecl (($1, $2),($2, Assign, $4))}  /* and optional initializer */
 
 
 /* TYPE DECLARATIONS **************************************************************************************/

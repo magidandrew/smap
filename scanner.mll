@@ -1,5 +1,7 @@
 (* QUESTIONS: *)
 (* what do we do with stlib functions like `print`? *)
+(* professor says not to worry about this until the code generation stage - 
+  for now, just treat built-in functions (and main) like regular user-defined functions *)
 
 { open Parser }
 let letter = ['a'-'z' 'A'-'Z' ]
