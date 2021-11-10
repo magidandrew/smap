@@ -156,28 +156,29 @@ args_list:
 /* STATEMENTS *********************************************************************************************/
 
 stmt: /* statements end with either a semicolon or a block */
-  expr SEMICOLON                                                                   {  Expr($1)   }
-| assign_expr SEMICOLON                                                            {  Assign_stmt($1)   }
-| BREAK SEMICOLON                                                                  {  Break   }
-| CONTINUE SEMICOLON                                                               {  Continue   }
-| RETURN expr_opt SEMICOLON                                                        {  Return($2)   }
-| IF LPAREN expr RPAREN block                                                      {  Dummy   }
-| IF LPAREN expr RPAREN block ELSE block                                           {  Dummy   }
-| IF LPAREN expr RPAREN block ELIF LPAREN expr RPAREN  block elif_list             {  Dummy   }
-| IF LPAREN expr RPAREN block ELIF LPAREN expr RPAREN  block elif_list ELSE block  {  Dummy   }
-| FOR LPAREN expr_opt SEMICOLON expr_opt SEMICOLON expr_opt SEMICOLON RPAREN block {  Dummy   }
-| WHILE LPAREN expr RPAREN block                                                   {  Dummy   }
+  expr SEMICOLON                                                                   { Expr($1)          }
+| assign_expr SEMICOLON                                                            { Assign_stmt($1)   }
+| BREAK SEMICOLON                                                                  { Break             }
+| CONTINUE SEMICOLON                                                               { Continue          }
+| RETURN expr_opt SEMICOLON                                                        { Return($2)        }
+| if_stmt                                                                          { $1                }
+| if_stmt ELSE block                                                               { If_Else($1,$3)    }
+| if_stmt elif elif_list                                                           { If_Elif($1,$2,$3) }
+| if_stmt elif elif_list ELSE block                                                { If_Elif_Else($1,$2,$3,$5)}
+| FOR LPAREN expr_opt SEMICOLON expr_opt SEMICOLON expr_opt SEMICOLON RPAREN block { For($3,$5,$7,$10) }
+| WHILE LPAREN expr RPAREN block                                                   { While($3,$5)      }
 
-block:
-| LBRACE stmt_list RBRACE { Dummy  }
+if_stmt: IF LPAREN expr RPAREN block                                               { If($3,$5)         }
+elif:    ELIF LPAREN expr RPAREN  block                                            { Elif($3,$5)       }
+block:   LBRACE stmt_list RBRACE                                                   { Block(List.rev $2)}
 
 stmt_list:
-  /* nothing */       { Block([])      }  /* zero or more statements */
-| stmt_list stmt      {Block([Dummy])  }
+  /* nothing */       { []     }           /* zero or more statements */
+| stmt_list stmt      { $2::$1 }
 
 elif_list:
 | /*nothing*/           { []     }         /* zero or more elif statements*/
-| ELIF LPAREN expr RPAREN block elif_list  {[Dummy]}
+| elif elif_list        { $1::$2 }
 
 
 program: decls EOF { $1 }                  /* a program consists of declarations and the EOF token*/
@@ -194,8 +195,8 @@ LBRACE vdecl_list stmt_list RBRACE
    fname = $2; 
    formals = List.rev $4;
    locals = List.rev $7; 
-   body = $8;
-  }}
+   body = $8; 
+  }}                
 
 formals_opt: 
 /* nothing */ { [] }                              /* zero or more formal parameters                          */

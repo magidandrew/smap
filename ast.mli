@@ -48,9 +48,9 @@ type stmt = Block of stmt list
 | Assign_stmt of assign_expr
 | Return of expr
 | If of expr * stmt
-| If_Else of expr * stmt * stmt
-| If_Elif of expr * stmt * stmt * stmt list    (*probably shouldn't use tuples here... fix soon?*)
-| If_Elif_Else of expr * stmt * stmt * stmt list * stmt
+| If_Else of stmt * stmt
+| If_Elif of stmt * stmt * stmt list   
+| If_Elif_Else of stmt * stmt * stmt list * stmt
 | For of expr * expr * expr * stmt
 | While of expr * stmt
 | Break
@@ -65,7 +65,7 @@ type func_decl = { typ_name : typ_name;
                    fname : string;
                    formals : bind list; 
                    locals : vdecl list; 
-                   body : stmt;
+                   body : stmt list;
                  }
 
 type program = vdecl list * func_decl list
