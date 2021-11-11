@@ -9,8 +9,8 @@ module StringMap = Map.Make(String)
 a dummy SAST node that simply contains the AST root node and a string*)
 let check (astRootNode) = 
   let x = "eventually do useful things here, like actually traverse AST" in
+(astRootNode, "Howdy") 
 
-sDummy(astRootNode, "Howdy") 
 
 
 

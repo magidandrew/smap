@@ -2,7 +2,7 @@
 
 open Ast
 
-type sDummy = program * string (* Dummy SAST node for throughline*)
+type sDummy = (program * string) (* Dummy SAST node for throughline*)
 
 (*type sprogram = svdecl list * sfunc_decl list (* the start of our real SAST*)*)
 
@@ -83,3 +83,5 @@ let string_of_sprogram (vars, funcs) =
   String.concat "" (List.map string_of_vdecl vars) ^ "\n" ^
   String.concat "\n" (List.map string_of_sfdecl funcs)
 *)
+
+let string_of_sprogram (vars, funcs) = "dummy"

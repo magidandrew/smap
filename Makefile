@@ -32,7 +32,8 @@ scanner.cmx : parser.cmx
 clean :
 	rm -rf *.cmi *.cmo parser.ml parser.mli scanner.ml calc.out calc
 
-
+.PHONY : smap
+smap : smap.native
 
 # Everything below the line was copied from the microc makefile
 # I changed the make clean rule to a make clean2 rule 

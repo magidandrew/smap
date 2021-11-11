@@ -5,10 +5,17 @@ To check parser is working:
     make parser
     make clean //make sure to do this make clean before checking the whole compiler!
 
-To check the whole compiler:
+To check compiler compiles:
+ 
+
+       make smap
+       make clean2
+
+
+To check compiler with all test cases/micro c stuff:
 
     make all
-    make clean
+    make clean2
 
 To run tests:
 
@@ -33,9 +40,14 @@ smap.ml is the front end of our compiler.
 6. finally, runs output of codegenerator through LLVM compiler to produce a test-hello.exe file.
 #### Files Corresponding to each part
 1. Scanner: scanner.mll
-2. Parser: parser.mly, ast.mli
+2. Parser: parser.mly, ast.ml
 4. Semantic Analyzer: semant.ml, sast.ml
 5. Code Generator: codegen.ml
 
-
+It would be nice to get these lines working so we can test the output of our compiler:
+./smap.native tests/test-hello.mc > test-hello.ll
+llc -relocation-model=pic test-hello.ll > test-hello.s
+cc -o test-hello.exe test-hello.s printbig.o
+./test-hello.exe
+diff -b test-hello.out tests/test-hello.out > test-hello.diff
 
