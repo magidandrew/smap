@@ -16,7 +16,6 @@ type expr =
 |   Char_lit of char
 |   String_lit of string
 |   List_lit of expr list
-|   Assertassign of expr
 |   Id of string
 |   ListElement of string * expr
 |   Cast of typ_name * expr
@@ -27,7 +26,6 @@ type expr =
 |   Length of expr
 |   FunCall of string * expr list
 |   Noexpr
-|   Blank (*filler AST node until we make a real one*)
 
 
 type probInit = expr * expr
@@ -56,7 +54,6 @@ type stmt = Block of stmt list
 | Break
 | Continue
 | Elif of expr * stmt (*only use inside an if statement, never alone!*)
-| Dummy (*filler AST node until we make a real one*)
 
 
 

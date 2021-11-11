@@ -135,7 +135,7 @@ assign_expr:
 
 expr_opt:                               /* zero or one expressions */
                         { Noexpr     }
-| expr                  { Blank      }
+| expr                  { $1      }
 
 expr_list_opt:                          /* zero or more expressions */
                         { []          }
