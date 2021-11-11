@@ -2,6 +2,13 @@
 
 open Ast
 
+type sDummy = program * string (* Dummy SAST node for throughline*)
+
+(*type sprogram = svdecl list * sfunc_decl list (* the start of our real SAST*)*)
+
+
+(*
+
 type sexpr = typ * sx
 and sx =
     SLiteral of int
@@ -75,3 +82,4 @@ let string_of_sfdecl fdecl =
 let string_of_sprogram (vars, funcs) =
   String.concat "" (List.map string_of_vdecl vars) ^ "\n" ^
   String.concat "\n" (List.map string_of_sfdecl funcs)
+*)
