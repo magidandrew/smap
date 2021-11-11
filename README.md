@@ -1,17 +1,22 @@
 # PLT - smap
 
 To check parser is working:
-make parser
-make clean //make sure to do this make clean before checking the whole compiler!
+
+    make parser
+    make clean //make sure to do this make clean before checking the whole compiler!
 
 To check the whole compiler:
-make all
-make clean
+
+    make all
+    make clean
 
 To run tests:
-./runtests.sh
+
+    ./runtests.sh
+
 To run tests and keep intermediate files (like the .exe files produced):
- ./runtests.sh -k
+
+     ./runtests.sh -k
 
 #################################################
 ## Hello World Milestone
@@ -28,8 +33,9 @@ smap.ml is the front end of our compiler.
 6. finally, runs output of codegenerator through LLVM compiler to produce a test-hello.exe file.
 #### Files Corresponding to each part
 1. Scanner: scanner.mll
-2. Parser: parser.mly, ast.ml
+2. Parser: parser.mly, ast.mli
 4. Semantic Analyzer: semant.ml, sast.ml
 5. Code Generator: codegen.ml
+
 
 

@@ -1,0 +1,43 @@
+### Starting build.
+# Target: smap.ml.depends, tags: { package(llvm), package(llvm.analysis), warn(+a-4), extension:ml, file:smap.ml, ocaml, ocamldep, quiet, traverse }
+ocamlfind ocamldep -package llvm -package llvm.analysis -modules smap.ml > smap.ml.depends # cached
+# Target: ast.mli.depends, tags: { package(llvm), package(llvm.analysis), warn(+a-4), extension:mli, file:ast.mli, ocaml, ocamldep, quiet, traverse }
+ocamlfind ocamldep -package llvm -package llvm.analysis -modules ast.mli > ast.mli.depends # cached
+# Target: ast.cmi, tags: { package(llvm), package(llvm.analysis), warn(+a-4), byte, compile, extension:mli, file:ast.mli, interf, ocaml, quiet, traverse }
+ocamlfind ocamlc -c -w +a-4 -package llvm -package llvm.analysis -o ast.cmi ast.mli # cached
+# Target: codegen.ml.depends, tags: { package(llvm), package(llvm.analysis), warn(+a-4), extension:ml, file:codegen.ml, ocaml, ocamldep, quiet, traverse }
+ocamlfind ocamldep -package llvm -package llvm.analysis -modules codegen.ml > codegen.ml.depends # cached
+# Target: sast.ml.depends, tags: { package(llvm), package(llvm.analysis), warn(+a-4), extension:ml, file:sast.ml, ocaml, ocamldep, quiet, traverse }
+ocamlfind ocamldep -package llvm -package llvm.analysis -modules sast.ml > sast.ml.depends # cached
+# Target: sast.cmo, tags: { package(llvm), package(llvm.analysis), warn(+a-4), byte, compile, extension:cmo, extension:ml, file:sast.cmo, file:sast.ml, implem, ocaml, quiet, traverse }
+ocamlfind ocamlc -c -w +a-4 -package llvm -package llvm.analysis -o sast.cmo sast.ml # cached
+# Target: scanner.mll, tags: { package(llvm), package(llvm.analysis), warn(+a-4), extension:mll, file:scanner.mll, lexer, ocaml, ocamllex, quiet, traverse }
+/usr/bin/ocamllex.opt -q scanner.mll # cached
+# Target: scanner.ml.depends, tags: { package(llvm), package(llvm.analysis), warn(+a-4), extension:ml, file:scanner.ml, ocaml, ocamldep, quiet, traverse }
+ocamlfind ocamldep -package llvm -package llvm.analysis -modules scanner.ml > scanner.ml.depends # cached
+# Target: parser.mly, tags: { package(llvm), package(llvm.analysis), warn(+a-4), extension:mly, file:parser.mly, infer, ocaml, ocamlyacc, parser, quiet, traverse }
+/usr/bin/ocamlyacc parser.mly # cached
+# Target: parser.mli.depends, tags: { package(llvm), package(llvm.analysis), warn(+a-4), extension:mli, file:parser.mli, ocaml, ocamldep, quiet, traverse }
+ocamlfind ocamldep -package llvm -package llvm.analysis -modules parser.mli > parser.mli.depends # cached
+# Target: parser.cmi, tags: { package(llvm), package(llvm.analysis), warn(+a-4), byte, compile, extension:mli, file:parser.mli, interf, ocaml, quiet, traverse }
+ocamlfind ocamlc -c -w +a-4 -package llvm -package llvm.analysis -o parser.cmi parser.mli # cached
+# Target: semant.ml.depends, tags: { package(llvm), package(llvm.analysis), warn(+a-4), extension:ml, file:semant.ml, ocaml, ocamldep, quiet, traverse }
+ocamlfind ocamldep -package llvm -package llvm.analysis -modules semant.ml > semant.ml.depends
+# Target: codegen.cmo, tags: { package(llvm), package(llvm.analysis), warn(+a-4), byte, compile, extension:cmo, extension:ml, file:codegen.cmo, file:codegen.ml, implem, ocaml, quiet, traverse }
+ocamlfind ocamlc -c -w +a-4 -package llvm -package llvm.analysis -o codegen.cmo codegen.ml
++ ocamlfind ocamlc -c -w +a-4 -package llvm -package llvm.analysis -o codegen.cmo codegen.ml
+File "codegen.ml", line 37, characters 21-123:
+37 | .....................function
+38 |       A.Int   -> i32_t
+39 |     | A.Bool  -> i1_t
+40 |     | A.Float -> float_t
+41 |     | A.Void  -> void_t
+Warning 8: this pattern-matching is not exhaustive.
+Here is an example of a case that is not matched:
+(Char|String|Prob|List)
+File "codegen.ml", line 65, characters 36-46:
+65 |   let function_decls : (L.llvalue * sfunc_decl) StringMap.t =
+                                         ^^^^^^^^^^
+Error: Unbound type constructor sfunc_decl
+Command exited with code 2.
+# Compilation unsuccessful.
