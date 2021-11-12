@@ -1,3 +1,4 @@
+
 # PLT - smap
 
 To check parser is working:
@@ -8,10 +9,19 @@ To check parser is working:
 To check compiler compiles:
  
 
-       make smap
-       make clean2
+    make clean2
+    make smap
 
-
+To test compiler on the input file hello-test.mc:
+1. Run hello-test.mc through compiler to get llvm IR in test-hello.ll
+ `./smap.native test-hello.mc > test-hello.ll`
+2. Turn the LLVM into regular assembly in test-hello.S
+ `llc -relocation-model=pic test-hello.ll > test-hello.s`  
+3. Turn the assembly into a .exe file 
+    `cc -o test-hello.exe test-hello.s printbig.o`
+4. Run the program to check output
+      `./test-hello.exe`
+      
 To check compiler with all test cases/micro c stuff:
 
     make all
@@ -44,10 +54,6 @@ smap.ml is the front end of our compiler.
 4. Semantic Analyzer: semant.ml, sast.ml
 5. Code Generator: codegen.ml
 
-It would be nice to get these lines working so we can test the output of our compiler:
-./smap.native tests/test-hello.mc > test-hello.ll
-llc -relocation-model=pic test-hello.ll > test-hello.s
-cc -o test-hello.exe test-hello.s printbig.o
-./test-hello.exe
-diff -b test-hello.out tests/test-hello.out > test-hello.diff
+
+
 
