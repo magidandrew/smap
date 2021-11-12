@@ -4,6 +4,34 @@ open Ast
 
 type sDummy = (program * string) (* Dummy SAST node for throughline*)
 
+type sexpr = typ * sx
+and sx =
+    SLiteral of int
+  | SFliteral of string
+  | SBoolLit of bool
+  | SId of string
+  | SBinop of sexpr * binary_op * sexpr
+  | SUnop of unary_op * sexpr
+  | SAssign of string * sexpr
+  | SCall of string * sexpr list
+  | SNoexpr
+
+type sstmt =
+    SBlock of sstmt list
+  | SExpr of sexpr
+  | SReturn of sexpr
+  | SIf of sexpr * sstmt * sstmt
+  | SFor of sexpr * sexpr * sexpr * sstmt
+  | SWhile of sexpr * sstmt
+
+type sfunc_decl = {
+    styp_name : typ_name;
+    sfname : string;
+    sformals : bind list;
+    slocals : bind list;
+    sbody : sstmt list;
+  }
+
 (*type sprogram = svdecl list * sfunc_decl list (* the start of our real SAST*)*)
 
 
@@ -55,7 +83,7 @@ let rec string_of_sexpr (t, e) =
   | SCall(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_sexpr el) ^ ")"
   | SNoexpr -> ""
-				  ) ^ ")"				     
+				  ) ^ ")"
 
 let rec string_of_sstmt = function
     SBlock(stmts) ->
@@ -84,4 +112,4 @@ let string_of_sprogram (vars, funcs) =
   String.concat "\n" (List.map string_of_sfdecl funcs)
 *)
 
-let string_of_sprogram (vars, funcs) = "dummy"
+let string_of_sprogram (vars, funcs) = "sast dummy\n"
