@@ -1,6 +1,6 @@
 (* QUESTIONS: *)
 (* what do we do with stlib functions like `print`? *)
-(* professor says not to worry about this until the code generation stage - 
+(* professor says not to worry about this until the code generation stage -
   for now, just treat built-in functions (and main) like regular user-defined functions *)
 
 { open Parser }
@@ -8,6 +8,7 @@ let letter = ['a'-'z' 'A'-'Z' ]
 let digit = ['0'-'9']
 let punc = ['.' ',' ':' ';' '!' '?' '-' '`' ''' '"' '(' ')' '?']
 let otherChar = ['@' '#' '$' '%' '^' '&' '*' '[' ']' '{' '}' '\\' '/' '+' '-' '*' '_' '>' '<' '=']
+let whitespace = [' ' '\t' '\r' '\n']
 
 rule tokenize = parse
 (* scoping *)
@@ -66,7 +67,7 @@ rule tokenize = parse
 | "//"                  { COMMENTLINE }
 
 (* whitespace *)
-| [' ' '\t' '\r' '\n']    { tokenize lexbuf }
+| whitespace { tokenize lexbuf }
 
 (* comparison operators *)
 | "=="                  { COMPEQ }
@@ -81,7 +82,7 @@ rule tokenize = parse
 
 (* Accessor *)
 (* if we put dot and length together, "length" doesn't have to be a keyword!*)
-| ".length"               { LENGTH  } 
+| ".length"               { LENGTH  }
 | '#'                     { OCTOTHORPE}
 
 (* control flow *)
@@ -100,7 +101,7 @@ rule tokenize = parse
 
 (* literals *)
 | ['''] ((letter | digit | punc | otherChar ) as c)['''] { CHAR_LIT(c)}                     (* char literal   *)
-| ['"'] (letter | digit | punc | otherChar )* ['"'] as s { STRING_LIT(s)}                   (* string literal *)
+| ['"'] (letter | digit | punc | otherChar | whitespace)* ['"'] as s { STRING_LIT(s)}       (* string literal *)
 | ['0'-'9']+ as lit                                      { INT_LIT(int_of_string lit) }     (* int literal    *)
 | ['0'-'9']* ['.'] ['0'-'9']+ as flit                    { FLOAT_LIT(float_of_string flit)} (* float literal  *)
 | "true"                                                 { BOOL_LIT(true) }
@@ -119,4 +120,4 @@ and comment =
   | _                   { comment lexbuf}
 
 
- 
+
