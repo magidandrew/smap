@@ -4,6 +4,76 @@ open Ast
 
 type sDummy = (program * string) (* Dummy SAST node for throughline*)
 
+
+type binary_op = Add | Sub | Mul | Div | Concat | CompEq | CompLt | CompLeq | CompGt | CompNeq | RShift | LShift | BitAnd | BitOr | Xor
+type unary_op = BitNot | Not | Bang | Octothorpe | Neg
+type assign_op = PlusEqual | MinusEqual | TimesEqual | DivEqual | Assign
+
+type typ = Int | Bool | Float | Void | Char | String | Prob | List
+type typ_name = typ list
+
+type bind = typ_name * string
+
+type sexpr = typ_name * sx
+and sx =
+    SBinop of sexpr * binary_op * sexpr
+|   SUnop of unary_op * sexpr
+|   SInt_lit of int
+|   SBool_lit of bool
+|   SFloat_lit of float
+|   SChar_lit of char
+|   SString_lit of string
+|   SList_lit of sexpr list
+|   SId of string
+|   SListElement of string * sexpr
+|   SCast of typ_name * sexpr
+|   SListRightShift of sexpr * sexpr * sexpr
+|   SListLeftShift of sexpr * sexpr * sexpr
+|   SListAddHead of string * sexpr
+|   SListAddTail of string * sexpr
+|   SLength of sexpr
+|   SFunCall of string * sexpr list
+|   SNoexpr
+
+type sprobInit = sexpr * sexpr
+
+type sinit =
+| Regular of sexpr
+| Prob_Init of sprobInit
+
+type sassign_expr = typ_name * (assign_op * sinit)
+
+type svdecl =
+  SPlainDecl of bind
+| SInitDecl of bind * sassign_expr
+
+type sstmt = SBlock of sstmt list
+| SExpr of sexpr
+| SAssign_stmt of sassign_expr
+| SReturn of sexpr
+| SIf of sexpr * sstmt
+| SIf_Else of sstmt * sstmt
+| SIf_Elif of sstmt * sstmt * sstmt list
+| SIf_Elif_Else of sstmt * sstmt * sstmt list * sstmt
+| SFor of sexpr * sexpr * sexpr * sstmt
+| SWhile of sexpr * sstmt
+| SBreak
+| SContinue
+| SElif of sexpr * sstmt (*only use inside an if statement, never alone!*)
+
+type sfunc_decl = { styp_name : typ_name;
+                   sfname : string;
+                   sformals : bind list;
+                   slocals : svdecl list;
+                   sbody : sstmt list;
+                 }
+
+type sprogram = svdecl list * sfunc_decl list
+
+
+
+(******************************************************************)
+(*
 type sexpr = typ * sx
 and sx =
     SLiteral of int
@@ -111,5 +181,5 @@ let string_of_sprogram (vars, funcs) =
   String.concat "" (List.map string_of_vdecl vars) ^ "\n" ^
   String.concat "\n" (List.map string_of_sfdecl funcs)
 *)
-
+*)
 let string_of_sprogram (vars, funcs) = "sast dummy\n"
