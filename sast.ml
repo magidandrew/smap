@@ -2,17 +2,6 @@
 
 open Ast
 
-type sDummy = (program * string) (* Dummy SAST node for throughline*)
-
-
-type binary_op = Add | Sub | Mul | Div | Concat | CompEq | CompLt | CompLeq | CompGt | CompNeq | RShift | LShift | BitAnd | BitOr | Xor
-type unary_op = BitNot | Not | Bang | Octothorpe | Neg
-type assign_op = PlusEqual | MinusEqual | TimesEqual | DivEqual | Assign
-
-type typ = Int | Bool | Float | Void | Char | String | Prob | List
-type typ_name = typ list
-
-type bind = typ_name * string
 
 type sexpr = typ_name * sx
 and sx =
@@ -35,21 +24,24 @@ and sx =
 |   SFunCall of string * sexpr list
 |   SNoexpr
 
-type sprobInit = sexpr * sexpr
+(* we need to redo how assignment is handled in our grammar
+
+type sprobInit = sx * sx
 
 type sinit =
-| Regular of sexpr
-| Prob_Init of sprobInit
+| SRegular of sx
+| SProb_Init of sprobInit
 
 type sassign_expr = typ_name * (assign_op * sinit)
+*)
 
 type svdecl =
   SPlainDecl of bind
-| SInitDecl of bind * sassign_expr
+| SInitDecl of bind
 
 type sstmt = SBlock of sstmt list
 | SExpr of sexpr
-| SAssign_stmt of sassign_expr
+(*| SAssign_stmt of sassign_expr*)
 | SReturn of sexpr
 | SIf of sexpr * sstmt
 | SIf_Else of sstmt * sstmt
@@ -70,7 +62,7 @@ type sfunc_decl = { styp_name : typ_name;
 
 type sprogram = svdecl list * sfunc_decl list
 
-
+type sDummy = (sprogram * string) (* Dummy SAST node for throughline*)
 
 (******************************************************************)
 (*
