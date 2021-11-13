@@ -36,7 +36,7 @@ clean :
 smap : smap.native
 
 # Everything below the line was copied from the microc makefile
-# I changed the make clean rule to a make clean2 rule 
+# I changed the make clean rule to a make clean2 rule
 # so it wouldn't clash with our current make clean rule
 # I also changed the microc.native rule to be smap.native
 
@@ -52,7 +52,7 @@ test : all testall.sh
 # to test linking external code
 
 .PHONY : all
-all : smap.native printbig.o
+all : smap.native printstr.o
 
 # "make microc.native" compiles the compiler
 #
@@ -70,12 +70,15 @@ smap.native :
 .PHONY : clean2
 clean2 :
 	ocamlbuild -clean
-	rm -rf testall.log ocamlllvm *.diff
+	rm -rf testall.log ocamlllvm *.diff *.o
 
 # Testing the "printbig" example
 
 printbig : printbig.c
 	cc -o printbig -DBUILD_TEST printbig.c
+
+printstr : printstr.c
+	cc -o printstr -BUILD_TEST printstr.c
 
 # Building the tarball
 
@@ -98,7 +101,7 @@ TARFILES = ast.ml sast.ml codegen.ml Makefile _tags smap.ml microcparse.mly \
 	README scanner.mll semant.ml testall.sh \
 	printbig.c arcade-font.pbm font2c \
 	Dockerfile \
-	$(TESTFILES:%=tests/%) 
+	$(TESTFILES:%=tests/%)
 
 microc.tar.gz : $(TARFILES)
 	cd .. && tar czf microc/microc.tar.gz \

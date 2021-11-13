@@ -1,4 +1,3 @@
-int main()
-{
-	printstr("hello world");
+int main(){
+	printstr(2);
 }

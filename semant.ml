@@ -4,7 +4,7 @@ open Ast
 open Sast
 
 module StringMap = Map.Make(String)
-let check(global,functions) = 
+let check(global,functions) =
 (* add built in functions to symbol table*)
   let built_in_decls =
     let add_bind map (name, ty) = StringMap.add name {
@@ -12,10 +12,10 @@ let check(global,functions) =
       typ_name = [Void];
       fname = name;
       formals = [(ty, "x")];
-      locals = []; 
+      locals = [];
       body = [] } map
-    in List.fold_left add_bind StringMap.empty [ ("print", [Int]); 
-                                                 ("printstr", [String]); ]in
+    in List.fold_left add_bind StringMap.empty [ ("print", [Int]);
+                                                 ("printstr", [Int]); ] in
 (* add user defined func declarations to symbol table,  *)
 (* add make sure there are no duplicate function names! *)
   let add_func map fd =
@@ -34,28 +34,28 @@ let check(global,functions) =
     try StringMap.find s function_decls
     with Not_found -> raise (Failure ("unrecognized function " ^ s)) in
   let _ = find_func "main" in (* Ensure "main" is defined *)
-  
+
   (* Define rules for the type checking *)
-  
+
   (* rule for checking/transforming an expr AST node *)
   let rec check_expr = function
-      FunCall (fname,args) -> 
-      let theFunc = find_func fname in 
+      FunCall (fname,args) ->
+      let theFunc = find_func fname in
       (theFunc.typ_name, SFunCall(fname, (List.map check_expr args)))
     | String_lit str -> ([String], SString_lit str)
     | Int_lit num -> ([Int], SInt_lit num)
     | _ -> raise (Failure ("can't type check this expression")) in
-  
+
   (* rule for checking/transforming a v_decl AST node *)
   let check_local = function
       PlainDecl (binding) -> SPlainDecl binding
     | _ -> raise (Failure ("can't type check assignment. make it an expression in grammar!!!")) in
-  
+
   (* rule for checking/transforming an statement node *)
-  let check_stmt = function 
+  let check_stmt = function
       Expr e -> SExpr (check_expr e)
     | _ -> raise (Failure ("can't type check this statement")) in
-   
+
   (* rule for checking/transforming an function AST node *)
   let typeCheck_func func = {
                    styp_name = func.typ_name;
@@ -66,7 +66,7 @@ let check(global,functions) =
   } in
 
   (* map the typeCheck_func over all the functions*)
-((global,List.map typeCheck_func functions),"howdy") 
+((global,List.map typeCheck_func functions),"howdy")
 
 
 
@@ -84,9 +84,9 @@ let check (globals, functions) =
       typ_name = [Void];
       fname = name;
       formals = [(ty, "x")];
-      locals = []; 
+      locals = [];
       body = [] } map
-    in List.fold_left add_bind StringMap.empty [ ("print", [Int]); 
+    in List.fold_left add_bind StringMap.empty [ ("print", [Int]);
                                                  ("printstr", [String]); ]in
 
 *)
