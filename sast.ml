@@ -7,6 +7,7 @@ type sexpr = typ_name * sx
 and sx =
     SBinop of sexpr * binary_op * sexpr
 |   SUnop of unary_op * sexpr
+|   SAssign of sexpr * assign_op * sexpr
 |   SInt_lit of int
 |   SBool_lit of bool
 |   SFloat_lit of float
@@ -14,34 +15,21 @@ and sx =
 |   SString_lit of string
 |   SList_lit of sexpr list
 |   SId of string
-|   SListElement of string * sexpr
 |   SCast of typ_name * sexpr
-|   SListRightShift of sexpr * sexpr * sexpr
-|   SListLeftShift of sexpr * sexpr * sexpr
-|   SListAddHead of string * sexpr
-|   SListAddTail of string * sexpr
+|   SListElement of sexpr * sexpr list
+|   SListAddHead of sexpr * sexpr
+|   SListAddTail of sexpr * sexpr
 |   SLength of sexpr
+|   SProbColon of sexpr * sexpr
 |   SFunCall of string * sexpr list
+|   SIndex of sexpr
 |   SNoexpr
 
-(* we need to redo how assignment is handled in our grammar
-
-type sprobInit = sx * sx
-
-type sinit =
-| SRegular of sx
-| SProb_Init of sprobInit
-
-type sassign_expr = typ_name * (assign_op * sinit)
-*)
-
 type svdecl =
-  SPlainDecl of bind
-| SInitDecl of bind
+  SVdecl of bind * sexpr
 
 type sstmt = SBlock of sstmt list
 | SExpr of sexpr
-(*| SAssign_stmt of sassign_expr*)
 | SReturn of sexpr
 | SIf of sexpr * sstmt
 | SIf_Else of sstmt * sstmt
@@ -174,4 +162,7 @@ let string_of_sprogram (vars, funcs) =
   String.concat "\n" (List.map string_of_sfdecl funcs)
 *)
 *)
-let string_of_sprogram (vars, funcs) = "sast dummy\n"
+
+(* dummy pretty printer*)
+(*                 (vars, funcs)                              *)
+let string_of_sprogram (_,_) = "someday I'll pretty print the SAST! \n"

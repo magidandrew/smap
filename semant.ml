@@ -29,7 +29,7 @@ let check(global,functions) =
        | _ -> StringMap.add n fd map
     in
   let function_decls = List.fold_left add_func built_in_decls functions in
-  (* make a main function is defined *)
+  (* make sure a main function is defined *)
   let find_func s =
     try StringMap.find s function_decls
     with Not_found -> raise (Failure ("unrecognized function " ^ s)) in
@@ -46,14 +46,15 @@ let check(global,functions) =
     | Int_lit num -> ([Int], SInt_lit num)
     | _ -> raise (Failure ("can't type check this expression")) in
 
-  (* rule for checking/transforming a v_decl AST node *)
-  let check_local = function
-      PlainDecl (binding) -> SPlainDecl binding
-    | _ -> raise (Failure ("can't type check assignment. make it an expression in grammar!!!")) in
+  (* rule for checking/transforming a Vdecl AST node *)
+  let check_local (Vdecl (binding,e)) = SVdecl (binding, check_expr e) in
 
-  (* rule for checking/transforming an statement node *)
+  (* rule for checking/transforming a statement node *)
   let check_stmt = function
       Expr e -> SExpr (check_expr e)
+    | Return e -> SReturn (check_expr e)
+    | Continue -> SContinue
+    | Break -> SBreak
     | _ -> raise (Failure ("can't type check this statement")) in
 
   (* rule for checking/transforming an function AST node *)
@@ -66,7 +67,7 @@ let check(global,functions) =
   } in
 
   (* map the typeCheck_func over all the functions*)
-((global,List.map typeCheck_func functions),"howdy")
+(global,List.map typeCheck_func functions)
 
 
 

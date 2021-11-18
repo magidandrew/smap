@@ -36,6 +36,8 @@ rule tokenize = parse
 | '|'                   { BITOR  }
 | '^'                   { XOR    }
 | "++"                  { CONCAT }
+| "[<]"                 { ADDHEAD }
+| "[>]"                 { ADDTAIL }
 
 
 (* statement symbols *)
