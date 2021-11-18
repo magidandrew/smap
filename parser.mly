@@ -36,7 +36,7 @@
 /* OPERATOR PRECEDENCE ************************************************************************************/
 
 %left SEMICOLON
-%right ASSIGN 
+%right ASSIGN PROBCOLON
 
 
 %left CONCAT 
@@ -48,11 +48,11 @@
 %left BITOR BITAND BITNOT XOR
 %left OCTOTHORPE 
 
-%left COMMA LENGTH PROBCOLON
+%left COMMA LENGTH 
 
 %nonassoc ELIF
 %nonassoc ELSE
-%nonassoc CAST
+%nonassoc CAST 
 %right NOT
 
 %start program
@@ -62,7 +62,7 @@
 
 /* EXPRESSIONS ********************************************************************************************/
 expr:
-/* binary expressions    */
+/* binary expressions                                 */
   expr PLUS   expr         { Binop($1, Add, $3)        }
 | expr MINUS  expr         { Binop($1, Sub,  $3)       }
 | expr TIMES  expr         { Binop($1, Mul, $3)        }
@@ -78,60 +78,45 @@ expr:
 | expr BITAND expr         { Binop($1, BitAnd, $3)     }
 | expr BITOR expr          { Binop($1, BitOr, $3)      }
 | expr XOR    expr         { Binop($1, Xor, $3)        }
-/* unary expressions     */                     /* what is our syntax for negative numbers? */
-| LPAREN MINUS expr RPAREN                      { Unop(Neg, $3)            } 
-| BITNOT expr                                   { Unop(BitNot, $2)         }
-| NOT expr                                      { Unop(Not, $2)            }
-| expr NOT                                      { Unop(Bang, $1)           }
-| expr OCTOTHORPE                               { Unop(Octothorpe, $1)     }
-| LPAREN typ_decl RPAREN expr   %prec CAST      { Cast($2, $4)             } /* added this in for now. Hoping precedence is correct*/
+/* assignment expressions (special case of binary)     */
+| expr ASSIGN expr         { Assign($1, Equal, $3)      }
+| expr ADDEQUAL expr       { Assign($1, PlusEqual,$3)   }
+| expr MINUSEQUAL expr     { Assign($1, MinusEqual, $3) }
+| expr TIMESEQUAL expr     { Assign($1, TimesEqual, $3) }
+| expr DIVEQUAL expr       { Assign($1, DivEqual, $3)   }
+/* unary expressions                                                        */                     
+| LPAREN MINUS expr RPAREN                        { Unop(Neg, $3)            } /* what is our syntax for negative numbers? */
+| BITNOT expr                                     { Unop(BitNot, $2)         }
+| NOT expr                                        { Unop(Not, $2)            }
+| expr NOT                                        { Unop(Bang, $1)           }
+| expr OCTOTHORPE                                 { Unop(Octothorpe, $1)     }
+| LPAREN typ_decl RPAREN expr   %prec CAST        { Cast($2, $4)             } /* added this in for now. Hoping precedence is correct*/
 /* literal expressions    */
-| INT_LIT                                       { Int_lit ($1)             }
-| BOOL_LIT                                      { Bool_lit($1)             }
-| STRING_LIT                                    { String_lit($1)           } 
-| FLOAT_LIT                                     { Float_lit ($1)           }
-| CHAR_LIT                                      { Char_lit($1)             }
-| list_lit                                      { $1                       }
+| INT_LIT                                         { Int_lit ($1)             }
+| BOOL_LIT                                        { Bool_lit($1)             }
+| STRING_LIT                                      { String_lit($1)           } 
+| FLOAT_LIT                                       { Float_lit ($1)           }
+| CHAR_LIT                                        { Char_lit($1)             }
 /* identifiers            */
-| identifier                                    { $1                       }
+| ID                                              { Id($1)                   } 
 /* List expressions       */
-| ID LBRACKET COMPLT RBRACKET ASSIGN expr       { ListAddHead($1,$6)       } /* add head */      
-| ID LBRACKET COMPGT RBRACKET ASSIGN expr       { ListAddTail($1,$6)       } /* add tail */
-| expr CONCAT expr                              { Binop($1, Concat, $3)    }
-| expr RSHIFT expr PROBCOLON expr               { ListRightShift($1,$3,$5) }
-| expr LSHIFT expr PROBCOLON expr               { ListLeftShift($1,$3,$5)  } 
-| expr LENGTH                                   { Length($1)               } /* also for prob types */
+| ID LBRACKET expr RBRACKET index_list_opt        { ListElement($1,$3)       } /* indexing a list element */
+| LBRACKET expr_list_opt RBRACKET                 { List_lit($2)             } /* list literal */
+| ID LBRACKET COMPLT RBRACKET ASSIGN expr         { ListAddHead($1,$6)       } /* add head     */      
+| ID LBRACKET COMPGT RBRACKET ASSIGN expr         { ListAddTail($1,$6)       } /* add tail     */
+| expr CONCAT expr                                { Binop($1, Concat, $3)    }
+| expr LENGTH                                     { Length($1)               } /* also for prob types */
+/* prob type expressions */                    
+| expr PROBCOLON expr                             { ($1,$3)                  }
 /*function call expression */
-| ID LPAREN args_opt RPAREN                     { FunCall ($1,$3)          }
+| ID LPAREN args_opt RPAREN                       { FunCall ($1,$3)          }
 /* parentheses around an expression*/
-| LPAREN expr RPAREN                            { $2                       }
+| LPAREN expr RPAREN                              { $2                       }
 
-/* need to distinguish probability initialization from others' because of normalization requirement*/
-/* any prob type bound to a name doesn't need special treatment here because it has already been   */
-/* intialized and therefore normalized. (prob types with names count as inits of type Regular)*/
-
-init:                            /* used in variable declaration rule and assignment expressions */
-| expr      { Regular($1)  }     /* common case, includes prob types with names        */
-| prob_init { Prob_Init($1)}     /* special case, unnamed prob types about to be bound */
-
-prob_init:
-| expr PROBCOLON expr               { ($1,$3)              } 
-
-list_lit:
-| LBRACKET expr_list_opt RBRACKET   { List_lit($2)         }
-
-/* identifier */
-identifier:
-| ID                                { Id($1)               } /* regular identifier      */
-| ID LBRACKET expr RBRACKET         { ListElement($1,$3)   } /* indexing a list element */
-
-/* assignment expressions */
-assign_expr:
-| identifier ASSIGN init            { ($1, Assign, $3)     }
-| identifier ADDEQUAL init          { ($1, PlusEqual,$3)   }
-| identifier MINUSEQUAL init        { ($1, MinusEqual, $3) }
-| identifier TIMESEQUAL init        { ($1, TimesEqual, $3) }
-| identifier DIVEQUAL init          { ($1, DivEqual, $3)   }
+index: LBRACKET expr RBRACKET  { Index($2)  } /* part of the ListElement node      */
+index_list_opt:
+                               { []         } /* allows for multidimensionla lists */
+| index index_list_opt         { $1:$2      }
 
 expr_opt:                               /* zero or one expressions */
                         { Noexpr     }
@@ -157,7 +142,6 @@ args_list:
 
 stmt: /* statements end with either a semicolon or a block */
   expr SEMICOLON                                                                   { Expr($1)          }
-| assign_expr SEMICOLON                                                            { Assign_stmt($1)   }
 | BREAK SEMICOLON                                                                  { Break             }
 | CONTINUE SEMICOLON                                                               { Continue          }
 | RETURN expr_opt SEMICOLON                                                        { Return($2)        }
@@ -211,8 +195,8 @@ vdecl_list:
 | vdecl_list vdecl { $2 :: $1 } 
 
 vdecl:                                                      /*      a variable declaration consists of   */
-typ_decl ID SEMICOLON { PlainDecl ($1, $2) }                /*      a type declaration and identifier,   */
-| typ_decl ID ASSIGN init SEMICOLON { InitDecl (($1, $2),(Id($2), Assign, $4))}  /* and optional initializer */
+typ_decl ID SEMICOLON { Vdecl (($1, $2),Noexpr) }           /*      a type declaration and identifier,   */
+| typ_decl ID ASSIGN expr SEMICOLON { Vdecl (($1, $2),$4)}  /*      and optional initializer             */
 
 
 /* TYPE DECLARATIONS **************************************************************************************/
@@ -233,7 +217,7 @@ typ_qual:
 
 spec_qual_list:                         
 | typ_spec spec_qual_list_opt {$1::$2}  /* int/bool/float/void/char/string, followed by zero or more types */
-| typ_qual spec_qual_list {$1::$2}      /* list/prob, followed by at least on type */
+| typ_qual spec_qual_list {$1::$2}      /* list/prob, followed by at least one type */
 
 spec_qual_list_opt:                     /* zero or more types */
 | /*nothing*/    {[]}
