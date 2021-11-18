@@ -70,7 +70,7 @@ smap.native :
 .PHONY : clean2
 clean2 :
 	ocamlbuild -clean
-	rm -rf testall.log ocamlllvm *.diff *.o
+	rm -rf testall.log ocamlllvm *.diff
 
 # Testing the "printbig" example
 
@@ -78,7 +78,10 @@ printbig : printbig.c
 	cc -o printbig -DBUILD_TEST printbig.c
 
 printstr : printstr.c
-	cc -o printstr -BUILD_TEST printstr.c
+	cc -o printstr -DBUILD_TEST printstr.c
+
+printstr.o : printstr.c
+	cc -c printstr.c
 
 # Building the tarball
 

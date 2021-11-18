@@ -55,10 +55,10 @@ let translate ((globals, functions), blah) =
 
     let builder = L.builder_at_end context (L.entry_block the_function) in
 
-    let int_format_str = L.build_global_stringptr "%d\n" "fmt" builder
-    and float_format_str = L.build_global_stringptr "%g\n" "fmt" builder in
+    let strcall = L.build_call printstr_func [| |] "printstr" builder in
+    L.block_terminator (L.insertion_block builder)
+  in
 
-    L.build_call printstr_func [| |] "printstr" builder in
   the_module
 
  (*(* <= un comment this line to see the old microc semantic analyzer with nice colors*)
