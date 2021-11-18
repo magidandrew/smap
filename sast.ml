@@ -14,7 +14,7 @@ and sx =
 |   SString_lit of string
 |   SList_lit of sexpr list
 |   SId of string
-|   SListElement of string * sexpr
+|   SListElement of string * sexpr list
 |   SCast of typ_name * sexpr
 |   SListRightShift of sexpr * sexpr * sexpr
 |   SListLeftShift of sexpr * sexpr * sexpr
@@ -22,26 +22,14 @@ and sx =
 |   SListAddTail of string * sexpr
 |   SLength of sexpr
 |   SFunCall of string * sexpr list
+|   SProbColon of sexpr * sexpr
 |   SNoexpr
 
-(* we need to redo how assignment is handled in our grammar
-
-type sprobInit = sx * sx
-
-type sinit =
-| SRegular of sx
-| SProb_Init of sprobInit
-
-type sassign_expr = typ_name * (assign_op * sinit)
-*)
-
 type svdecl =
-  SPlainDecl of bind
-| SInitDecl of bind
+  SVdecl of bind * sexpr
 
 type sstmt = SBlock of sstmt list
 | SExpr of sexpr
-(*| SAssign_stmt of sassign_expr*)
 | SReturn of sexpr
 | SIf of sexpr * sstmt
 | SIf_Else of sstmt * sstmt

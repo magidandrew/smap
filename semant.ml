@@ -48,7 +48,7 @@ let check(global,functions) =
 
   (* rule for checking/transforming a v_decl AST node *)
   let check_local = function
-      PlainDecl (binding) -> SPlainDecl binding
+      Vdecl (binding,e) -> SVdecl (binding, check_expr e)
     | _ -> raise (Failure ("can't type check assignment. make it an expression in grammar!!!")) in
 
   (* rule for checking/transforming an statement node *)

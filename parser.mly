@@ -11,6 +11,7 @@
 %token PLUS MINUS TIMES DIVIDE RSHIFT LSHIFT
 %token ADDEQUAL MINUSEQUAL TIMESEQUAL DIVEQUAL WHILE FOR
 %token AND OR NOT LENGTH OCTOTHORPE
+%token ADDHEAD ADDTAIL
 
 // primitives
 %token INT CHAR BOOL STRING FLOAT PROB LIST VOID RETURN
@@ -91,36 +92,42 @@ expr:
 | expr NOT                                        { Unop(Bang, $1)           }
 | expr OCTOTHORPE                                 { Unop(Octothorpe, $1)     }
 | LPAREN typ_decl RPAREN expr   %prec CAST        { Cast($2, $4)             } /* added this in for now. Hoping precedence is correct*/
-/* literal expressions    */
+/* literal expressions                                                      */
 | INT_LIT                                         { Int_lit ($1)             }
 | BOOL_LIT                                        { Bool_lit($1)             }
 | STRING_LIT                                      { String_lit($1)           } 
 | FLOAT_LIT                                       { Float_lit ($1)           }
 | CHAR_LIT                                        { Char_lit($1)             }
-/* identifiers            */
-| ID                                              { Id($1)                   } 
-/* List expressions       */
-| ID LBRACKET expr RBRACKET index_list_opt        { ListElement($1,$3)       } /* indexing a list element */
+/* identifiers                                                              */
+| id                                              { $1                       }
+/* List expressions                                                         */
 | LBRACKET expr_list_opt RBRACKET                 { List_lit($2)             } /* list literal */
-| ID LBRACKET COMPLT RBRACKET ASSIGN expr         { ListAddHead($1,$6)       } /* add head     */      
-| ID LBRACKET COMPGT RBRACKET ASSIGN expr         { ListAddTail($1,$6)       } /* add tail     */
+| id ADDHEAD ASSIGN expr                          { ListAddHead($1,$4)       } /* add head     */      
+| id ADDTAIL ASSIGN expr                          { ListAddTail($1,$4)       } /* add tail     */
 | expr CONCAT expr                                { Binop($1, Concat, $3)    }
 | expr LENGTH                                     { Length($1)               } /* also for prob types */
-/* prob type expressions */                    
-| expr PROBCOLON expr                             { ($1,$3)                  }
-/*function call expression */
+/* prob type expressions                                                    */                    
+| expr PROBCOLON expr                             { ProbColon($1,$3)         }
+/*function call expression                                                  */
 | ID LPAREN args_opt RPAREN                       { FunCall ($1,$3)          }
-/* parentheses around an expression*/
+/* parentheses around an expression                                         */
 | LPAREN expr RPAREN                              { $2                       }
 
-index: LBRACKET expr RBRACKET  { Index($2)  } /* part of the ListElement node      */
-index_list_opt:
-                               { []         } /* allows for multidimensionla lists */
-| index index_list_opt         { $1:$2      }
+id:
+  ID                                              { Id($1)                   } 
+| list_elt                                        { $1                       }
 
+/* indexing into a list                                                                      */
+list_elt: ID index index_list_opt  { ListElement($1,$2,$3) }  /* indexed elt (for ex a[0][0][1])       */
+index: LBRACKET expr RBRACKET      { Index($2)             }  /* a single index (for ex. [0])          */
+index_list_opt:
+                                   { []                    }  /* 0 or more indices (for ex. [1][2])    */
+| index index_list_opt             { $1::$2                }   
+
+/* recursive expressions to handle plurals  */
 expr_opt:                               /* zero or one expressions */
-                        { Noexpr     }
-| expr                  { $1      }
+                        { Noexpr      }
+| expr                  { $1          }
 
 expr_list_opt:                          /* zero or more expressions */
                         { []          }
@@ -195,7 +202,7 @@ vdecl_list:
 | vdecl_list vdecl { $2 :: $1 } 
 
 vdecl:                                                      /*      a variable declaration consists of   */
-typ_decl ID SEMICOLON { Vdecl (($1, $2),Noexpr) }           /*      a type declaration and identifier,   */
+  typ_decl ID SEMICOLON { Vdecl (($1, $2),Noexpr) }           /*      a type declaration and identifier,   */
 | typ_decl ID ASSIGN expr SEMICOLON { Vdecl (($1, $2),$4)}  /*      and optional initializer             */
 
 

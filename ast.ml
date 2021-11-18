@@ -19,22 +19,20 @@ type expr =
 |   List_lit of expr list
 |   Id of string
 |   Cast of typ_name * expr
-|   ListElement of string * index list
-|   ListAddHead of string * expr
-|   ListAddTail of string * expr
+|   ListElement of string * expr * expr list
+|   ListAddHead of expr * expr
+|   ListAddTail of expr * expr
 |   Length of expr
 |   ProbColon of expr * expr
 |   FunCall of string * expr list
-|   Noexpr
-
-type index = expr
+|   Index of expr
+|   Noexpr 
 
 type vdecl =
   Vdecl of bind * expr
 
 type stmt = Block of stmt list
 | Expr of expr
-| Assign_stmt of assign_expr
 | Return of expr
 | If of expr * stmt
 | If_Else of stmt * stmt
