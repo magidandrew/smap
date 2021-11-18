@@ -54,4 +54,5 @@ type func_decl = { typ_name : typ_name;
 type program = vdecl list * func_decl list
 
 (* dummy pretty printer*)
-let string_of_program (vars, funcs) = "I don't do anything useful yet\n"
+(*                 (vars, funcs)                              *)
+let string_of_program (_,_) = "someday I'll pretty print the AST! \n"

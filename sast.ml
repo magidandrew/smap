@@ -7,6 +7,7 @@ type sexpr = typ_name * sx
 and sx =
     SBinop of sexpr * binary_op * sexpr
 |   SUnop of unary_op * sexpr
+|   SAssign of sexpr * assign_op * sexpr
 |   SInt_lit of int
 |   SBool_lit of bool
 |   SFloat_lit of float
@@ -14,15 +15,14 @@ and sx =
 |   SString_lit of string
 |   SList_lit of sexpr list
 |   SId of string
-|   SListElement of string * sexpr list
 |   SCast of typ_name * sexpr
-|   SListRightShift of sexpr * sexpr * sexpr
-|   SListLeftShift of sexpr * sexpr * sexpr
-|   SListAddHead of string * sexpr
-|   SListAddTail of string * sexpr
+|   SListElement of sexpr * sexpr list
+|   SListAddHead of sexpr * sexpr
+|   SListAddTail of sexpr * sexpr
 |   SLength of sexpr
-|   SFunCall of string * sexpr list
 |   SProbColon of sexpr * sexpr
+|   SFunCall of string * sexpr list
+|   SIndex of sexpr
 |   SNoexpr
 
 type svdecl =
@@ -162,4 +162,7 @@ let string_of_sprogram (vars, funcs) =
   String.concat "\n" (List.map string_of_sfdecl funcs)
 *)
 *)
-let string_of_sprogram (vars, funcs) = "sast dummy\n"
+
+(* dummy pretty printer*)
+(*                 (vars, funcs)                              *)
+let string_of_sprogram (_,_) = "someday I'll pretty print the SAST! \n"

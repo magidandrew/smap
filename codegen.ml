@@ -18,12 +18,14 @@ open Sast
 
 module StringMap = Map.Make(String)
 (* translate : Sast.program -> Llvm.module *)
-let translate ((globals, functions), blah) =
+
+
+let translate (globals, functions) =
   let context = L.global_context () in
 
   (* Create the LLVM compilation module into which we will generate code *)
   let the_module = L.create_module context "MicroC" in
-
+(*
   let i32_t = L.i32_type context
   and i8_t = L.i8_type context
   and i1_t = L.i1_type context
@@ -58,8 +60,12 @@ let translate ((globals, functions), blah) =
     let int_format_str = L.build_global_stringptr "%d\n" "fmt" builder
     and float_format_str = L.build_global_stringptr "%g\n" "fmt" builder in
 
-    L.build_call printstr_func [| |] "printstr" builder in
+    L.build_call printstr_func [| |] "printstr" builder in*)
   the_module
+
+
+
+
 
  (*(* <= un comment this line to see the old microc semantic analyzer with nice colors*)
 

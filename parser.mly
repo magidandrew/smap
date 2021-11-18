@@ -113,11 +113,12 @@ expr:
 /* parentheses around an expression                                         */
 | LPAREN expr RPAREN                              { $2                       }
 
+/* identifier is either an indexed list element or regular text identifier  */
 id:
   ID                                              { Id($1)                   } 
 | list_elt                                        { $1                       }
 
-/* indexing into a list                                                                      */
+/* indexing into a list  */
 list_elt: ID index index_list_opt  { ListElement($1,$2,$3) }  /* indexed elt (for ex a[0][0][1])       */
 index: LBRACKET expr RBRACKET      { Index($2)             }  /* a single index (for ex. [0])          */
 index_list_opt:
