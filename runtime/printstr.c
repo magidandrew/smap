@@ -8,7 +8,7 @@
 
 void printstr(int x)
 {
-	fprintf(stderr, "%d\n", x);
+	printf("%d\n", x);
 }
 
 #ifdef BUILD_TEST

@@ -4,7 +4,7 @@ open Ast
 open Sast
 
 module StringMap = Map.Make(String)
-let check(global,functions) =
+let check(globals,functions) =
 (* add built in functions to symbol table*)
   let built_in_decls =
     let add_bind map (name, ty) = StringMap.add name {
@@ -66,8 +66,12 @@ let check(global,functions) =
                    sbody = List.map check_stmt func.body;
   } in
 
+  (* rule for type checking the global vars *)
+let typeCheck_global (Vdecl(binding, expression)) = SVdecl(binding,check_expr expression) in
+
+
   (* map the typeCheck_func over all the functions*)
-(global, List.map typeCheck_func functions)
+(List.map typeCheck_global globals, List.map typeCheck_func functions)
 
 
 
