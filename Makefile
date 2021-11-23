@@ -1,5 +1,10 @@
-# "ocamlbuild calc.native" will also build the calculator
+.PHONY : dune
+dune: 
+	 dune build src/smap.exe
 
+.PHONY : dunehello
+dunehello : 
+	 dune exec src/smap.exe test/hello.smap
 # calc : parser.cmo scanner.cmo calc.cmo
 # 	ocamlc -w A -o calc $^
 
@@ -30,7 +35,7 @@ scanner.cmx : parser.cmx
 
 .PHONY : clean
 clean :
-	rm -rf *.cmi *.cmo parser.ml parser.mli scanner.ml calc.out calc
+	rm -rf *.cmi *.cmo parser.ml parser.mli scanner.ml calc.out calc *.o; make clean2
 
 .PHONY : smap
 smap : smap.native
@@ -43,6 +48,9 @@ smap : smap.native
 ############### microc makefile stuff ########################################
 
 # "make test" Compiles everything and runs the regression tests
+.PHONY : testhello
+testhello : 
+	 ./testhello.sh
 
 .PHONY : test
 test : all testall.sh
@@ -63,14 +71,14 @@ all : smap.native printstr.o
 
 smap.native :
 	opam config exec -- \
-	ocamlbuild -use-ocamlfind smap.native
+	ocamlbuild -use-ocamlfind src/smap.native
 
 # "make clean" removes all generated files
 
 .PHONY : clean2
 clean2 :
 	ocamlbuild -clean
-	rm -rf testall.log ocamlllvm *.diff *.o
+	rm -rf testall.log ocamlllvm *.diff 
 
 # Testing the "printbig" example
 
@@ -78,7 +86,10 @@ printbig : printbig.c
 	cc -o printbig -DBUILD_TEST printbig.c
 
 printstr : printstr.c
-	cc -o printstr -BUILD_TEST printstr.c
+	cc -o printstr -DBUILD_TEST printstr.c
+
+printstr.o : 
+	cc -c runtime/printstr.c
 
 # Building the tarball
 

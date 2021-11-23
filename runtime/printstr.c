@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 
 // void printstr(const char *str)
@@ -13,7 +14,7 @@ void printstr(int x)
 #ifdef BUILD_TEST
 int main()
 {
-	printstr("build test printstr");
+	printstr(42);
 	return 0;
 }
 #endif

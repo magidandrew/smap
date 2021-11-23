@@ -67,7 +67,7 @@ let check(global,functions) =
   } in
 
   (* map the typeCheck_func over all the functions*)
-(global,List.map typeCheck_func functions)
+(global, List.map typeCheck_func functions)
 
 
 
