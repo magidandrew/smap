@@ -22,7 +22,7 @@ let translate (globals, functions) =
   let context = L.global_context () in
 
   (* Create the LLVM compilation module into which we will generate code *)
-  let the_module = L.create_module context "MicroC" in
+  let the_module = L.create_module context "Smap" in
 
   let i32_t = L.i32_type context
   and i8_t = L.i8_type context
