@@ -89,7 +89,7 @@ printstr : printstr.c
 	cc -o printstr -DBUILD_TEST printstr.c
 
 printstr.o : 
-	cc -c runtime/printstr.c
+	cc -c -o printstr.o runtime/printstr.c
 
 # Building the tarball
 
