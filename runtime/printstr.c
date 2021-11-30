@@ -6,15 +6,15 @@
 // 	puts(str);
 // }
 
-void printstr(int x)
+void printstr(char* x)
 {
-	printf("%d\n", x);
+	printf("%s", x);
 }
 
 #ifdef BUILD_TEST
 int main()
 {
-	printstr(42);
+	printstr("42");
 	return 0;
 }
 #endif

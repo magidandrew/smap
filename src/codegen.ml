@@ -27,6 +27,7 @@ let translate (globals, functions) =
   let i32_t = L.i32_type context (* 32 bit integer *)
   and i8_t = L.i8_type context   (* 8 bit integer *)
   and i1_t = L.i1_type context   (* 1 bit integer *)
+  and str = L.pointer_type (L.i8_type context)
   and float_t = L.double_type context
   and void_t = L.void_type context in
   (* Return the LLVM type for a MicroC type *)
@@ -36,6 +37,7 @@ let translate (globals, functions) =
   | A.Bool -> i1_t
   | A.Float -> float_t
   | A.Void -> void_t
+  | A.String -> str
   | _ -> void_t (*add in prob, string, and list types later! *)
   in
 
@@ -52,8 +54,11 @@ let translate (globals, functions) =
   List.fold_left global_var StringMap.empty globals in
 
   (* declare built in C functions *)
-  let printstr_t: L.lltype = L.function_type i32_t [| i32_t |] in
+  let printstr_t: L.lltype = L.function_type i32_t [| L.pointer_type i8_t |] in
   let printstr_func : L.llvalue = L.declare_function "printstr" printstr_t the_module in
+
+  let printint_t: L.lltype = L.function_type i32_t [| i32_t |] in
+  let printint_func : L.llvalue = L.declare_function "printint" printint_t the_module in
 
   let printf_t : L.lltype = L.var_arg_function_type i32_t [| L.pointer_type i8_t |] in
   let printf_func : L.llvalue = L.declare_function "printf" printf_t the_module in
@@ -68,7 +73,6 @@ let translate (globals, functions) =
   let ftype = L.function_type (ltype_of_typ simpleReturnType) formal_types in
   StringMap.add name (L.define_function name ftype the_module, fdecl) m in
   List.fold_left function_decl StringMap.empty functions in
- (* I stop getting output after this point ************************************************ *)
   (* ... *)
   (* Fill in the body of the given function *)
   let build_function_body fdecl =
@@ -76,10 +80,12 @@ let translate (globals, functions) =
     StringMap.find fdecl.sfname function_decls in
     let builder =
     L.builder_at_end context (L.entry_block the_function) in
+    let test_str =
+      L.build_global_stringptr "test test test!\n" "test" builder in
     let int_format_str =
     L.build_global_stringptr "%d\n" "fmt" builder
     and float_format_str =
-    L.build_global_stringptr "%g\n" "fmt" builder in
+    L.build_global_stringptr "%f\n" "fmt" builder in
 
   let local_vars =
     let add_formal m (t, n) p = L.set_value_name n p;
@@ -100,12 +106,17 @@ let translate (globals, functions) =
   let rec expr builder ((_, e) : sexpr) = match e with
     SInt_lit i
     -> L.const_int i32_t i
+    | SString_lit s
+    -> L.build_global_stringptr s "the_str" builder
     | SBool_lit b
     -> L.const_int i1_t (if b then 1 else 0)
     | SFloat_lit l
     -> L.const_float float_t l
     | SNoexpr
     -> L.const_int i32_t 0
+    | SFunCall ("printint", [e]) ->
+      L.build_call printint_func [| (expr builder e) |]
+      "printint" builder
     | SFunCall ("printstr", [e]) ->
       L.build_call printstr_func [| (expr builder e) |]
       "printstr" builder

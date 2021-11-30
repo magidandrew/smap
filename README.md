@@ -6,19 +6,16 @@
 
   
 
-Building the compiler with dune:
+Building the compiler with dune:  
 
-  
-
-dune build src/smap.exe
+    dune build src/smap.exe
 
 Building compiler without dune:
 
   
 
-make clean
-
-make smap
+    make clean    
+    make smap
 
   
 
@@ -26,11 +23,9 @@ To test compiler:
 
   
 
-make clean
-
-make all
-
-./testall.sh
+    make clean
+    make all
+    ./testall.sh
 
   
 
@@ -38,11 +33,9 @@ To test compiler *and keep intermediate files*:
 
   
 
-make clean
-
-make all
-
-./testall.sh -k
+    make clean
+    make all
+    ./testall.sh -k
 
   
 

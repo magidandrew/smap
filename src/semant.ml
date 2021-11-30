@@ -14,8 +14,9 @@ let check(globals,functions) =
       formals = [(ty, "x")];
       locals = [];
       body = [] } map
-    in List.fold_left add_bind StringMap.empty [ ("print", [Int]);
-                                                 ("printstr", [Int]); ] in
+    in List.fold_left add_bind StringMap.empty [ ("printint", [Int]);
+                                                 ("printf", [Float]);
+                                                 ("printstr", [String]); ] in
 (* add user defined func declarations to symbol table,  *)
 (* add make sure there are no duplicate function names! *)
   let add_func map fd =
@@ -44,6 +45,7 @@ let check(globals,functions) =
       (theFunc.typ_name, SFunCall(fname, (List.map check_expr args)))
     | String_lit str -> ([String], SString_lit str)
     | Int_lit num -> ([Int], SInt_lit num)
+    | Float_lit flt -> ([Float], SFloat_lit flt)
     | _ -> raise (Failure ("can't type check this expression")) in
 
   (* rule for checking/transforming a Vdecl AST node *)

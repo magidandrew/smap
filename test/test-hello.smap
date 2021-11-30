@@ -1,3 +1,3 @@
 int main(){
-	printstr(43110);
+	printstr("Hello, World!");
 }
