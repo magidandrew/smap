@@ -1,9 +1,9 @@
 .PHONY : dune
-dune: 
+dune:
 	 dune build src/smap.exe
 
 .PHONY : dunehello
-dunehello : 
+dunehello :
 	 dune exec src/smap.exe test/hello.smap
 # calc : parser.cmo scanner.cmo calc.cmo
 # 	ocamlc -w A -o calc $^
@@ -49,7 +49,7 @@ smap : smap.native
 
 # "make test" Compiles everything and runs the regression tests
 .PHONY : testhello
-testhello : 
+testhello :
 	 ./testhello.sh
 
 .PHONY : test
@@ -78,9 +78,12 @@ smap.native :
 .PHONY : clean2
 clean2 :
 	ocamlbuild -clean
-	rm -rf testall.log ocamlllvm *.diff 
+	rm -rf testall.log ocamlllvm *.diff
 
 # Testing the "printbig" example
+
+list: list.c
+	cd runtime && cc -o list -DBUILD_TEST list.c
 
 printbig : printbig.c
 	cc -o printbig -DBUILD_TEST printbig.c
@@ -88,10 +91,10 @@ printbig : printbig.c
 printstr : printstr.c
 	cc -o printstr -DBUILD_TEST printstr.c
 
-printstr.o : 
+printstr.o :
 	cc -c -o printstr.o runtime/printstr.c
 
-printint.o : 
+printint.o :
 	cc -c -o printint.o runtime/printint.c
 
 # Building the tarball
