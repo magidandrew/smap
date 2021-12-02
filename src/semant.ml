@@ -4,8 +4,28 @@ open Ast
 open Sast
 
 module StringMap = Map.Make(String)
+
+
+(*  duplicate names binds is the vdecl  *)
+
 let check(globals,functions) =
-(* add built in functions to symbol table*)
+
+  let check_binds (kind : string) (binds : vdecl list) =
+    List.iter (function
+    (Vdecl(([Void],b), (_))) -> raise (Failure ("illegal void " ^ kind ^ " " ^ b))
+      | _ -> ()) binds;
+    let rec dups = function
+        [] -> ()
+      | ((Vdecl((_,n1), _)):: (Vdecl((_,n2),_)) :: _) when n1 = n2 ->
+    raise (Failure ("duplicate " ^ kind ^ " " ^ n1))
+      | _ :: t -> dups t
+    in dups (List.sort (fun (Vdecl((_,a), _)) (Vdecl((_,b), _)) -> compare a b) binds)
+  in
+
+  check_binds "global" globals;
+
+
+(* add built in functions to symbol table *)
   let built_in_decls =
     let add_bind map (name, ty) = StringMap.add name {
       (* would be a singleton typ_list with sole Void element *)
@@ -15,11 +35,9 @@ let check(globals,functions) =
       locals = [];
       body = [] } map
     in List.fold_left add_bind StringMap.empty [ ("printint", [Int]);
-                                                 ("printb", [Bool]);
                                                  ("printf", [Float]);
-                                                 ("printstr", [String]); 
-                                                 ("testMakeStruct", [Int])]
-                                                 in
+                                                 ("printstr", [String]); ]
+  in
 (* add user defined func declarations to symbol table,  *)
 (* add make sure there are no duplicate function names! *)
   let add_func map fd =
@@ -40,28 +58,15 @@ let check(globals,functions) =
   let _ = find_func "main" in (* Ensure "main" is defined *)
 
   (* Define rules for the type checking *)
-
+  
   (* rule for checking/transforming an expr AST node *)
   let rec check_expr = function
       FunCall (fname,args) ->
       let theFunc = find_func fname in
       (theFunc.typ_name, SFunCall(fname, (List.map check_expr args)))
     | String_lit str -> ([String], SString_lit str)
-    | Bool_lit bl -> ([Bool],SBool_lit bl)
     | Int_lit num -> ([Int], SInt_lit num)
     | Float_lit flt -> ([Float], SFloat_lit flt)
-    | Noexpr -> ([],SNoexpr) 
-    | Id str -> raise (Failure ("can't type check this identifier "^str))
-    | Unop(op, e) as ex ->
-      let (t, e') = check_expr e in
-      let ty = match op with
-      Neg when t = [Int] || t = [Float] -> t
-      | Not when t = [Bool] -> [Bool]
-      | BitNot when t = [Int] -> [Int]
-      | _ -> raise (Failure ("illegal unary operator " ^
-      string_of_uop op ^ string_of_typ_name t ^
-      " in " ^ string_of_expr ex))
-      in (ty, SUnop(op, (t, e')))
     | _ -> raise (Failure ("can't type check this expression")) in
 
   (* rule for checking/transforming a Vdecl AST node *)
@@ -85,11 +90,13 @@ let check(globals,functions) =
   } in
 
   (* rule for type checking the global vars *)
-let typeCheck_global (Vdecl(binding, expression)) = SVdecl(binding,check_expr expression) in
-
+  let typeCheck_global (Vdecl(binding, expression)) = SVdecl(binding,check_expr expression) 
+  in
 
   (* map the typeCheck_func over all the functions*)
-(List.map typeCheck_global globals, List.map typeCheck_func functions)
+  (List.map typeCheck_global globals, List.map typeCheck_func functions);
+
+
 
 
 
@@ -138,3 +145,9 @@ let check (globals, functions) =
   let _ = find_func "main" in (* Ensure "main" is defined *)
 
  *)
+ 
+ let check_functions func =
+    check_binds "formal" (List.map (fun (a,b) -> Vdecl((a,b),Noexpr)) func.formals);
+    check_binds "local" func.locals
+
+  in (globals, List.map check_functions functions)
