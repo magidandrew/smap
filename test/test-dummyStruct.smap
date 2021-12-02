@@ -1,0 +1,11 @@
+int main(){
+	prob int dummyStruct;
+	takeDummy(testMakeStruct(16));
+	printstr("dummy struct.");
+}
+
+int takeDummy(prob int dumb){
+	return(5);
+}
+
+

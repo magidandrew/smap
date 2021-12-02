@@ -56,3 +56,25 @@ type program = vdecl list * func_decl list
 (* dummy pretty printer*)
 (*                 (vars, funcs)                              *)
 let string_of_program (_,_) = "someday I'll pretty print the AST! \n"
+
+let string_of_uop = function
+  Neg -> "-"
+| Not -> "!"
+| BitNot -> "~"
+| Bang -> "!"
+| Octothorpe -> "#"
+
+let string_of_typ = function
+  Int -> "Int"
+| Bool -> "Bool"
+| Float -> "Float"
+| Char -> "Char"
+| String -> "String"
+| List -> "List"
+| Void -> "Void"
+| Prob -> "Prob"
+
+let string_of_typ_name typ_lst = 
+  List.fold_left (fun acc elt -> acc^elt^" ") "" (List.map string_of_typ typ_lst)
+
+let string_of_expr _ = "some expression"

@@ -98,9 +98,6 @@ rule tokenize = parse
 | "continue"            { CONTINUE }
 | "return"              { RETURN }
 
-(*identifiers *)
-| ['a'-'z' 'A'-'Z' '_']['a'-'z' 'A'-'Z' '0'-'9' '_']* as var_id  { ID(var_id) }
-
 (* literals *)
 | ['''] ((letter | digit | punc | otherChar ) as c)['''] { CHAR_LIT(c)}                     (* char literal   *)
 | ['"'] ((letter | digit | punc | otherChar | whitespace)* as s) ['"'] { STRING_LIT(s)}       (* string literal *)
@@ -108,6 +105,9 @@ rule tokenize = parse
 | ['0'-'9']* ['.'] ['0'-'9']+ as flit                    { FLOAT_LIT(float_of_string flit)} (* float literal  *)
 | "true"                                                 { BOOL_LIT(true) }
 | "false"                                                { BOOL_LIT(false) }
+
+(*identifiers *)
+| ['a'-'z' 'A'-'Z' '_']['a'-'z' 'A'-'Z' '0'-'9' '_']* as var_id  { ID(var_id) }
 
 (* EOF *)
 | eof                   { EOF }

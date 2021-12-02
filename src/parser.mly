@@ -187,7 +187,7 @@ LBRACE vdecl_list stmt_list RBRACE
    fname = $2; 
    formals = List.rev $4;
    locals = List.rev $7; 
-   body = $8; 
+   body = List.rev $8; 
   }}                
 
 formals_opt: 

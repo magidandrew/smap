@@ -15,8 +15,11 @@ let check(globals,functions) =
       locals = [];
       body = [] } map
     in List.fold_left add_bind StringMap.empty [ ("printint", [Int]);
+                                                 ("printb", [Bool]);
                                                  ("printf", [Float]);
-                                                 ("printstr", [String]); ] in
+                                                 ("printstr", [String]); 
+                                                 ("testMakeStruct", [Int])]
+                                                 in
 (* add user defined func declarations to symbol table,  *)
 (* add make sure there are no duplicate function names! *)
   let add_func map fd =
@@ -44,8 +47,21 @@ let check(globals,functions) =
       let theFunc = find_func fname in
       (theFunc.typ_name, SFunCall(fname, (List.map check_expr args)))
     | String_lit str -> ([String], SString_lit str)
+    | Bool_lit bl -> ([Bool],SBool_lit bl)
     | Int_lit num -> ([Int], SInt_lit num)
     | Float_lit flt -> ([Float], SFloat_lit flt)
+    | Noexpr -> ([],SNoexpr) 
+    | Id str -> raise (Failure ("can't type check this identifier "^str))
+    | Unop(op, e) as ex ->
+      let (t, e') = check_expr e in
+      let ty = match op with
+      Neg when t = [Int] || t = [Float] -> t
+      | Not when t = [Bool] -> [Bool]
+      | BitNot when t = [Int] -> [Int]
+      | _ -> raise (Failure ("illegal unary operator " ^
+      string_of_uop op ^ string_of_typ_name t ^
+      " in " ^ string_of_expr ex))
+      in (ty, SUnop(op, (t, e')))
     | _ -> raise (Failure ("can't type check this expression")) in
 
   (* rule for checking/transforming a Vdecl AST node *)

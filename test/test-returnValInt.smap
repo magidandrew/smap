@@ -1,0 +1,5 @@
+int main(){
+	printint(testReturn());
+}
+
+int testReturn (){return 5;}
