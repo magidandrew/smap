@@ -1,4 +1,4 @@
-type binary_op = Add | Sub | Mul | Div | Concat | CompEq | CompLt | CompLeq | CompGt | CompNeq | RShift | LShift | BitAnd | BitOr | Xor
+type binary_op = Add | Sub | Mul | Div | Concat | CompEq | CompLt | CompLeq | CompGt | CompNeq | CompGeq | And | Or | RShift | LShift | BitAnd | BitOr | Xor
 type unary_op = BitNot | Not | Bang | Octothorpe | Neg
 type assign_op = PlusEqual | MinusEqual | TimesEqual | DivEqual | Equal
 
@@ -31,6 +31,63 @@ type expr =
 type vdecl =
   Vdecl of bind * expr
 
+let string_of_op = function
+    Add -> "+"
+  | Sub -> "-"
+  | Mul -> "*"
+  | Div -> "/"
+  | Concat -> "++"
+  | CompEq -> "=="
+  | CompLt -> "<"
+  | CompNeq -> "!="
+  | CompLeq -> "<="
+  | CompGt -> ">"
+  | CompGeq -> ">="
+  | And -> "&&"
+  | Or -> "||"
+  | RShift -> ">>"
+  | LShift -> "<<"
+  | BitAnd -> "&"
+  | BitOr -> "|"
+  | Xor -> "^"
+
+let string_of_uop = function
+    BitNot -> "~"
+  | Not -> "!"
+  | Octothorpe -> "#"
+  (*| Neg -> "-"*)
+
+let string_of_assign = function
+    PlusEqual -> "+="
+  | MinusEqual -> "-="
+  | TimesEqual -> "*="
+  | DivEqual -> "/="
+  | Equal -> "="
+
+let rec string_of_expr = function
+    Int_lit(l) -> string_of_int l
+  | Float_lit(l) -> string_of_float l    (*check floats again*)
+  | Bool_lit(true) -> "true"
+  | Bool_lit(false) -> "false"
+  | Id(s) -> s
+  | Binop(e1, o, e2) ->
+      string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
+  | Unop(o, e) -> string_of_uop o ^ string_of_expr e
+  | Assign(v, o, e) -> string_of_expr v ^ " " ^ string_of_assign o ^ " " ^ string_of_expr e
+  | FunCall(f, el) ->
+      f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
+  | Noexpr -> ""
+
+let string_of_typ = function
+    [Int] -> "int"
+  | [Bool] -> "bool"
+  | [Float] -> "float"
+  | [Void] -> "void"
+  | [Char] -> "char"
+  | [String] -> "string"
+  | [Prob] -> "prob"
+  | [List] -> "list"
+
 type stmt = Block of stmt list
 | Expr of expr
 | Return of expr
@@ -56,25 +113,3 @@ type program = vdecl list * func_decl list
 (* dummy pretty printer*)
 (*                 (vars, funcs)                              *)
 let string_of_program (_,_) = "someday I'll pretty print the AST! \n"
-
-let string_of_uop = function
-  Neg -> "-"
-| Not -> "!"
-| BitNot -> "~"
-| Bang -> "!"
-| Octothorpe -> "#"
-
-let string_of_typ = function
-  Int -> "Int"
-| Bool -> "Bool"
-| Float -> "Float"
-| Char -> "Char"
-| String -> "String"
-| List -> "List"
-| Void -> "Void"
-| Prob -> "Prob"
-
-let string_of_typ_name typ_lst = 
-  List.fold_left (fun acc elt -> acc^elt^" ") "" (List.map string_of_typ typ_lst)
-
-let string_of_expr _ = "some expression"
