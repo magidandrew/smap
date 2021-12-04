@@ -122,23 +122,27 @@ let translate (globals, functions) =
     -> L.const_float float_t l
     | SNoexpr
     -> L.const_int i32_t 0
-    | SUnop(op, ((t, _) as e)) ->
-      let e' = expr builder e in
-      (match op with
-      A.Neg when t = [A.Float] -> L.build_fneg
-      | A.Neg
-      -> L.build_neg
-      | A.BitNot
-      -> L.build_not
-      | A.Not
-      -> L.build_not) e' "tmp" builder
-    | SFunCall ("printint", [e]) ->
-      L.build_call printint_func [| (expr builder e) |]
-      "printint" builder
-    | SFunCall ("testMakeStruct",[len]) ->
-      L.build_call testMakeStruct_func [| test_str; expr builder len |]
-      "testMakeStruct" builder
-      | SFunCall ("printb", [e]) ->
+    | SUnop(op, ((t, _) as e)) 
+    -> let e' = expr builder e in (match op with
+        A.Neg when t = [A.Float] -> L.build_fneg
+        | A.Neg
+        -> L.build_neg
+        | A.BitNot
+        -> L.build_not
+        | A.Not
+        -> L.build_not) e' "tmp" builder
+    | SFunCall ("printint", [e]) 
+    -> L.build_call printint_func [| (expr builder e) |]
+       "printint" builder
+    | SFunCall ("testMakeStruct",[(_,theSExpr) as arg]) 
+    -> (match theSExpr with
+        SInt_lit _
+        -> L.build_call testMakeStruct_func [| test_str; expr builder arg |]
+            "testMakeStruct" builder
+        | _ 
+        -> L.build_call printb_func [| (expr builder arg) |]
+            "printb" builder)
+    | SFunCall ("printb", [e]) ->
         L.build_call printb_func [| (expr builder e) |]
         "printb" builder
     | SFunCall ("printstr", [e]) ->

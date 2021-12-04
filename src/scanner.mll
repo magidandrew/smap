@@ -66,7 +66,7 @@ rule tokenize = parse
 
 (* comments *)
 | "/*"                  { comment lexbuf }
-| "//"                  { COMMENTLINE }
+| "//"                  { lineComment lexbuf }
 
 (* whitespace *)
 | whitespace { tokenize lexbuf }
