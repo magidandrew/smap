@@ -81,9 +81,12 @@ clean2 :
 	rm -rf testall.log ocamlllvm *.diff
 
 # Testing the "printbig" example
+list.c:
+	cc -g -Wall -c -o list.o runtime/list.c
 
-list: list.c
-	cd runtime && cc -o list -DBUILD_TEST list.c
+list_test : list.c
+	cc -g -Wall -o list -DBUILD_TEST runtime/list.c
+
 
 printbig : printbig.c
 	cc -o printbig -DBUILD_TEST printbig.c
@@ -97,10 +100,10 @@ printstr.o :
 printint.o :
 	cc -c -o printint.o runtime/printint.c
 
-printb.o : 
+printb.o :
 	cc -c -o printb.o runtime/printb.c
 
-testMakeStruct.o : 
+testMakeStruct.o :
 	cc -c -o testMakeStruct.o runtime/testMakeStruct.c
 
 # Building the tarball
