@@ -1,3 +1,6 @@
+CC = cc
+CFLAGS = -g -Wall
+
 .PHONY : dune
 dune:
 	 dune build src/smap.exe
@@ -81,12 +84,17 @@ clean2 :
 	rm -rf testall.log ocamlllvm *.diff
 
 # Testing the "printbig" example
-list.c:
-	cc -g -Wall -c -o list.o runtime/list.c
+list.o:
+	$(CC) $(CFLAGS) -c -o list.o runtime/list.c
 
-list_test : list.c
-	cc -g -Wall -o list -DBUILD_TEST runtime/list.c
+list: list.o runtime/list.c
+	$(CC) $(CFLAGS) -o list -DBUILD_TEST runtime/list.c
 
+prob.o:
+	$(CC) $(CFLAGS) -c -o prob.o runtime/prob.c
+
+prob: list.o runtime/prob.c
+	$(CC) $(CFLAGS) list.o -o prob -DBUILD_TEST runtime/prob.c
 
 printbig : printbig.c
 	cc -o printbig -DBUILD_TEST printbig.c
