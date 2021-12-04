@@ -1,86 +1,95 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include "list.h"
 
-#define INITIAL_LIST_CAPACITY 10
-
-#define FLOAT_TYPE 1
-#define CHAR_TYPE 2
-#define BOOL_TYPE 3
-#define LIST_TYPE 4
-#define INT_TYPE 5
-
-typedef struct list {
-    void *data;
-    int capacity;
-    int size;
-    int type;
-} list;
-
-int init_list(list *l, int type) {
+int init_list(list *l) {
     l->capacity = INITIAL_LIST_CAPACITY;
     l->size = 0;
-    l->type = type;
 
-    l->data = (void *) malloc(INITIAL_LIST_CAPACITY * sizeof(void *));
-    printf("l->data ptr: %p\n", l->data);
+    l->data = (void **) malloc(INITIAL_LIST_CAPACITY * sizeof(void **));
     if (!l->data)
         return -1; // failure
 
     return 0; // success
 }
 
-int pushback_int(list *l, int *item) {
-    if (l->type != INT_TYPE)
+// checks if list is at capacity
+// ret 1 if needs resizing, ret 0 if doesn't
+int check_resizing(list *l) {
+    if (l->size == l->capacity) {return 1;} else {return 0;}
+}
+
+// ret 1 if empty
+// ret 0 if non-empty
+int check_empty(list *l) {
+    if (l->size == 0) {return 1;} else {return 0;}
+}
+
+// ret 0 if successful
+// ret -1 on failure
+int resize(list *l) {
+    puts("resizing");
+    l->data = (void **) realloc(l->data, l->capacity * 2 * sizeof(void **));
+    if (l->data == NULL)
         return -1;
-
-    // resizing
-    if ((l->size + 1) > l->capacity) {
-        puts("resizing");
-        printf("l->data ptr realloc: %p\n", l->data);
-        l->data = (void *) realloc(l->data, l->capacity * 2 * sizeof(void *));
-        if (l->data == NULL)
-            return -1;
-        l->capacity *= 2;
-    }
-
-    // allocate space for this item on heap
-    int *tmp = (int *) malloc(sizeof(int));
-    // copy over value to this address
-    // *tmp = *((int *) item);
-
-
-    // inc arr size by 1
-    l->size++;
-
+    l->capacity *= 2;
     return 0;
 }
 
-// int pushfront_int(list *l, void *item) {
+void push_back(list *l, void *item) {
+    if (check_resizing(l))
+        resize(l);
+    // set item
+    l->data[l->size] = item;
+    l->size++;
+}
 
-// }
+void push_front(list *l, void *item) {
+    if (check_resizing(l))
+        resize(l);
 
-// int pushback_float(list *l, void *item) {
+    // shift everything over by 1
+    for (int i=l->size; i > 0; i--) {
+        l->data[i] = l->data[i-1];
+    }
 
-// }
+    l->data[0] = item;
+    l->size++;
+}
 
-// int pushfront_float(list *l, void *item) {
+// ret 0 on success
+// ret -1 on failure
+// WARNING: WILL CAUSE MEMORY LEAKS! DATA DOES NOT GET FREE'D
+int del_back(list *l) {
+    if (check_empty(l))
+        return -1;
 
-// }
+    l->size--;
+    return 0;
+}
 
-// int pushback_char(list *l, void *item) {
+// ret 0 on success
+// ret -1 on failure
+// WARNING: WILL CAUSE MEMORY LEAKS! DATA DOES NOT GET FREE'D
+int del_front(list *l) {
+    if (check_empty(l))
+        return -1;
 
-// }
+    // shift over data
+    for (int i=0; i < (l->size - 1); i++) {
+        l->data[i] = l->data[i+1];
+    }
 
-// int pushfront_char(list *l, void *item) {
-
-// }
+    l->size--;
+    return 0;
+}
 
 void *get_back(list *l) {
     if (l->size == 0)
         return NULL; // list is empty
 
     // offset data pointer by size of array
-    return (l->data) + l->size - 1;
+    return l->data[l->size - 1];
 }
 
 void *get_front(list *l) {
@@ -88,23 +97,29 @@ void *get_front(list *l) {
         return NULL; // list is empty
 
     // get index 0, ie. first element
-    return (l->data);
+    return l->data[0];
 }
 
 #ifdef BUILD_TEST
 int main() {
 	list l;
-    init_list(&l, INT_TYPE);
+    init_list(&l);
 
     int a = 0;
-    int *p;
+    int *p = &a;
 
-    for (int i=0; i < 50; i++){
+    for (int i=0; i<10; i++) {
+        p = (int *) malloc(sizeof(int));
+        *p = a;
+        printf("pushing: %d\n", *p);
+        push_back(&l, (void *) p);
         a++;
-        pushback_int(&l, (void *) &a);
-        p = (int *) get_front(&l);
-        printf("%d\n", *p);
     }
+
+    del_front(&l);
+    del_front(&l);
+    del_front(&l);
+    printf("%d\n", *((int *) get_front(&l)));
 
 	return 0;
 }
