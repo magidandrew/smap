@@ -3,7 +3,31 @@
 open Ast
 open Sast
 
-module StringMap = Map.Make(String)
+module StdLib = Stdlib
+module StringMap = Map.Make(struct
+type t = string
+let compare x y = StdLib.compare x y
+end)
+
+(* Define a data structure to keep track of scope and var bindings       *)
+(*                                                                       *)
+let scope = [StringMap.empty]
+let enterScope s = (StringMap.empty)::s
+let addVar typ_name id s = match s with 
+  (h::t) -> if (StringMap.mem id h) 
+    then raise (Failure ("a variable named "^id^" was already defined in this scope"))
+    else (StringMap.add id typ_name h)::t
+| [] -> raise (Failure ("no scope to add an identifier to"))
+let rec findVar id cur_scope = match cur_scope with 
+ (h::t) -> if (StringMap.mem id h) then StringMap.find id h else findVar id t
+ |_ -> []  (* returns empty list of types if identifier not present in any scopes *)
+let exitScope s = match s with
+  [h] -> [h] (* never get rid of the global scope *)
+ | (_::t) -> t
+ | [] -> raise (Failure ("tried to exit scope but there aren't any scopes left!!"))
+(*                                                                       *)
+(* _____________________________________________________________________ *)
+
 let check(globals,functions) =
 (* add built in functions to symbol table*)
   let built_in_decls =
@@ -15,8 +39,11 @@ let check(globals,functions) =
       locals = [];
       body = [] } map
     in List.fold_left add_bind StringMap.empty [ ("printint", [Int]);
+                                                 ("printb", [Bool]);
                                                  ("printf", [Float]);
-                                                 ("printstr", [String]); ] in
+                                                 ("printstr", [String]); 
+                                                 ("testMakeStruct", [Int])]
+                                                 in
 (* add user defined func declarations to symbol table,  *)
 (* add make sure there are no duplicate function names! *)
   let add_func map fd =
@@ -44,8 +71,21 @@ let check(globals,functions) =
       let theFunc = find_func fname in
       (theFunc.typ_name, SFunCall(fname, (List.map check_expr args)))
     | String_lit str -> ([String], SString_lit str)
+    | Bool_lit bl -> ([Bool],SBool_lit bl)
     | Int_lit num -> ([Int], SInt_lit num)
     | Float_lit flt -> ([Float], SFloat_lit flt)
+    | Noexpr -> ([],SNoexpr) 
+    | Id str -> raise (Failure ("can't type check this identifier "^str))
+    | Unop(op, e) as ex ->
+      let (t, e') = check_expr e in
+      let ty = match op with
+      Neg when t = [Int] || t = [Float] -> t
+      | Not when t = [Bool] -> [Bool]
+      | BitNot when t = [Int] -> [Int]
+      | _ -> raise (Failure ("illegal unary operator " ^
+      string_of_uop op ^ string_of_typ_name t ^
+      " in " ^ string_of_expr ex))
+      in (ty, SUnop(op, (t, e')))
     | _ -> raise (Failure ("can't type check this expression")) in
 
   (* rule for checking/transforming a Vdecl AST node *)

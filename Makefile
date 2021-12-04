@@ -60,7 +60,7 @@ test : all testall.sh
 # to test linking external code
 
 .PHONY : all
-all : smap.native printstr.o printint.o
+all : smap.native printstr.o printint.o testMakeStruct.o printb.o
 
 # "make microc.native" compiles the compiler
 #
@@ -96,6 +96,12 @@ printstr.o :
 
 printint.o :
 	cc -c -o printint.o runtime/printint.c
+
+printb.o : 
+	cc -c -o printb.o runtime/printb.c
+
+testMakeStruct.o : 
+	cc -c -o testMakeStruct.o runtime/testMakeStruct.c
 
 # Building the tarball
 

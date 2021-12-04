@@ -29,6 +29,7 @@ let translate (globals, functions) =
   and i1_t = L.i1_type context   (* 1 bit integer *)
   and str = L.pointer_type (L.i8_type context)
   and float_t = L.double_type context
+  and dummy_t = L.struct_type context [|L.pointer_type (L.i8_type context);(L.i32_type context)|]
   and void_t = L.void_type context in
   (* Return the LLVM type for a MicroC type *)
   let ltype_of_typ = function
@@ -38,6 +39,7 @@ let translate (globals, functions) =
   | A.Float -> float_t
   | A.Void -> void_t
   | A.String -> str
+  | A.Prob -> dummy_t
   | _ -> void_t (*add in prob, string, and list types later! *)
   in
 
@@ -56,6 +58,12 @@ let translate (globals, functions) =
   (* declare built in C functions *)
   let printstr_t: L.lltype = L.function_type i32_t [| L.pointer_type i8_t |] in
   let printstr_func : L.llvalue = L.declare_function "printstr" printstr_t the_module in
+
+  let printb_t: L.lltype = L.function_type i32_t [| i1_t |] in
+  let printb_func : L.llvalue = L.declare_function "printb" printb_t the_module in
+  
+  let testMakeStruct_t: L.lltype = L.function_type dummy_t [| L.pointer_type i8_t;i32_t |] in
+  let testMakeStruct_func : L.llvalue = L.declare_function "testMakeStruct" testMakeStruct_t the_module in
 
   let printint_t: L.lltype = L.function_type i32_t [| i32_t |] in
   let printint_func : L.llvalue = L.declare_function "printint" printint_t the_module in
@@ -114,9 +122,25 @@ let translate (globals, functions) =
     -> L.const_float float_t l
     | SNoexpr
     -> L.const_int i32_t 0
+    | SUnop(op, ((t, _) as e)) ->
+      let e' = expr builder e in
+      (match op with
+      A.Neg when t = [A.Float] -> L.build_fneg
+      | A.Neg
+      -> L.build_neg
+      | A.BitNot
+      -> L.build_not
+      | A.Not
+      -> L.build_not) e' "tmp" builder
     | SFunCall ("printint", [e]) ->
       L.build_call printint_func [| (expr builder e) |]
       "printint" builder
+    | SFunCall ("testMakeStruct",[len]) ->
+      L.build_call testMakeStruct_func [| test_str; expr builder len |]
+      "testMakeStruct" builder
+      | SFunCall ("printb", [e]) ->
+        L.build_call printb_func [| (expr builder e) |]
+        "printb" builder
     | SFunCall ("printstr", [e]) ->
       L.build_call printstr_func [| (expr builder e) |]
       "printstr" builder
