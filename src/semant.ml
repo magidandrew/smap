@@ -125,19 +125,19 @@ let check(globals,functions) =
       (theFunc.typ_name, SFunCall(fname, (List.map check_expr args)))
     | String_lit str -> ([String], SString_lit str)
     | Int_lit num -> ([Int], SInt_lit num)
-    | Float_lit flt -> ([Float], SFloat_lit flt) in
-    (*| Assign(var, op, e) as ex -> 
-          let lt = type_of_identifier var
+    | Float_lit flt -> ([Float], SFloat_lit flt)
+    | Assign(var, op, e) as ex -> 
+          let (lt, e'') = expr var
           and (rt, e') = expr e in
           let err = "illegal assignment " ^ string_of_typ lt ^ " = " ^ 
             string_of_typ rt ^ " in " ^ string_of_expr ex
-          in (check_assign lt rt err, SAssign(var, (rt, e')))
-    | _ -> raise (Failure ("can't type check this expression")) in
-    | Unop(op, e) as ex -> 
+          in (check_assign lt rt err, SAssign((lt, e''), op, (rt, e')))
+    | _ -> raise (Failure ("can't type check this expression"))
+    | Unop(op, e) as ex ->                                      (*Only Neg and Not are handles here*)
         let (t, e') = expr e in
         let ty = match op with
-          Neg when t = Int || t = Float -> t
-        | Not when t = Bool -> Bool
+          Neg when t = [Int] || t = [Float] -> t
+        | Not when t = [Bool] -> [Bool]
         | _ -> raise (Failure ("illegal unary operator " ^ 
                                 string_of_uop op ^ string_of_typ t ^
                                 " in " ^ string_of_expr ex))
@@ -149,28 +149,34 @@ let check(globals,functions) =
         let same = t1 = t2 in
         (* Determine expression type based on operator and operand types *)
         let ty = match op with
-          Add | Sub | Mult | Div when same && t1 = Int   -> Int
-        | Add | Sub | Mult | Div when same && t1 = Float -> Float
-        | Equal | Neq            when same               -> Bool
-        | Less | Leq | Greater | Geq
-                    when same && (t1 = Int || t1 = Float) -> Bool
-        | And | Or when same && t1 = Bool -> Bool
+          Add | Sub | Mul | Div when same && t1 = [Int]  -> [Int]
+        | Add | Sub | Mul | Div when same && t1 = [Float] -> [Float]
+        | CompEq | CompNeq        when same               -> [Bool]
+        | CompLeq | CompLt | CompGeq | CompGt
+                    when same && (t1 = [Int] || t1 = [Float]) -> [Bool]
+        | And | Or when same && t1 = [Bool] -> [Bool]
+        | Concat   when same && t1 = [String] -> [String]
+        | RShift | LShift | BitAnd | BitOr | Xor
+                    when same && t1 = [String] -> [String]
         | _ -> raise (
       Failure ("illegal binary operator " ^
                       string_of_typ t1 ^ " " ^ string_of_op op ^ " " ^
                       string_of_typ t2 ^ " in " ^ string_of_expr e))
         in (ty, SBinop((t1, e1'), op, (t2, e2')))
-  in *)
+  in
     let check_bool_expr e = 
       let (t', e') = expr e
       and err = "expected Boolean expression in " ^ string_of_expr e
       in if t' != [Bool] then raise (Failure err) else (t', e') 
     in
-
+      
     (* Return a semantically-checked statement i.e. containing sexprs *)
      let rec check_stmt = function
         Expr e -> SExpr (expr e)
       | If(p, b1) -> SIf(check_bool_expr p, check_stmt b1)
+      | If_Else(b1, b2) -> SIf_Else(check_stmt b1, check_stmt b2)
+      (*| If_Elif(b1, b2, b3) -> SIf_Elif(check_stmt b1, check_stmt b2, check_stmt_list b3) *)
+      (*|If_Elif_Else(b1, b2, b3, b4) -> SIf_Elif_Else()*)
       | For(e1, e2, e3, st) ->
 	  SFor(expr e1, check_bool_expr e2, expr e3, check_stmt st)
       | While(p, s) -> SWhile(check_bool_expr p, check_stmt s)
@@ -191,13 +197,13 @@ let check(globals,functions) =
             | []              -> []
           in SBlock(check_stmt_list sl)
 
-    (*in (* body of check_function *)
+    in (* body of check_function *)
     { styp_name = func.typ_name;
       sfname = func.fname;
       sformals = func.formals;
-      slocals  = func.locals;
+      slocals  = List.map check_local func.locals;
       sbody = match check_stmt (Block func.body) with
 	SBlock(sl) -> sl
       | _ -> raise (Failure ("internal error: block didn't become a block?"))
     }
-  in (typeCheck_globals globals, List.map check_function functions) *)
+  in (typeCheck_global globals, List.map check_function functions)
