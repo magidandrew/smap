@@ -61,7 +61,15 @@ int init_prob(prob *p, list *gprobs, list *gdata) {
     return 0;
 }
 
+// same formula as normalizing a vector
 void normalize(prob *p) {
+
+}
+
+// checks that probability bucket vector is non-zero
+// ret 0 if zero
+// ret 1 if non-zero
+int check_nonzero(prob *p) {
 
 }
 
@@ -110,6 +118,8 @@ void *peek(prob *p) {
         }
     }
 
+    // error
+    fprintf(stderr, "probability peek error: no matching value found\n");
     return NULL;
 }
 
