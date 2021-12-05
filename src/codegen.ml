@@ -155,6 +155,13 @@ let translate (globals, functions) =
         -> L.build_not
         | A.Not
         -> L.build_not) e' "tmp" builder
+    (*| SBinop (e1, op, e2) ->
+	  let e1' = expr builder e1
+	  and e2' = exr builder e2 in
+	  (match op with
+	    A.Add     -> L.build_add
+	  | A.Sub     -> L.build_ub
+	  ) e1' e2' "tmp" builder *)
     | SAssign (e1, op, e2)
     -> let e1' = (match e1 with (_,SId nm) -> lookup nm | _ -> raise (Failure("assignments to exprs dont work yet")))
        and e2' = expr builder e2 in
