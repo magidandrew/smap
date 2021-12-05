@@ -17,7 +17,7 @@ void *get_front(list *l);
 int del_back(list *l);
 int del_front(list *l);
 
-void print_list(list *l) {
+void print_list_int(list *l) {
     for (int i=0; i<l->size; i++)
         printf("%d\n", *(int *)l->data[i]);
 }

@@ -6,7 +6,7 @@ int init_list(list *l) {
     l->capacity = INITIAL_LIST_CAPACITY;
     l->size = 0;
 
-    l->data = (void **) malloc(INITIAL_LIST_CAPACITY * sizeof(void **));
+    l->data = (void **) malloc(INITIAL_LIST_CAPACITY * sizeof(void *));
     if (!l->data)
         return -1; // failure
 
@@ -28,8 +28,7 @@ int check_empty(list *l) {
 // ret 0 if successful
 // ret -1 on failure
 int resize(list *l) {
-    puts("resizing");
-    l->data = (void **) realloc(l->data, l->capacity * 2 * sizeof(void **));
+    l->data = (void **) realloc(l->data, l->capacity * 2 * sizeof(void *));
     if (l->data == NULL)
         return -1;
     l->capacity *= 2;
