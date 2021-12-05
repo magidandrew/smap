@@ -48,10 +48,13 @@ let translate (globals, functions) =
   let global_var m (SVdecl((t, n),exp)) =
   let simpleType = List.hd t in (*just use head of type list for now *)
   let init = match simpleType with (* add more types in this pattern match! *)
-   A.Float -> match exp with 
-             (_,SFloat_lit v) -> L.const_float (ltype_of_typ simpleType) v
-             | (_,_) ->  L.const_float (ltype_of_typ simpleType) 0.0
-   | _ -> L.const_int (ltype_of_typ simpleType) 0
+     A.Float -> (match exp with 
+                 (_,SFloat_lit v) -> L.const_float (ltype_of_typ simpleType) v
+                 | _ ->  L.const_float (ltype_of_typ simpleType) 0.0)
+    | A.Int -> (match exp with 
+                 (_, SInt_lit v) -> L.const_int (ltype_of_typ simpleType) v
+                 |_ ->  L.const_int(ltype_of_typ simpleType) 0)
+    | _ -> L.const_int (ltype_of_typ simpleType) 0
   in StringMap.add n (L.define_global n init the_module) m in
   List.fold_left global_var StringMap.empty globals in
 
@@ -95,6 +98,24 @@ let translate (globals, functions) =
     and float_format_str =
     L.build_global_stringptr "%f\n" "fmt" builder in
 
+  (*
+   let global_vars : L.llvalue StringMap.t =
+  let global_var m (SVdecl((t, n),exp)) =
+  let simpleType = List.hd t in (*just use head of type list for now *)
+  let init = match simpleType with (* add more types in this pattern match! *)
+     A.Float -> (match exp with 
+                 (_,SFloat_lit v) -> L.const_float (ltype_of_typ simpleType) v
+                 | _ ->  L.const_float (ltype_of_typ simpleType) 0.0)
+    | A.Int -> (match exp with 
+                 (_, SInt_lit v) -> L.const_int (ltype_of_typ simpleType) v
+                 |_ ->  L.const_int(ltype_of_typ simpleType) 0)
+    | _ -> L.const_int (ltype_of_typ simpleType) 0
+  in StringMap.add n (L.define_global n init the_module) m in
+  List.fold_left global_var StringMap.empty globals in
+  
+  
+  *)
+
   let local_vars =
     let add_formal m (t, n) p = L.set_value_name n p;
     let simpleType = List.hd t in
@@ -109,7 +130,8 @@ let translate (globals, functions) =
     List.fold_left add_local formals fdecl.slocals in 
 
   (* Return the value for a variable or formal argument. Check local names first, then global names *)
-  let lookup n = try StringMap.find n local_vars with Not_found -> StringMap.find n global_vars in
+  let lookup n = try StringMap.find n local_vars with 
+                     Not_found -> StringMap.find n global_vars in
 
   let rec expr builder ((_, e) : sexpr) = match e with
     SInt_lit i
@@ -122,23 +144,38 @@ let translate (globals, functions) =
     -> L.const_float float_t l
     | SNoexpr
     -> L.const_int i32_t 0
-    | SUnop(op, ((t, _) as e)) ->
-      let e' = expr builder e in
-      (match op with
-      A.Neg when t = [A.Float] -> L.build_fneg
-      | A.Neg
-      -> L.build_neg
-      | A.BitNot
-      -> L.build_not
-      | A.Not
-      -> L.build_not) e' "tmp" builder
-    | SFunCall ("printint", [e]) ->
-      L.build_call printint_func [| (expr builder e) |]
-      "printint" builder
-    | SFunCall ("testMakeStruct",[len]) ->
-      L.build_call testMakeStruct_func [| test_str; expr builder len |]
-      "testMakeStruct" builder
-      | SFunCall ("printb", [e]) ->
+    | SId s
+    -> L.build_load (lookup s) s builder
+    | SUnop(op, ((t, _) as e)) 
+    -> let e' = expr builder e in (match op with
+        A.Neg when t = [A.Float] -> L.build_fneg
+        | A.Neg
+        -> L.build_neg
+        | A.BitNot
+        -> L.build_not
+        | A.Not
+        -> L.build_not) e' "tmp" builder
+    | SAssign (e1, op, e2)
+    -> let e1' = (match e1 with (_,SId nm) -> lookup nm | _ -> raise (Failure("assignments to exprs dont work yet")))
+       and e2' = expr builder e2 in
+       (match op with (*PlusEqual | MinusEqual | TimesEqual | DivEqual | Equal*)
+          PlusEqual -> raise (Failure("special assignments need binops to be able to work"))
+        | MinusEqual -> raise (Failure("special assignments need binops to be able to work"))
+        | TimesEqual -> raise (Failure("special assignments need binops to be able to work"))
+        | DivEqual -> raise (Failure("special assignments need binops to be able to work"))
+        | Equal -> ignore(L.build_store e2' e1' builder); e1')
+    | SFunCall ("printint", [e]) 
+    -> L.build_call printint_func [| (expr builder e) |]
+       "printint" builder
+    | SFunCall ("testMakeStruct",[(_,theSExpr) as arg]) 
+    -> (match theSExpr with
+        SInt_lit _
+        -> L.build_call testMakeStruct_func [| test_str; expr builder arg |]
+            "testMakeStruct" builder
+        | _ 
+        -> L.build_call printb_func [| (expr builder arg) |]
+            "printb" builder)
+    | SFunCall ("printb", [e]) ->
         L.build_call printb_func [| (expr builder e) |]
         "printb" builder
     | SFunCall ("printstr", [e]) ->
