@@ -1,4 +1,4 @@
-type binary_op = Add | Sub | Mul | Div | Concat | CompEq | CompLt | CompLeq | CompGt | CompNeq | RShift | LShift | BitAnd | BitOr | Xor
+type binary_op = Add | Sub | Mul | Div | Concat | CompEq | CompGeq | And | Or | CompLt | CompLeq | CompGt | CompNeq | RShift | LShift | BitAnd | BitOr | Xor
 type unary_op = BitNot | Not | Bang | Octothorpe | Neg
 type assign_op = PlusEqual | MinusEqual | TimesEqual | DivEqual | Equal
 
@@ -74,6 +74,27 @@ let string_of_typ = function
 | Void -> "Void"
 | Prob -> "Prob"
 
+
+let string_of_op = function
+    Add -> "+"
+  | Sub -> "-"
+  | Mul -> "*"
+  | Div -> "/"
+  | Concat -> "++"
+  | CompEq -> "=="
+  | CompLt -> "<"
+  | CompNeq -> "!="
+  | CompLeq -> "<="
+  | CompGt -> ">"
+  | CompGeq -> ">="
+  | And -> "&&"
+  | Or -> "||"
+  | RShift -> ">>"
+  | LShift -> "<<"
+  | BitAnd -> "&"
+  | BitOr -> "|"
+  | Xor -> "^"
+  
 let string_of_typ_name typ_lst = 
   List.fold_left (fun acc elt -> acc^elt^" ") "" (List.map string_of_typ typ_lst)
 

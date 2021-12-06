@@ -1,0 +1,6 @@
+int main(){
+    int x = 12;
+    int y = x + 3;
+	printint(y); 
+    //this needs to be fixed
+}

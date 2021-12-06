@@ -3,7 +3,7 @@
 open Ast
 open Sast
 
-module StdLib = Stdlib
+module StdLib = Pervasives
 module StringMap = Map.Make(struct
 type t = string
 let compare x y = StdLib.compare x y
@@ -66,6 +66,19 @@ let print_scope tbl =
 (* _____________________________________________________________________ *)
 
 let check(globals,functions) =
+
+  let check_binds (kind : string) (binds : vdecl list) =
+    List.iter (function
+    (Vdecl(([Void],b), (_))) -> raise (Failure ("illegal void " ^ kind ^ " " ^ b))
+      | _ -> ()) binds;
+    let rec dups = function
+        [] -> ()
+      | ((Vdecl((_,n1), _)):: (Vdecl((_,n2),_)) :: _) when n1 = n2 ->
+    raise (Failure ("duplicate " ^ kind ^ " " ^ n1))
+      | _ :: t -> dups t
+    in dups (List.sort (fun (Vdecl((_,a), _)) (Vdecl((_,b), _)) -> compare a b) binds)
+  in
+
 (* add built in functions to symbol table*)
   let built_in_decls =
     let add_bind map (name, ty) = StringMap.add name {
@@ -93,11 +106,14 @@ let check(globals,functions) =
        | _ when StringMap.mem n map -> make_err dup_err
        | _ -> StringMap.add n fd map
     in
+
   let function_decls = List.fold_left add_func built_in_decls functions in
+  
   (* make sure a main function is defined *)
   let find_func s =
     try StringMap.find s function_decls
     with Not_found -> raise (Failure ("unrecognized function " ^ s)) in
+  
   let _ = find_func "main" in (* Ensure "main" is defined *)
 
   (* Define rules for the type checking *)
@@ -134,8 +150,27 @@ let check(globals,functions) =
         else raise (Failure ("type of  " ^ string_of_typ_name (fst lhs) ^ 
                              " does not match type " ^ string_of_typ_name (fst rhs) ^
                              " in " ^ string_of_expr ex))
-    | Binop(e1, op, e2) as ex -> raise (Failure ("can't type check binops yet"))
-    (*^ Tushar, please add stuff here *)
+    | Binop(e1, op, e2) as e -> 
+        let (t1, e1') = check_expr e1 
+        and (t2, e2') = check_expr e2 in
+        (* All binary operators require operands of the same type *)
+        let same = t1 = t2 in
+        (* Determine expression type based on operator and operand types *)
+        let ty = match op with
+          Add | Sub | Mul | Div when same && t1 = [Int]  -> [Int]
+        | Add | Sub | Mul | Div when same && t1 = [Float] -> [Float]
+        | CompEq | CompNeq        when same               -> [Bool]
+        | CompLeq | CompLt | CompGeq | CompGt
+                    when same && (t1 = [Int] || t1 = [Float]) -> [Bool]
+        | And | Or when same && t1 = [Bool] -> [Bool]
+        | Concat   when same && t1 = [String] -> [String]      (*the LRM doesn't have this, do we need this?*)
+        | RShift | LShift | BitAnd | BitOr | Xor
+                    when same && t1 = [String] -> [String]
+        | _ -> raise (
+      Failure ("illegal binary operator " ^
+                      string_of_typ (List.hd t1) ^ " " ^ string_of_op op ^ " " ^
+                      string_of_typ (List.hd t2) ^ " in " ^ string_of_expr e))
+        in (ty, SBinop((t1, e1'), op, (t2, e2')))
     | _ -> raise (Failure ("can't type check this expression")) in
   
   (* rule for type checking the global var *)
@@ -145,6 +180,7 @@ let check(globals,functions) =
     then raise (Failure ("Void is not a valid type")) 
     else (addVar scope typs nm ); svdecl 
   in
+
   (* rule for checking/transforming a local var *)
   let check_local (Vdecl((typs,nm)as binding,e)) = 
     let svdecl = SVdecl (binding, check_expr e) in
@@ -152,12 +188,14 @@ let check(globals,functions) =
     then raise (Failure ("Void is not a valid type"))
   else (addVar scope typs nm); svdecl
   in
+
   (* rule for checking formal parameter *)
   let check_formal ((typs,nm)as binding) = 
     if List.mem Void typs 
     then raise (Failure ("Void is not a valid type"))
     else addVar scope typs nm ; binding
   in
+
   (* extract local vars that were declared and initialized in the same line*)
   let check_for_init_local (Vdecl((typs,nm)as binding,e)) = match e with
      Noexpr -> None
@@ -165,12 +203,22 @@ let check(globals,functions) =
     
   in
 
+  let check_bool_expr e = 
+      let (t', e') = check_expr e
+      and err = "expected Boolean expression in " ^ string_of_expr e
+      in if t' != [Bool] then raise (Failure err) else (t', e') 
+    in
+
   (* rule for checking/transforming a statement node *)
-  let check_stmt = function
+  let rec check_stmt = function
       Expr e -> SExpr (check_expr e)
-    | Return e -> SReturn (check_expr e)
+    | Return e -> SReturn (check_expr e)    (*this does not check the return type of the function*)
     | Continue -> SContinue
     | Break -> SBreak
+    | For(e1, e2, e3, st) ->
+	        SFor(check_expr e1, check_bool_expr e2, check_expr e3, check_stmt st)
+    | While(p, s) -> 
+          SWhile(check_bool_expr p, check_stmt s)
     | _ -> raise (Failure ("can't type check this statement")) in
 
   (* rule for checking/transforming an function AST node *)
