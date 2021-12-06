@@ -155,13 +155,44 @@ let translate (globals, functions) =
         -> L.build_not
         | A.Not
         -> L.build_not) e' "tmp" builder
-    (*| SBinop (e1, op, e2) ->
+    | SBinop (([Float],_ ) as e1, op, e2) ->
 	  let e1' = expr builder e1
-	  and e2' = exr builder e2 in
+	  and e2' = expr builder e2 in
+	  (match op with 
+	    A.Add     -> L.build_fadd
+	  | A.Sub     -> L.build_fsub
+	  | A.Mul     -> L.build_fmul
+	  | A.Div     -> L.build_fdiv 
+	  | A.CompNeq -> L.build_fcmp L.Fcmp.One
+	  | A.CompLt  -> L.build_fcmp L.Fcmp.Olt
+	  | A.CompLeq -> L.build_fcmp L.Fcmp.Ole
+	  | A.CompGt  -> L.build_fcmp L.Fcmp.Ogt
+	  | A.CompGeq -> L.build_fcmp L.Fcmp.Oge
+	  | A.And | A.Or ->
+	      raise (Failure "internal error: semant should have rejected and/or on float")
+	  ) e1' e2' "tmp" builder
+      | SBinop (e1, op, e2) ->
+	  let e1' = expr builder e1
+	  and e2' = expr builder e2 in
 	  (match op with
 	    A.Add     -> L.build_add
-	  | A.Sub     -> L.build_ub
-	  ) e1' e2' "tmp" builder *)
+	  | A.Sub     -> L.build_sub
+	  | A.Mul     -> L.build_mul
+    | A.Div     -> L.build_sdiv
+	  | A.And     -> L.build_and
+	  | A.Or      -> L.build_or
+	  | A.CompNeq -> L.build_icmp L.Icmp.Ne
+	  | A.CompLt  -> L.build_icmp L.Icmp.Slt
+	  | A.CompLeq -> L.build_icmp L.Icmp.Sle
+	  | A.CompGt  -> L.build_icmp L.Icmp.Sgt
+	  | A.CompGeq -> L.build_icmp L.Icmp.Sge
+    (*| A.CompEq  -> 
+    | A.RShift  ->
+    | A.LShift  ->
+    | A.BitAnd  ->
+    | A.BitOr   ->
+    | A.Xor     -> *)
+	  ) e1' e2' "tmp" builder
     | SAssign (e1, op, e2)
     -> let e1' = (match e1 with (_,SId nm) -> lookup nm | _ -> raise (Failure("assignments to exprs dont work yet")))
        and e2' = expr builder e2 in
@@ -339,7 +370,7 @@ let translate (globals, functions) =
 	    A.Add     -> L.build_add
 	  | A.Sub     -> L.build_sub
 	  | A.Mult    -> L.build_mul
-          | A.Div     -> L.build_sdiv
+    | A.Div     -> L.build_sdiv
 	  | A.And     -> L.build_and
 	  | A.Or      -> L.build_or
 	  | A.Equal   -> L.build_icmp L.Icmp.Eq

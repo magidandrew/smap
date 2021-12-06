@@ -163,7 +163,7 @@ let check(globals,functions) =
         | CompLeq | CompLt | CompGeq | CompGt
                     when same && (t1 = [Int] || t1 = [Float]) -> [Bool]
         | And | Or when same && t1 = [Bool] -> [Bool]
-        | Concat   when same && t1 = [String] -> [String]
+        | Concat   when same && t1 = [String] -> [String]      (*the LRM doesn't have this, do we need this?*)
         | RShift | LShift | BitAnd | BitOr | Xor
                     when same && t1 = [String] -> [String]
         | _ -> raise (
