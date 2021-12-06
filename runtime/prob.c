@@ -10,22 +10,7 @@
 #include <time.h>
 #include <math.h>
 #include "list.h"
-
-#ifndef min
-#define min(a,b)     (((a) < (b)) ? (a) : (b))
-#endif
-
-#ifndef prob_at
-#define prob_at(prob, i)   *(double *) prob->probs.data[i]
-#endif
-
-#define PROB_PRECISION 5
-
-typedef struct prob {
-    list probs;
-    list vals;
-    int length;
-} prob;
+#include "prob.h"
 
 double precision(double num, int precision) {
     return floor(pow(10,precision)*num)/pow(10,precision);
@@ -36,10 +21,10 @@ int init_prob(prob *p, list *gprobs, list *gdata) {
     int minlen = min(gprobs->size, gdata->size);
 
     // malloc both arrays in prob --> these are copies
-    p->probs.data = (void **) malloc(sizeof(void **) * minlen);
+    p->probs.data = (void **) malloc(sizeof(void *) * minlen);
     if (p->probs.data == NULL)
         return -1;
-    p->vals.data = (void **) malloc(sizeof(void **) * minlen);
+    p->vals.data = (void **) malloc(sizeof(void *) * minlen);
     if (p->vals.data == NULL)
         return -1;
     // set size and capacity to minlen
@@ -55,6 +40,9 @@ int init_prob(prob *p, list *gprobs, list *gdata) {
         p->vals.data[i] = gdata->data[i];
     }
 
+    // normalize
+    normalize(p);
+
     // seed rng
     srand48(time(NULL));
 
@@ -63,14 +51,37 @@ int init_prob(prob *p, list *gprobs, list *gdata) {
 
 // same formula as normalizing a vector
 void normalize(prob *p) {
+    // cannot normalize 0 vector
+    if (check_nonzero(p) == 0)
+        return;
 
+    // calculate magnitude
+    double sum = 0;
+    for (int i=0; i < p->length; i++) {
+        sum += prob_at(p, i);
+    }
+
+    // divide each element by sum and round
+    for (int i=0; i< p->length; i++)
+        prob_at(p, i) = precision(prob_at(p, i)/sum, PROB_PRECISION);
+
+    // last element will be automatically calculated to ensure sum(n) == 1.0
+    // WARNING: slight error is allowed
+    double sum_of_probs = 0;
+    for (int i=0; i < p->length-1; i++)
+        sum_of_probs += prob_at(p, i);
+    prob_at(p, (p->length - 1)) = (1.0 - sum_of_probs);
 }
 
 // checks that probability bucket vector is non-zero
 // ret 0 if zero
 // ret 1 if non-zero
 int check_nonzero(prob *p) {
-
+    for (int i = 0; i < p->length; i++) {
+        if (prob_at(p, i) != 0)
+            return 1;
+    }
+    return 0;
 }
 
 list *get_probs(prob *p) { return &p->probs; }
@@ -81,11 +92,11 @@ int get_length(prob *p) { return p->length; }
 
 // returns a value based on the probability distribution
 void *peek(prob *p) {
-    // double *rnd = (double *) malloc(sizeof(double));
-
     double rnd = precision(drand48(), PROB_PRECISION);
 
+    #ifdef debug
     // printf("rnd: %f\n", rnd);
+    #endif
 
     // given: [.25, .5, .25]
     // intervals: -->edge case w/ 0 : [0, .25], (.25, .75], (.75, 1.0]
@@ -96,16 +107,16 @@ void *peek(prob *p) {
         double max_interval = 0;
 
         // for min_interval
-        for (int j=0; j < i; j++) {
+        for (int j=0; j < i; j++)
             min_interval += prob_at(p, j);
-        }
 
         // for max_interval
-        for (int j=0; j < (i+1); j++) {
+        for (int j=0; j < (i+1); j++)
             max_interval += prob_at(p,j);
-        }
 
+        #ifdef debug
         // printf("i=%d\n(%f, %f]\n\n", i, min_interval, max_interval);
+        #endif
 
         // edge case for i==0
         if (i==0) {
@@ -166,7 +177,11 @@ int main() {
     // print_list_int(&prb.probs);
     // print_list_int(&prb.vals);
 
+    if(check_nonzero(&prb))
+        printf("non zero!\n");
+
     int x; int y; int z;
+    x = y = z = 0;
     for(int i=0; i< 100000; i++) {
         int num = *(int *) peek(&prb);
         if (num == 5)
@@ -176,6 +191,13 @@ int main() {
         else if (num == 7)
             z++;
     }
+
+    printf("probs: ");
+    print_probs(&prb);
+
+    printf("values: ");
+    print_list_int(&prb.vals);
+
     printf("results: 5: %d // 6: %d // 7: %d\n", x, y, z);
 
     // printf("%d\n", *(int *) peek(&prb));

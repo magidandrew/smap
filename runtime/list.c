@@ -99,6 +99,13 @@ void *get_front(list *l) {
     return l->data[0];
 }
 
+void print_list_int(list *l) {
+    printf("[");
+    for (int i=0; i<l->size; i++)
+        printf("%d, ", *(int *)l->data[i]);
+    printf("]\n");
+}
+
 #ifdef BUILD_TEST
 int main() {
 	list l;

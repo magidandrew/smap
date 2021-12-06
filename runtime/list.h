@@ -1,3 +1,8 @@
+#ifndef __LIST_H__
+#define __LIST_H__
+
+#include <stdio.h>
+
 #define INITIAL_LIST_CAPACITY 10
 
 typedef struct list{
@@ -17,7 +22,6 @@ void *get_front(list *l);
 int del_back(list *l);
 int del_front(list *l);
 
-void print_list_int(list *l) {
-    for (int i=0; i<l->size; i++)
-        printf("%d\n", *(int *)l->data[i]);
-}
+void print_list_int(list *l);
+
+#endif
