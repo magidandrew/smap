@@ -16,6 +16,8 @@ double precision(double num, int precision) {
     return floor(pow(10,precision)*num)/pow(10,precision);
 }
 
+// return -1 on error
+// return 0 on success
 int init_prob(prob *p, list *gprobs, list *gdata) {
     // min len of both lists
     int minlen = min(gprobs->size, gdata->size);
@@ -38,6 +40,12 @@ int init_prob(prob *p, list *gprobs, list *gdata) {
     for (int i = 0; i < minlen; i++) {
         p->probs.data[i] = gprobs->data[i];
         p->vals.data[i] = gdata->data[i];
+    }
+
+    // check for negative values
+    for (int i = 0; i < minlen; i++) {
+        if (prob_at(p, i) < 0)
+            return -1;
     }
 
     // normalize
@@ -132,6 +140,12 @@ void *peek(prob *p) {
     // error
     fprintf(stderr, "probability peek error: no matching value found\n");
     return NULL;
+}
+
+// TODO: return pointer to malloced list of the values that
+// satisfy the condition
+void *get_values_by_range(prob *p, int min, int max) {
+
 }
 
 #ifdef BUILD_TEST
