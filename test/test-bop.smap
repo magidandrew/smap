@@ -1,3 +1,0 @@
-int main(){
-    printb(1 < 2);
-}

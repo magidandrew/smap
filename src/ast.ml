@@ -1,4 +1,4 @@
-type binary_op = Add | Sub | Mul | Div | Concat | CompEq | CompGeq | And | Or | CompLt | CompLeq | CompGt | CompNeq | RShift | LShift | BitAnd | BitOr | Xor
+type binary_op = Add | Sub | Mul | Div | Concat | CompEq | CompGeq | CompLt | CompLeq | CompGt | CompNeq | RShift | LShift | BitAnd | BitOr | Xor
 type unary_op = BitNot | Not | Bang | Octothorpe | Neg
 type assign_op = PlusEqual | MinusEqual | TimesEqual | DivEqual | Equal
 
@@ -87,8 +87,6 @@ let string_of_op = function
   | CompLeq -> "<="
   | CompGt -> ">"
   | CompGeq -> ">="
-  | And -> "&&"
-  | Or -> "||"
   | RShift -> ">>"
   | LShift -> "<<"
   | BitAnd -> "&"

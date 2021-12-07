@@ -168,7 +168,7 @@ let translate (globals, functions) =
 	  | A.CompLeq -> L.build_fcmp L.Fcmp.Ole
 	  | A.CompGt  -> L.build_fcmp L.Fcmp.Ogt
 	  | A.CompGeq -> L.build_fcmp L.Fcmp.Oge
-	  | A.And | A.Or ->
+	  | A.BitAnd | A.BitOr ->
 	      raise (Failure "internal error: semant should have rejected and/or on float")
 	  ) e1' e2' "tmp" builder
       | SBinop (e1, op, e2) ->
@@ -179,19 +179,17 @@ let translate (globals, functions) =
 	  | A.Sub     -> L.build_sub
 	  | A.Mul     -> L.build_mul
     | A.Div     -> L.build_sdiv
-	  | A.And     -> L.build_and
-	  | A.Or      -> L.build_or
+	  | A.BitAnd  -> L.build_and
+	  | A.BitOr   -> L.build_or
 	  | A.CompNeq -> L.build_icmp L.Icmp.Ne
 	  | A.CompLt  -> L.build_icmp L.Icmp.Slt
 	  | A.CompLeq -> L.build_icmp L.Icmp.Sle
 	  | A.CompGt  -> L.build_icmp L.Icmp.Sgt
 	  | A.CompGeq -> L.build_icmp L.Icmp.Sge
-    (*| A.CompEq  -> 
-    | A.RShift  ->
-    | A.LShift  ->
-    | A.BitAnd  ->
-    | A.BitOr   ->
-    | A.Xor     -> *)
+    | A.CompEq  -> L.build_icmp L.Icmp.Eq
+    | A.RShift  -> L.build_ashr
+    | A.LShift  -> L.build_lshr
+    | A.Xor     -> L.build_xor
 	  ) e1' e2' "tmp" builder
     | SAssign (e1, op, e2)
     -> let e1' = (match e1 with (_,SId nm) -> lookup nm | _ -> raise (Failure("assignments to exprs dont work yet")))
