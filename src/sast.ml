@@ -48,6 +48,37 @@ type sfunc_decl = { styp_name : typ_name;
                    sbody : sstmt list;
                  }
 
+
+let rec string_of_sexpr (t, e) =
+  "(" ^ string_of_typ (List.hd t) ^ " : " ^ (match e with
+    SInt_lit(l) -> string_of_int l
+  | SFloat_lit(l) -> string_of_float l    (*check floats again*)
+  | SBool_lit(true) -> "true"
+  | SBool_lit(false) -> "false"
+  | SId(s) -> s
+  | SBinop(e1, o, e2) ->
+      string_of_sexpr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_sexpr e2
+  | SUnop(o, e) -> string_of_uop o ^ string_of_sexpr e
+  | SAssign(v, o, e) -> string_of_sexpr v ^ " " ^ string_of_assign o ^ " " ^ string_of_sexpr e
+  | SFunCall(f, el) ->
+      f ^ "(" ^ String.concat ", " (List.map string_of_sexpr el) ^ ")"
+  | SNoexpr -> ""
+				  ) ^ ")"				     
+
+let rec string_of_sstmt = function
+    SBlock(stmts) ->
+      "{\n" ^ String.concat "" (List.map string_of_sstmt stmts) ^ "}\n"
+  | SExpr(expr) -> string_of_sexpr expr ^ ";\n";
+  | SReturn(expr) -> "return " ^ string_of_sexpr expr ^ ";\n";
+  (*| SIf(e, s, SBlock([])) ->
+      "if (" ^ string_of_sexpr e ^ ")\n" ^ string_of_sstmt s
+  | SIf(e, s1, s2) ->  "if (" ^ string_of_sexpr e ^ ")\n" ^
+      string_of_sstmt s1 ^ "else\n" ^ string_of_sstmt s2*)
+  | SFor(e1, e2, e3, s) ->
+      "for (" ^ string_of_sexpr e1  ^ " ; " ^ string_of_sexpr e2 ^ " ; " ^
+      string_of_sexpr e3  ^ ") " ^ string_of_sstmt s
+  | SWhile(e, s) -> "while (" ^ string_of_sexpr e ^ ") " ^ string_of_sstmt s
+
 type sprogram = svdecl list * sfunc_decl list
 
 type sDummy = (sprogram * string) (* Dummy SAST node for throughline*)
