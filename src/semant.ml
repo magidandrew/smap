@@ -128,6 +128,18 @@ let check(globals,functions) =
     | Int_lit num -> ([Int], SInt_lit num)
     | Float_lit flt -> ([Float], SFloat_lit flt)
     | Noexpr -> ([],SNoexpr) 
+    | List_lit (elts) -> 
+      let checked_elts = (List.map check_expr elts) in (*make sure each elt type checks on its own*)
+      let rep =  fst (List.hd checked_elts) in (*take type of the first elt arbitrarily*)
+      let same = snd (List.fold_left (fun acc (ty,elt) -> (ty, (fst acc == ty) & (snd acc))) 
+                                  (rep, true) checked_elts) in
+      if same (*make sure elts in list are all of the same type*)
+      then (List::rep, SList_lit(checked_elts))
+          (*TODO: once prob type checking is in place, 
+           need to check for the case of multiple probs in a row which is not allowed
+           e.g. "list prob prob int x" is not valid
+          *)
+      else raise (Failure ("Semant: Elements of a list must all be the same type. "))
     | Id str -> let result = (findVar scope str) in
                   (match (result) with 
                    [] -> raise (Failure ("Semant: Could not find identifier "^str^" in tbl "^(print_scope scope)))
