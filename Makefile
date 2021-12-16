@@ -38,7 +38,7 @@ scanner.cmx : parser.cmx
 
 .PHONY : clean
 clean :
-	rm -rf *.cmi *.cmo parser.ml parser.mli scanner.ml calc.out calc *.o; make clean2
+	rm -rf *.cmi *.cmo parser.ml parser.mli scanner.ml calc.out calc *.o *.dSYM; make clean2
 
 .PHONY : smap
 smap : smap.native

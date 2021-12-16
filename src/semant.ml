@@ -29,31 +29,31 @@ let scope = let scopeStack = (ScopeHash.create 50) in
             let aNewScope = (StringHash.create 50) in
             ignore(ScopeHash.add scopeStack  0 aNewScope);scopeStack
 
-let max_binding tbl = 
+let max_binding tbl =
   let asList = (ScopeHash.fold (fun kn dn acc -> (kn,dn)::acc) tbl []) in
   List.fold_left (fun acc (k,_) -> StdLib.max acc k) 0 asList
-let enterScope tbl = 
+let enterScope tbl =
   let num = max_binding tbl in
   ScopeHash.add tbl (num+1) (StringHash.create 50)
-let addVar tbl typs id = 
+let addVar tbl typs id =
   let num = max_binding tbl in
     let curScope = ScopeHash.find tbl num in
-    if (StringHash.mem curScope id) 
+    if (StringHash.mem curScope id)
     then raise (Failure ("a variable named "^id^" was already defined in this scope"))
     else (StringHash.add curScope id typs)
 
-let rec findVar tbl id = 
+let rec findVar tbl id =
   let num = (max_binding tbl) in
     let curScope = (ScopeHash.find tbl num) in
-    if (StringHash.mem curScope id) 
+    if (StringHash.mem curScope id)
     then (StringHash.find curScope id)
-    else 
+    else
       let containingScope = ScopeHash.copy tbl in
         ignore(ScopeHash.remove containingScope num);
         if (ScopeHash.length containingScope == 0) then []
         else findVar containingScope id
-let exitScope tbl = 
-  let num = max_binding tbl in 
+let exitScope tbl =
+  let num = max_binding tbl in
   ScopeHash.remove tbl num
 
 let print_scope tbl =
@@ -65,7 +65,7 @@ let print_scope tbl =
 (*                                                                       *)
 (* _____________________________________________________________________ *)
 
-let check(globals,functions) =
+let check(globals, functions) =
 
   let check_binds (kind : string) (binds : vdecl list) =
     List.iter (function
@@ -91,7 +91,7 @@ let check(globals,functions) =
     in List.fold_left add_bind StringMap.empty [ ("printint", [Void]);
                                                  ("printb", [Void]);
                                                  ("printf", [Void]);
-                                                 ("printstr", [Void]); 
+                                                 ("printstr", [Void]);
                                                  ("testMakeStruct", [Void]) ]
                                                  in
 (* add user defined func declarations to symbol table,  *)
@@ -108,12 +108,12 @@ let check(globals,functions) =
     in
 
   let function_decls = List.fold_left add_func built_in_decls functions in
-  
+
   (* make sure a main function is defined *)
   let find_func s =
     try StringMap.find s function_decls
     with Not_found -> raise (Failure ("unrecognized function " ^ s)) in
-  
+
   let _ = find_func "main" in (* Ensure "main" is defined *)
 
   (* Define rules for the type checking *)
@@ -127,11 +127,11 @@ let check(globals,functions) =
     | Bool_lit bl -> ([Bool],SBool_lit bl)
     | Int_lit num -> ([Int], SInt_lit num)
     | Float_lit flt -> ([Float], SFloat_lit flt)
-    | Noexpr -> ([],SNoexpr) 
+    | Noexpr -> ([],SNoexpr)
     | Id str -> let result = (findVar scope str) in
-                  (match (result) with 
+                  (match (result) with
                    [] -> raise (Failure ("Semant: Could not find identifier "^str^" in tbl "^(print_scope scope)))
-                   | typs -> (typs,(SId str))  )              
+                   | typs -> (typs,(SId str))  )
     | Unop(op, e) as ex ->
       let (t, e') = check_expr e in
       let ty = match op with
@@ -143,15 +143,15 @@ let check(globals,functions) =
       " in " ^ string_of_expr ex))
       in (ty, SUnop(op, (t, e')))
     | Assign (e1, op, e2) as ex->
-        let lhs = check_expr e1 
+        let lhs = check_expr e1
         and rhs = check_expr e2 in
-        if ((fst lhs) = (fst rhs)) 
+        if ((fst lhs) = (fst rhs))
         then (fst lhs, SAssign (lhs, op, rhs))
-        else raise (Failure ("type of  " ^ string_of_typ_name (fst lhs) ^ 
+        else raise (Failure ("type of  " ^ string_of_typ_name (fst lhs) ^
                              " does not match type " ^ string_of_typ_name (fst rhs) ^
                              " in " ^ string_of_expr ex))
-    | Binop(e1, op, e2) as e -> 
-        let (t1, e1') = check_expr e1 
+    | Binop(e1, op, e2) as e ->
+        let (t1, e1') = check_expr e1
         and (t2, e2') = check_expr e2 in
         (* All binary operators require operands of the same type *)
         let same = t1 = t2 in
@@ -172,26 +172,26 @@ let check(globals,functions) =
                       string_of_typ (List.hd t2) ^ " in " ^ string_of_expr e))
         in (ty, SBinop((t1, e1'), op, (t2, e2')))
     | _ -> raise (Failure ("can't type check this expression")) in
-  
+
   (* rule for type checking the global var *)
-  let typeCheck_global (Vdecl((typs,nm)as binding, expression)) = 
+  let typeCheck_global (Vdecl((typs,nm)as binding, expression)) =
     let svdecl = SVdecl(binding,check_expr expression) in
-    if List.mem Void typs 
-    then raise (Failure ("Void is not a valid type")) 
-    else (addVar scope typs nm ); svdecl 
+    if List.mem Void typs
+    then raise (Failure ("Void is not a valid type"))
+    else (addVar scope typs nm ); svdecl
   in
 
   (* rule for checking/transforming a local var *)
-  let check_local (Vdecl((typs,nm)as binding,e)) = 
+  let check_local (Vdecl((typs,nm)as binding,e)) =
     let svdecl = SVdecl (binding, check_expr e) in
-    if List.mem Void typs 
+    if List.mem Void typs
     then raise (Failure ("Void is not a valid type"))
   else (addVar scope typs nm); svdecl
   in
 
   (* rule for checking formal parameter *)
-  let check_formal ((typs,nm)as binding) = 
-    if List.mem Void typs 
+  let check_formal ((typs,nm)as binding) =
+    if List.mem Void typs
     then raise (Failure ("Void is not a valid type"))
     else addVar scope typs nm ; binding
   in
@@ -199,14 +199,14 @@ let check(globals,functions) =
   (* extract local vars that were declared and initialized in the same line*)
   let check_for_init_local (Vdecl((typs,nm)as binding,e)) = match e with
      Noexpr -> None
-    | init -> Some (typs,SAssign((typs,SId nm),Equal,check_expr init)) 
-    
+    | init -> Some (typs,SAssign((typs,SId nm),Equal,check_expr init))
+
   in
 
-  let check_bool_expr e = 
+  let check_bool_expr e =
       let (t', e') = check_expr e
       and err = "expected Boolean expression in " ^ string_of_expr e
-      in if t' != [Bool] then raise (Failure err) else (t', e') 
+      in if t' != [Bool] then raise (Failure err) else (t', e')
     in
 
   (* rule for checking/transforming a statement node *)
@@ -217,16 +217,24 @@ let check(globals,functions) =
     | Break -> SBreak
     | For(e1, e2, e3, st) ->
 	        SFor(check_expr e1, check_bool_expr e2, check_expr e3, check_stmt st)
-    | While(p, s) -> 
+    | While(p, s) ->
           SWhile(check_bool_expr p, check_stmt s)
+    | Block sl ->
+      let rec check_stmt_list = function
+          [Return _ as s] -> [check_stmt s]
+        | Return _ :: _   -> raise (Failure "nothing may follow a return")
+        | Block sl :: ss  -> check_stmt_list (sl @ ss) (* Flatten blocks *)
+        | s :: ss         -> check_stmt s :: check_stmt_list ss
+        | []              -> []
+      in SBlock(check_stmt_list sl)
     | _ -> raise (Failure ("can't type check this statement")) in
 
   (* rule for checking/transforming an function AST node *)
-  let typeCheck_func func = 
+  let typeCheck_func func =
     let checkedFormals = List.map check_formal func.formals in
     let checkedLocals = List.map check_local func.locals in
-    let initLocals = List.map (fun (Some a) -> SExpr a) 
-                    ( List.filter (fun a -> match a with None -> false |_->true) 
+    let initLocals = List.map (fun (Some a) -> SExpr a)
+                    ( List.filter (fun a -> match a with None -> false |_->true)
                     (List.map check_for_init_local func.locals) )
     in
     (* add initialization of locals to front of body *)
@@ -237,7 +245,7 @@ let check(globals,functions) =
             sformals = checkedFormals;
             slocals = checkedLocals;
             sbody = checkedBody;
-    } 
+    }
   in
   (* typecheck globals before any functions *)
   let checkedGlobals = List.map typeCheck_global (List.rev globals) in

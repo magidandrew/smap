@@ -26,12 +26,13 @@ type expr =
 |   ProbColon of expr * expr
 |   FunCall of string * expr list
 |   Index of expr
-|   Noexpr 
+|   Noexpr
 
 type vdecl =
   Vdecl of bind * expr
 
-type stmt = Block of stmt list
+type stmt =
+  Block of stmt list
 | Expr of expr
 | Return of expr
 | If of expr * stmt
@@ -100,6 +101,7 @@ let string_of_assign = function
   | DivEqual -> "/="
   | Equal -> "="
 
+(* !NON EXHUASTIVE PATTERN MATCHING! *)
 let rec string_of_expr = function
     Int_lit(l) -> string_of_int l
   | Float_lit(l) -> string_of_float l    (*check floats again*)
@@ -114,6 +116,7 @@ let rec string_of_expr = function
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
   | Noexpr -> ""
 
+(* !NON EXHUASTIVE PATTERN MATCHING! *)
 let rec string_of_stmt = function
     Block(stmts) ->
       "{\n" ^ String.concat "" (List.map string_of_stmt stmts) ^ "}\n"
@@ -127,5 +130,5 @@ let rec string_of_stmt = function
       string_of_expr e3  ^ ") " ^ string_of_stmt s
   | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
 
-let string_of_typ_name typ_lst = 
+let string_of_typ_name typ_lst =
   List.fold_left (fun acc elt -> acc^elt^" ") "" (List.map string_of_typ typ_lst)

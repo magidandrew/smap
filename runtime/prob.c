@@ -57,7 +57,6 @@ int init_prob(prob *p, list *gprobs, list *gdata) {
     return 0;
 }
 
-// same formula as normalizing a vector
 void normalize(prob *p) {
     // cannot normalize 0 vector
     if (check_nonzero(p) == 0)
@@ -145,7 +144,7 @@ void *peek(prob *p) {
 // TODO: return pointer to malloced list of the values that
 // satisfy the condition
 void *get_values_by_range(prob *p, int min, int max) {
-
+    return NULL;
 }
 
 #ifdef BUILD_TEST
