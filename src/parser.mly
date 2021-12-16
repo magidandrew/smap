@@ -2,7 +2,7 @@
 
 /* TOKENS *************************************************************************************************/
 
-%token EOF ASSIGN SEMICOLON PROBCOLON COMMA IF ELIF ELSE 
+%token EOF ASSIGN SEMICOLON PROBCOLON COMMA IF ELIF ELSE
 // scoping
 %token LBRACKET RBRACKET LBRACE RBRACE LPAREN RPAREN
 
@@ -37,20 +37,20 @@
 %right ASSIGN PROBCOLON
 
 
-%left CONCAT 
+%left CONCAT
 %left PLUS MINUS
 %left TIMES DIVIDE
 
-%left ADDEQUAL MINUSEQUAL TIMESEQUAL DIVEQUAL COMPEQ COMPLT COMPLEQ RSHIFT LSHIFT 
+%left ADDEQUAL MINUSEQUAL TIMESEQUAL DIVEQUAL COMPEQ COMPLT COMPLEQ RSHIFT LSHIFT
 %left COMPGT COMPGEQ COMPNEQ
 %left BITOR BITAND BITNOT XOR
-%left OCTOTHORPE 
+%left OCTOTHORPE
 
-%left COMMA LENGTH 
+%left COMMA LENGTH
 
 %nonassoc ELIF
 %nonassoc ELSE
-%nonassoc CAST 
+%nonassoc CAST
 %right NOT
 
 %start program
@@ -82,7 +82,7 @@ expr:
 | expr MINUSEQUAL expr     { Assign($1, MinusEqual, $3) }
 | expr TIMESEQUAL expr     { Assign($1, TimesEqual, $3) }
 | expr DIVEQUAL expr       { Assign($1, DivEqual, $3)   }
-/* unary expressions                                                        */                     
+/* unary expressions                                                        */
 | LPAREN MINUS expr RPAREN                        { Unop(Neg, $3)            } /* what is our syntax for negative numbers? */
 | BITNOT expr                                     { Unop(BitNot, $2)         }
 | NOT expr                                        { Unop(Not, $2)            }
@@ -92,18 +92,18 @@ expr:
 /* literal expressions                                                      */
 | INT_LIT                                         { Int_lit ($1)             }
 | BOOL_LIT                                        { Bool_lit($1)             }
-| STRING_LIT                                      { String_lit($1)           } 
+| STRING_LIT                                      { String_lit($1)           }
 | FLOAT_LIT                                       { Float_lit ($1)           }
 | CHAR_LIT                                        { Char_lit($1)             }
 /* identifiers                                                              */
 | id                                              { $1                       }
 /* List expressions                                                         */
 | LBRACKET expr_list_opt RBRACKET                 { List_lit($2)             } /* list literal */
-| id ADDHEAD ASSIGN expr                          { ListAddHead($1,$4)       } /* add head     */      
+| id ADDHEAD ASSIGN expr                          { ListAddHead($1,$4)       } /* add head     */
 | id ADDTAIL ASSIGN expr                          { ListAddTail($1,$4)       } /* add tail     */
 | expr CONCAT expr                                { Binop($1, Concat, $3)    }
 | expr LENGTH                                     { Length($1)               } /* also for prob types */
-/* prob type expressions                                                    */                    
+/* prob type expressions                                                    */
 | expr PROBCOLON expr                             { ProbColon($1,$3)         }
 /*function call expression                                                  */
 | ID LPAREN args_opt RPAREN                       { FunCall ($1,$3)          }
@@ -112,7 +112,7 @@ expr:
 
 /* identifier is either an indexed list element or regular text identifier  */
 id:
-  ID                                              { Id($1)                   } 
+  ID                                              { Id($1)                   }
 | list_elt                                        { $1                       }
 
 /* indexing into a list  */
@@ -120,7 +120,7 @@ list_elt: ID index index_list_opt  { ListElement($1,$2,$3) }  /* indexed elt (fo
 index: LBRACKET expr RBRACKET      { Index($2)             }  /* a single index (for ex. [0])          */
 index_list_opt:
                                    { []                    }  /* 0 or more indices (for ex. [1][2])    */
-| index index_list_opt             { $1::$2                }   
+| index index_list_opt             { $1::$2                }
 
 /* recursive expressions to handle plurals  */
 expr_opt:                               /* zero or one expressions */
@@ -135,7 +135,7 @@ expr_list:                              /* one or more expressions */
   expr                  { [$1]        }
 | expr_list COMMA expr  { $3 :: $1    }
 
-args_opt: 
+args_opt:
                         { []          } /* zero or more arguments */
 | args_list             { List.rev $1 }
 
@@ -154,7 +154,7 @@ stmt: /* statements end with either a semicolon or a block */
 | if_stmt ELSE block                                                               { If_Else($1,$3)    }
 | if_stmt elif elif_list                                                           { If_Elif($1,$2,$3) }
 | if_stmt elif elif_list ELSE block                                                { If_Elif_Else($1,$2,$3,$5)}
-| FOR LPAREN expr_opt SEMICOLON expr_opt SEMICOLON expr_opt SEMICOLON RPAREN block { For($3,$5,$7,$10) }
+| FOR LPAREN expr_opt SEMICOLON expr_opt SEMICOLON expr_opt RPAREN block           { For($3,$5,$7,$9) }
 | WHILE LPAREN expr RPAREN block                                                   { While($3,$5)      }
 
 if_stmt: IF LPAREN expr RPAREN block                                               { If($3,$5)         }
@@ -171,33 +171,33 @@ elif_list:
 
 
 program: decls EOF { $1 }                  /* a program consists of declarations and the EOF token*/
-decls: 
+decls:
   /* nothing */ { ([], []) }
 | decls vdecl { (($2 :: fst $1), snd $1) } /* global variable declarations */
 | decls fdecl { (fst $1, ($2 :: snd $1)) } /* function definitions         */
 
 
 /* FUNCTION DECLARATIONS **********************************************************************************/
-fdecl: typ_decl ID LPAREN formals_opt RPAREN     /* are we going to use the function keyword??*/         
-LBRACE vdecl_list stmt_list RBRACE                    
-{{ typ_name = $1; 
-   fname = $2; 
+fdecl: typ_decl ID LPAREN formals_opt RPAREN     /* are we going to use the function keyword??*/
+LBRACE vdecl_list stmt_list RBRACE
+{{ typ_name = $1;
+   fname = $2;
    formals = List.rev $4;
-   locals = List.rev $7; 
-   body = List.rev $8; 
-  }}                
+   locals = List.rev $7;
+   body = List.rev $8;
+  }}
 
-formals_opt: 
+formals_opt:
 /* nothing */ { [] }                              /* zero or more formal parameters                          */
 | formal_list { $1 }
 
-formal_list: 
+formal_list:
   typ_decl ID                   { [($1,$2)]     } /* formal param consists of type declaration and identifer */
 | formal_list COMMA typ_decl ID { ($3,$4) :: $1 } /* a list of formal params are separted by commas          */
 
-vdecl_list: 
+vdecl_list:
 /* nothing */      { []       }                             /*      zero or more variable declarations  */
-| vdecl_list vdecl { $2 :: $1 } 
+| vdecl_list vdecl { $2 :: $1 }
 
 vdecl:                                                      /*      a variable declaration consists of   */
   typ_decl ID SEMICOLON { Vdecl (($1, $2),Noexpr) }           /*      a type declaration and identifier,   */
@@ -208,10 +208,10 @@ vdecl:                                                      /*      a variable d
 typ_decl:                               /* A type decl is composed of a list of types */
 | spec_qual_list     {$1}
 
-typ_spec: 
-  INT     { Int    } 
+typ_spec:
+  INT     { Int    }
 | BOOL    { Bool   }
-| FLOAT   { Float  } 
+| FLOAT   { Float  }
 | VOID    { Void   }
 | CHAR    { Char   }
 | STRING  { String }
@@ -220,7 +220,7 @@ typ_qual:
 | PROB    { Prob }
 | LIST    { List }
 
-spec_qual_list:                         
+spec_qual_list:
 | typ_spec spec_qual_list_opt {$1::$2}  /* int/bool/float/void/char/string, followed by zero or more types */
 | typ_qual spec_qual_list {$1::$2}      /* list/prob, followed by at least one type */
 
