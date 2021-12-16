@@ -24,13 +24,34 @@ let translate (globals, functions) =
   (* Create the LLVM compilation module into which we will generate code *)
   let the_module = L.create_module context "Smap" in
 
+  (* 
+  For reference - delete before committing!!!
+  typedef struct list{
+    void **data;
+    int capacity;
+    int size;
+  } list; 
+
+  typedef struct prob {
+    list probs;
+    list vals;
+    int length;
+} prob;
+*)
+
   let i32_t = L.i32_type context (* 32 bit integer *)
   and i8_t = L.i8_type context   (* 8 bit integer *)
   and i1_t = L.i1_type context   (* 1 bit integer *)
   and str = L.pointer_type (L.i8_type context)
   and float_t = L.double_type context
-  and dummy_t = L.struct_type context [|L.pointer_type (L.i8_type context);(L.i32_type context)|]
-  and void_t = L.void_type context in
+  and void_t = L.void_type context 
+  in
+  let dummy_t = L.struct_type context [|str; i32_t;|]
+  in
+  let list_t : L.lltype = L.named_struct_type context "list"
+  in
+  let prob_t : L.lltype = L.named_struct_type context "prob"
+  in
   (* Return the LLVM type for a MicroC type *)
   let ltype_of_typ = function
     A.Int -> i32_t
@@ -39,8 +60,21 @@ let translate (globals, functions) =
   | A.Float -> float_t
   | A.Void -> void_t
   | A.String -> str
-  | A.Prob -> dummy_t
+  | A.Prob -> dummy_t (*need to change to prob_t eventually*)
+  | A.List -> list_t
   | _ -> void_t (*add in prob, string, and list types later! *)
+  in
+
+  (*make sure to include struct definitions for the llvm struct types named earlier*)
+  let _ = 
+    L.struct_set_body list_t
+    	[| L.pointer_type (L.pointer_type void_t)
+      ; i32_t 
+      ; i32_t |] false; 
+  L.struct_set_body prob_t 
+	  [| L.pointer_type list_t 
+		; L.pointer_type list_t
+    ; i32_t |] false;
   in
 
   (* Create a map of global variables after creating each *)
