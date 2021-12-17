@@ -91,8 +91,10 @@ let check(globals, functions) =
     in List.fold_left add_bind StringMap.empty [ ("printint", [Void]);
                                                  ("printb", [Void]);
                                                  ("printf", [Void]);
-                                                 ("printstr", [Void]);
-                                                 ("testMakeStruct", [Void]) ]
+                                                 ("printstr", [Void]); 
+                                                 ("testMakeStruct", [Void]);
+                                                 ("bad_add_head", [Int]);
+                                                 ("very_bad_get_head",[Int])]
                                                  in
 (* add user defined func declarations to symbol table,  *)
 (* add make sure there are no duplicate function names! *)

@@ -61,14 +61,14 @@ let translate (globals, functions) =
   | A.Void -> void_t
   | A.String -> str
   | A.Prob -> dummy_t (*need to change to prob_t eventually*)
-  | A.List -> list_t
+  | A.List -> L.pointer_type list_t
   | _ -> void_t (*add in prob, string, and list types later! *)
   in
 
   (*make sure to include struct definitions for the llvm struct types named earlier*)
   let _ = 
     L.struct_set_body list_t
-    	[| L.pointer_type (L.pointer_type void_t)
+    	[| L.pointer_type (L.pointer_type i8_t)
       ; i32_t 
       ; i32_t |] false; 
   L.struct_set_body prob_t 
@@ -77,19 +77,54 @@ let translate (globals, functions) =
     ; i32_t |] false;
   in
 
+  (* for reference
+  SFunCall ("printint", [e]) 
+    -> L.build_call printint_func [| (expr builder e) |]
+       "printint" builder
+  *)
+  let genGlobalListLit (typlist,exp) n m = 
+    let defaultZero = 
+      let zero = L.const_int i32_t 0 in 
+      L.const_named_struct list_t [|zero; zero; zero|]
+    in
+    let wholeThing = (match exp with
+      (SList_lit(inits)) 
+      -> (match inits with
+          ([A.Int],SInt_lit(v))::rest -> let one = L.const_int i32_t 1 in
+                                    L.const_named_struct list_t [|one; one; one|]
+          | _ -> let zero = L.const_int i32_t 0 in
+                  L.const_named_struct list_t [|zero; zero; zero|])
+      | _ -> defaultZero)
+    in StringMap.add n (L.define_global n wholeThing the_module) m
+  in
+
   (* Create a map of global variables after creating each *)
   let global_vars : L.llvalue StringMap.t =
   let global_var m (SVdecl((t, n),exp)) =
   let simpleType = List.hd t in (*just use head of type list for now *)
-  let init = match simpleType with (* add more types in this pattern match! *)
-     A.Float -> (match exp with 
-                 (_,SFloat_lit v) -> L.const_float (ltype_of_typ simpleType) v
-                 | _ ->  L.const_float (ltype_of_typ simpleType) 0.0)
-    | A.Int -> (match exp with 
-                 (_, SInt_lit v) -> L.const_int (ltype_of_typ simpleType) v
-                 |_ ->  L.const_int(ltype_of_typ simpleType) 0)
-    | _ -> L.const_int (ltype_of_typ simpleType) 0
-  in StringMap.add n (L.define_global n init the_module) m in
+  match simpleType with
+     A.List 
+     -> genGlobalListLit exp n m
+    | _ 
+     -> let init = (match simpleType with (* add more types in this pattern match! *)
+                        A.Float 
+                        -> (match exp with 
+                              (_,SFloat_lit v) 
+                              -> L.const_float (ltype_of_typ simpleType) v
+                              | _ 
+                              ->  L.const_float (ltype_of_typ simpleType) 0.0)
+                        | A.Int 
+                        -> (match exp with 
+                              (_, SInt_lit v) 
+                              -> L.const_int (ltype_of_typ simpleType) v
+                              |_ 
+                              ->  L.const_int(ltype_of_typ simpleType) 0)
+                        (*TODO: change this to actually work with prob type!!!*)
+                        | A.Prob 
+                        -> L.const_int i32_t 0 
+                        | _ 
+                        -> L.const_int i32_t 0)
+        in StringMap.add n (L.define_global n init the_module) m in
   List.fold_left global_var StringMap.empty globals in
 
   (* declare built in C functions *)
@@ -107,6 +142,12 @@ let translate (globals, functions) =
 
   let printf_t : L.lltype = L.var_arg_function_type i32_t [| L.pointer_type i8_t |] in
   let printf_func : L.llvalue = L.declare_function "printf" printf_t the_module in
+
+  let bad_add_head_t : L.lltype = L.var_arg_function_type i32_t [| L.pointer_type list_t; L.pointer_type i8_t |] in
+  let bad_add_head_func : L.llvalue = L.declare_function "bad_add_head" bad_add_head_t the_module in
+
+  let very_bad_get_head_t : L.lltype = L.var_arg_function_type i32_t [| L.pointer_type list_t|] in
+  let very_bad_get_head_func : L.llvalue = L.declare_function "very_bad_get_head" very_bad_get_head_t the_module in
 
   (* Define each function (arguments and return type) so we can 
   call it even before we’ve created its body *)
@@ -132,31 +173,14 @@ let translate (globals, functions) =
     and float_format_str =
     L.build_global_stringptr "%f\n" "fmt" builder in
 
-  (*
-   let global_vars : L.llvalue StringMap.t =
-  let global_var m (SVdecl((t, n),exp)) =
-  let simpleType = List.hd t in (*just use head of type list for now *)
-  let init = match simpleType with (* add more types in this pattern match! *)
-     A.Float -> (match exp with 
-                 (_,SFloat_lit v) -> L.const_float (ltype_of_typ simpleType) v
-                 | _ ->  L.const_float (ltype_of_typ simpleType) 0.0)
-    | A.Int -> (match exp with 
-                 (_, SInt_lit v) -> L.const_int (ltype_of_typ simpleType) v
-                 |_ ->  L.const_int(ltype_of_typ simpleType) 0)
-    | _ -> L.const_int (ltype_of_typ simpleType) 0
-  in StringMap.add n (L.define_global n init the_module) m in
-  List.fold_left global_var StringMap.empty globals in
-  
-  
-  *)
-
   let local_vars =
-    let add_formal m (t, n) p = L.set_value_name n p;
+    let add_formal m (t, n) p = (* add formal parameters to scope *)
+    L.set_value_name n p;
     let simpleType = List.hd t in
     let local = L.build_alloca (ltype_of_typ simpleType) n builder in 
     ignore (L.build_store p local builder);
     StringMap.add n local m
-    and add_local m (SVdecl((t, n),exp)) = (* need to add in initializing locals!!! *)
+    and add_local m (SVdecl((t, n),exp)) = (* add locals to scope  *)
     let simpleType2 = List.hd t in
     let local_var = L.build_alloca (ltype_of_typ simpleType2) n builder in 
     StringMap.add n local_var m in
@@ -180,6 +204,59 @@ let translate (globals, functions) =
     -> L.const_int i32_t 0
     | SId s
     -> L.build_load (lookup s) s builder
+    | SList_lit elts
+    -> let defaultZero = 
+           let zero = L.const_int i32_t 0 in 
+               L.const_named_struct list_t [|zero; zero; zero|]
+       in
+       (match elts with
+       ([A.Int],SInt_lit(v))::rest (* ([A.Int],SInt_lit(v))::rest *)
+           -> (*let h = L.build_load (expr builder ([A.Int],SInt_lit(v))) "tmpElt" builder in*)
+            let value = L.const_int i32_t v in
+            let tmp = L.build_alloca (L.pointer_type i32_t) "tmpElt" builder in 
+            (*let tmpDeRef = L.build_alloca i32_t "tmpEltDeref" builder in   *)
+            let heapAddr = L.build_malloc i32_t "eltAddr" builder in   
+            let tmp' = ignore(L.build_store heapAddr tmp builder); tmp in
+            (* reference:
+               %5 = load i32*, i32** %1, align 8, !dbg !18
+               store i32 73, i32* %5, align 4, !dbg !19
+               //defreference
+                %6 = load i32*, i32** %1, align 8, !dbg !22
+                %7 = load i32, i32* %6, align 4, !dbg !23
+                 store i32 %7, i32* %2, align 4, !dbg !21
+
+              %tmpEltWithVal = load i32*, i32** %tmpElt
+              store i32 5, i32* %tmpEltWithVal
+
+              store %struct.list* %1, %struct.list** %2, align 8, !dbg !26
+
+              L.build_call printint_func [| (expr builder e) |]
+              "printint" builder
+
+              val build_bitcast : llvalue -> lltype -> string -> llbuilder -> llvalue
+
+            *)
+            let tmp'' = L.build_load tmp' "tmpEltWithVal" builder in
+            let tmp''' = ignore (L.build_store value tmp'' builder); tmp'' in
+            let asChar = L.build_bitcast tmp''' (L.pointer_type i8_t) "eltAsChar" builder in
+            (*
+            let dref = L.build_load tmp "deref" builder in
+            let dref' = L.build_load dref "dref'" builder in
+            let _ = ignore (L.build_store dref' tmpDeRef builder); dref' in*)
+            let aList = L.build_alloca (L.pointer_type list_t) "theList" in
+            let anAllocatedList = L.build_malloc list_t "listAddr" builder in 
+            (*let tmpList = L.build_alloca (list_t) "tmpList" builder in
+            let _ = ignore(L.build_store defaultZero tmpList builder); tmpList in
+            let tmpListPtr = L.build_alloca (L.pointer_type list_t) "tmpListPtr" builder in
+            let _ = ignore (L.build_store tmpList tmpListPtr builder); tmp'' in*)
+            let _ =  L.build_call bad_add_head_func [| anAllocatedList; asChar |]
+            "add_bad_head" builder in anAllocatedList
+           | _ 
+           -> let zero = L.const_int i32_t 0 in
+                  L.const_named_struct list_t [|zero; zero; zero|]
+        | _ 
+        -> defaultZero)
+
     | SUnop(op, ((t, _) as e)) 
     -> let e' = expr builder e in (match op with
         A.Neg when t = [A.Float] -> L.build_fneg
@@ -237,6 +314,17 @@ let translate (globals, functions) =
     | SFunCall ("printint", [e]) 
     -> L.build_call printint_func [| (expr builder e) |]
        "printint" builder
+    | SFunCall ("very_bad_get_head", [e]) 
+    (** for reference
+         %2 = alloca %struct.list*, align 8
+         store %struct.list* %1, %struct.list** %2, align 8, !dbg !26
+
+         let tmpListPtr = L.build_alloca (L.pointer_type list_t) "tmpListPtr" builder in
+            let _ = ignore (L.build_store tmpList tmpListPtr builder); tmp'' in
+    *)
+    -> let arg = (expr builder e) in
+       L.build_call very_bad_get_head_func [| arg |]
+       "very_bad_get_head" builder
     | SFunCall ("testMakeStruct",[(_,theSExpr) as arg]) 
     -> (match theSExpr with
         SInt_lit _
