@@ -24,13 +24,13 @@ let translate (globals, functions) =
   (* Create the LLVM compilation module into which we will generate code *)
   let the_module = L.create_module context "Smap" in
 
-  (* 
+  (*
   For reference - delete before committing!!!
   typedef struct list{
     void **data;
     int capacity;
     int size;
-  } list; 
+  } list;
 
   typedef struct prob {
     list probs;
@@ -44,7 +44,7 @@ let translate (globals, functions) =
   and i1_t = L.i1_type context   (* 1 bit integer *)
   and str = L.pointer_type (L.i8_type context)
   and float_t = L.double_type context
-  and void_t = L.void_type context 
+  and void_t = L.void_type context
   in
   let dummy_t = L.struct_type context [|str; i32_t;|]
   in
@@ -66,13 +66,13 @@ let translate (globals, functions) =
   in
 
   (*make sure to include struct definitions for the llvm struct types named earlier*)
-  let _ = 
+  let _ =
     L.struct_set_body list_t
     	[| L.pointer_type (L.pointer_type void_t)
-      ; i32_t 
-      ; i32_t |] false; 
-  L.struct_set_body prob_t 
-	  [| L.pointer_type list_t 
+      ; i32_t
+      ; i32_t |] false;
+  L.struct_set_body prob_t
+	  [| L.pointer_type list_t
 		; L.pointer_type list_t
     ; i32_t |] false;
   in
@@ -82,10 +82,10 @@ let translate (globals, functions) =
   let global_var m (SVdecl((t, n),exp)) =
   let simpleType = List.hd t in (*just use head of type list for now *)
   let init = match simpleType with (* add more types in this pattern match! *)
-     A.Float -> (match exp with 
+     A.Float -> (match exp with
                  (_,SFloat_lit v) -> L.const_float (ltype_of_typ simpleType) v
                  | _ ->  L.const_float (ltype_of_typ simpleType) 0.0)
-    | A.Int -> (match exp with 
+    | A.Int -> (match exp with
                  (_, SInt_lit v) -> L.const_int (ltype_of_typ simpleType) v
                  |_ ->  L.const_int(ltype_of_typ simpleType) 0)
     | _ -> L.const_int (ltype_of_typ simpleType) 0
@@ -98,7 +98,7 @@ let translate (globals, functions) =
 
   let printb_t: L.lltype = L.function_type i32_t [| i1_t |] in
   let printb_func : L.llvalue = L.declare_function "printb" printb_t the_module in
-  
+
   let testMakeStruct_t: L.lltype = L.function_type dummy_t [| L.pointer_type i8_t;i32_t |] in
   let testMakeStruct_func : L.llvalue = L.declare_function "testMakeStruct" testMakeStruct_t the_module in
 
@@ -108,7 +108,7 @@ let translate (globals, functions) =
   let printf_t : L.lltype = L.var_arg_function_type i32_t [| L.pointer_type i8_t |] in
   let printf_func : L.llvalue = L.declare_function "printf" printf_t the_module in
 
-  (* Define each function (arguments and return type) so we can 
+  (* Define each function (arguments and return type) so we can
   call it even before we’ve created its body *)
   let function_decls : (L.llvalue * sfunc_decl) StringMap.t =
   let function_decl m fdecl =
@@ -137,34 +137,34 @@ let translate (globals, functions) =
   let global_var m (SVdecl((t, n),exp)) =
   let simpleType = List.hd t in (*just use head of type list for now *)
   let init = match simpleType with (* add more types in this pattern match! *)
-     A.Float -> (match exp with 
+     A.Float -> (match exp with
                  (_,SFloat_lit v) -> L.const_float (ltype_of_typ simpleType) v
                  | _ ->  L.const_float (ltype_of_typ simpleType) 0.0)
-    | A.Int -> (match exp with 
+    | A.Int -> (match exp with
                  (_, SInt_lit v) -> L.const_int (ltype_of_typ simpleType) v
                  |_ ->  L.const_int(ltype_of_typ simpleType) 0)
     | _ -> L.const_int (ltype_of_typ simpleType) 0
   in StringMap.add n (L.define_global n init the_module) m in
   List.fold_left global_var StringMap.empty globals in
-  
-  
+
+
   *)
 
   let local_vars =
     let add_formal m (t, n) p = L.set_value_name n p;
     let simpleType = List.hd t in
-    let local = L.build_alloca (ltype_of_typ simpleType) n builder in 
+    let local = L.build_alloca (ltype_of_typ simpleType) n builder in
     ignore (L.build_store p local builder);
     StringMap.add n local m
     and add_local m (SVdecl((t, n),exp)) = (* need to add in initializing locals!!! *)
     let simpleType2 = List.hd t in
-    let local_var = L.build_alloca (ltype_of_typ simpleType2) n builder in 
+    let local_var = L.build_alloca (ltype_of_typ simpleType2) n builder in
     StringMap.add n local_var m in
     let formals = List.fold_left2 add_formal StringMap.empty fdecl.sformals (Array.to_list (L.params the_function)) in
-    List.fold_left add_local formals fdecl.slocals in 
+    List.fold_left add_local formals fdecl.slocals in
 
   (* Return the value for a variable or formal argument. Check local names first, then global names *)
-  let lookup n = try StringMap.find n local_vars with 
+  let lookup n = try StringMap.find n local_vars with
                      Not_found -> StringMap.find n global_vars in
 
   let rec expr builder ((_, e) : sexpr) = match e with
@@ -180,7 +180,7 @@ let translate (globals, functions) =
     -> L.const_int i32_t 0
     | SId s
     -> L.build_load (lookup s) s builder
-    | SUnop(op, ((t, _) as e)) 
+    | SUnop(op, ((t, _) as e))
     -> let e' = expr builder e in (match op with
         A.Neg when t = [A.Float] -> L.build_fneg
         | A.Neg
@@ -192,11 +192,11 @@ let translate (globals, functions) =
     | SBinop (([Float],_ ) as e1, op, e2) ->
 	  let e1' = expr builder e1
 	  and e2' = expr builder e2 in
-	  (match op with 
+	  (match op with
 	    A.Add     -> L.build_fadd
 	  | A.Sub     -> L.build_fsub
 	  | A.Mul     -> L.build_fmul
-	  | A.Div     -> L.build_fdiv 
+	  | A.Div     -> L.build_fdiv
 	  | A.CompNeq -> L.build_fcmp L.Fcmp.One
 	  | A.CompLt  -> L.build_fcmp L.Fcmp.Olt
 	  | A.CompLeq -> L.build_fcmp L.Fcmp.Ole
@@ -234,15 +234,15 @@ let translate (globals, functions) =
         | TimesEqual -> raise (Failure("special assignments need binops to be able to work"))
         | DivEqual -> raise (Failure("special assignments need binops to be able to work"))
         | Equal -> ignore(L.build_store e2' e1' builder); e1')
-    | SFunCall ("printint", [e]) 
+    | SFunCall ("printint", [e])
     -> L.build_call printint_func [| (expr builder e) |]
        "printint" builder
-    | SFunCall ("testMakeStruct",[(_,theSExpr) as arg]) 
+    | SFunCall ("testMakeStruct",[(_,theSExpr) as arg])
     -> (match theSExpr with
         SInt_lit _
         -> L.build_call testMakeStruct_func [| test_str; expr builder arg |]
             "testMakeStruct" builder
-        | _ 
+        | _
         -> L.build_call printb_func [| (expr builder arg) |]
             "printb" builder)
     | SFunCall ("printb", [e]) ->
@@ -253,7 +253,7 @@ let translate (globals, functions) =
       "printstr" builder
     | SFunCall ("printf", [e]) ->
       L.build_call printf_func [| float_format_str ; (expr builder e) |]
-      "printf" builder  
+      "printf" builder
     | SFunCall (f, args) ->
        let (fdef, fdecl) = StringMap.find f function_decls in
        let llargs = List.rev (List.map (expr builder) (List.rev args)) in
@@ -267,7 +267,7 @@ let translate (globals, functions) =
     match L.block_terminator (L.insertion_block builder) with
     Some _ -> ()
     | None -> ignore (f builder) in
-  
+
   let rec stmt builder = function
     SBlock sl -> List.fold_left stmt builder sl
     | SExpr e -> ignore(expr builder e); builder
@@ -291,10 +291,24 @@ let translate (globals, functions) =
 	  ignore(L.build_cond_br bool_val body_bb merge_bb pred_builder);
 	  L.builder_at_end context merge_bb
 
-      (* Implement for loops as while loops *)
-      | SFor (e1, e2, e3, body) -> stmt builder
-	    ( SBlock [SExpr e1 ; SWhile (e2, SBlock [body ; SExpr e3]) ] )
-  in 
+    (* Implement for loops as while loops *)
+    | SFor (e1, e2, e3, body) -> stmt builder
+      ( SBlock [SExpr e1 ; SWhile (e2, SBlock [body ; SExpr e3]) ] )
+    | SIf (p, b) ->
+      let pred_bb = L.append_block context "if" the_function in
+      ignore(L.build_br pred_bb builder);
+
+      let body_bb = L.append_block context "if_body" the_function in
+      add_terminal (stmt (L.builder_at_end context body_bb) b)
+        (L.build_br pred_bb);
+
+      let pred_builder = L.builder_at_end context pred_bb in
+      let bool_val = expr pred_builder p in
+
+      let merge_bb = L.append_block context "merge" the_function in
+      ignore(L.build_cond_br bool_val body_bb merge_bb pred_builder);
+      L.builder_at_end context merge_bb
+  in
 
   (* Build the code for each statement in the function *)
   let builder = stmt builder (SBlock fdecl.sbody) in
@@ -309,7 +323,7 @@ let translate (globals, functions) =
   List.iter build_function_body functions;
   the_module
 
- 
+
 
  (*(* <= un comment this line to see the old microc semantic analyzer with nice colors*)
 (* translate : Sast.program -> Llvm.module *)
