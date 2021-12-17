@@ -6,7 +6,7 @@ int init_list(list *l) {
     l->capacity = INITIAL_LIST_CAPACITY;
     l->size = 0;
 
-    l->data = (void **) malloc(INITIAL_LIST_CAPACITY * sizeof(void *));
+    l->data = (char **) malloc(INITIAL_LIST_CAPACITY * sizeof(char *));
     if (!l->data)
         return -1; // failure
 
@@ -28,14 +28,14 @@ int check_empty(list *l) {
 // ret 0 if successful
 // ret -1 on failure
 int resize(list *l) {
-    l->data = (void **) realloc(l->data, l->capacity * 2 * sizeof(void *));
+    l->data = (char **) realloc(l->data, l->capacity * 2 * sizeof(char *));
     if (l->data == NULL)
         return -1;
     l->capacity *= 2;
     return 0;
 }
 
-void push_back(list *l, void *item) {
+void push_back(list *l, char *item) {
     if (check_resizing(l))
         resize(l);
     // set item
@@ -43,7 +43,7 @@ void push_back(list *l, void *item) {
     l->size++;
 }
 
-void push_front(list *l, void *item) {
+void push_front(list *l, char *item) {
     if (check_resizing(l))
         resize(l);
 
@@ -97,7 +97,7 @@ int del_at(list *l, int i) {
     return 0;
 }
 
-void *get_back(list *l) {
+char *get_back(list *l) {
     if (l->size == 0)
         return NULL; // list is empty
 
@@ -105,7 +105,7 @@ void *get_back(list *l) {
     return l->data[l->size - 1];
 }
 
-void *get_front(list *l) {
+char *get_front(list *l) {
     if (l->size == 0)
         return NULL; // list is empty
 
@@ -113,7 +113,7 @@ void *get_front(list *l) {
     return l->data[0];
 }
 
-void *get_at(list *l, int i) {
+char *get_at(list *l, int i) {
     if (check_empty(l))
         return NULL;
 
@@ -143,7 +143,7 @@ int main() {
         p = (int *) malloc(sizeof(int));
         *p = a;
         printf("pushing: %d\n", *p);
-        push_back(&l, (void *) p);
+        push_back(&l, (char *) p);
         a++;
     }
 

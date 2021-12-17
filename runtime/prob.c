@@ -23,10 +23,10 @@ int init_prob(prob *p, list *gprobs, list *gdata) {
     int minlen = min(gprobs->size, gdata->size);
 
     // malloc both arrays in prob --> these are copies
-    p->probs.data = (void **) malloc(sizeof(void *) * minlen);
+    p->probs.data = (char **) malloc(sizeof(char *) * minlen);
     if (p->probs.data == NULL)
         return -1;
-    p->vals.data = (void **) malloc(sizeof(void *) * minlen);
+    p->vals.data = (char **) malloc(sizeof(char *) * minlen);
     if (p->vals.data == NULL)
         return -1;
     // set size and capacity to minlen
@@ -98,7 +98,7 @@ list *get_vals(prob *p) { return &p->vals; }
 int get_length(prob *p) { return p->length; }
 
 // returns a value based on the probability distribution
-void *peek(prob *p) {
+char *peek(prob *p) {
     double rnd = precision(drand48(), PROB_PRECISION);
 
     #ifdef debug
@@ -179,7 +179,7 @@ void div_probs(prob *target, prob *p2) {
 
 // TODO: return pointer to malloced list of the values that
 // satisfy the condition
-void *get_values_by_range(prob *p, int min, int max) {
+char *get_values_by_range(prob *p, int min, int max) {
     return NULL;
 }
 
@@ -200,17 +200,17 @@ int main() {
     d = (double *) malloc(sizeof(double));
     *d = .25;
     printf("pushing: %f\n", *d);
-    push_back(&l1, (void *) d);
+    push_back(&l1, (char *) d);
 
     d = (double *) malloc(sizeof(double));
     *d = .5;
     printf("pushing: %f\n", *d);
-    push_back(&l1, (void *) d);
+    push_back(&l1, (char *) d);
 
     d = (double *) malloc(sizeof(double));
     *d = .25;
     printf("pushing: %f\n", *d);
-    push_back(&l1, (void *) d);
+    push_back(&l1, (char *) d);
 
     puts("values");
 
@@ -218,7 +218,7 @@ int main() {
         p = (int *) malloc(sizeof(int));
         *p = a;
         printf("pushing: %d\n", *p);
-        push_back(&l2, (void *) p);
+        push_back(&l2, (char *) p);
         a++;
     }
 

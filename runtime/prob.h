@@ -26,7 +26,7 @@ int check_nonzero(prob *p);
 list *get_probs(prob *p);
 list *get_vals(prob *p);
 int get_length(prob *p);
-void *peek(prob *p);
+char *peek(prob *p);
 
 // transformations
 void add_probs(prob *target, prob *p2);
