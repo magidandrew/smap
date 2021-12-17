@@ -1,0 +1,4 @@
+int main(){
+    list int y = [99];
+    printint (very_bad_get_head(y)); 
+}
