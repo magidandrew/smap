@@ -141,6 +141,42 @@ void *peek(prob *p) {
     return NULL;
 }
 
+// changes the probabilities of the target argument
+void add_probs(prob *target, prob *p2) {
+    int minlen = min(target->length, p2->length);
+    for (int i = 0; i < minlen; i++)
+        prob_at(target, i) = prob_at(target, i) + prob_at(p2, i);
+
+    normalize(target);
+}
+
+// changes the probabilities of the target argument
+void sub_probs(prob *target, prob *p2) {
+    int minlen = min(target->length, p2->length);
+    for (int i = 0; i < minlen; i++)
+        prob_at(target, i) = prob_at(target, i) - prob_at(p2, i);
+
+    normalize(target);
+}
+
+// changes the probabilities of the target argument
+void times_probs(prob *target, prob *p2) {
+    int minlen = min(target->length, p2->length);
+    for (int i = 0; i < minlen; i++)
+        prob_at(target, i) = prob_at(target, i) * prob_at(p2, i);
+
+    normalize(target);
+}
+
+// changes the probabilities of the target argument
+void div_probs(prob *target, prob *p2) {
+    int minlen = min(target->length, p2->length);
+    for (int i = 0; i < minlen; i++)
+        prob_at(target, i) = prob_at(target, i) / prob_at(p2, i);
+
+    normalize(target);
+}
+
 // TODO: return pointer to malloced list of the values that
 // satisfy the condition
 void *get_values_by_range(prob *p, int min, int max) {

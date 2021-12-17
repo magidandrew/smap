@@ -28,6 +28,12 @@ list *get_vals(prob *p);
 int get_length(prob *p);
 void *peek(prob *p);
 
+// transformations
+void add_probs(prob *target, prob *p2);
+void sub_probs(prob *target, prob *p2);
+void times_probs(prob *target, prob *p2);
+void div_probs(prob *target, prob *p2);
+
 void print_probs(prob *p) {
     printf("[");
     for (int i=0; i<p->length; i++)
