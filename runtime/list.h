@@ -21,6 +21,8 @@ void *get_back(list *l);
 void *get_front(list *l);
 int del_back(list *l);
 int del_front(list *l);
+int del_at(list *l, int i);
+int get_at(list*l, int i);
 
 void print_list_int(list *l);
 

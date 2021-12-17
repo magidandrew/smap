@@ -75,9 +75,23 @@ int del_front(list *l) {
         return -1;
 
     // shift over data
-    for (int i=0; i < (l->size - 1); i++) {
+    for (int i=0; i < (l->size - 1); i++)
         l->data[i] = l->data[i+1];
-    }
+
+    l->size--;
+    return 0;
+}
+
+// ret 0 on success
+// ret -1 on failure
+// WARNING: WILL CAUSE MEMORY LEAKS! DATA DOES NOT GET FREE'D
+int del_at(list *l, int i) {
+    if (check_empty(l))
+        return -1;
+
+    // shift over data
+    for (int j=i; j < (l->size - 1); j++)
+        l->data[j] = l->data[j+1];
 
     l->size--;
     return 0;
@@ -97,6 +111,17 @@ void *get_front(list *l) {
 
     // get index 0, ie. first element
     return l->data[0];
+}
+
+void *get_at(list *l, int i) {
+    if (check_empty(l))
+        return NULL;
+
+    // check if index is within bounds of array
+    if (i < l->size && i >= 0)
+        return NULL;
+
+    return l->data[i];
 }
 
 void print_list_int(list *l) {
