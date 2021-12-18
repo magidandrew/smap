@@ -91,7 +91,7 @@ let check(globals, functions) =
     in List.fold_left add_bind StringMap.empty [ ("printint", [Void]);
                                                  ("printb", [Void]);
                                                  ("printf", [Void]);
-                                                 ("printstr", [Void]); 
+                                                 ("printstr", [Void]);
                                                  ("testMakeStruct", [Void]);
                                                  ("bad_add_head", [Int]);
                                                  ("very_bad_get_head",[Int])]
@@ -231,8 +231,7 @@ let check(globals, functions) =
     | Break -> SBreak
     | For(e1, e2, e3, st) ->
 	        SFor(check_expr e1, check_bool_expr e2, check_expr e3, check_stmt st)
-    | While(e, s) ->
-          SWhile(check_bool_expr e, check_stmt s)
+    | While(e, s) -> SWhile(check_bool_expr e, check_stmt s)
     | If(e, s) -> SIf(check_bool_expr e, check_stmt s)
     | Block sl ->
       let rec check_stmt_list = function

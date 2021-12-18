@@ -382,20 +382,22 @@ let translate (globals, functions) =
     (* Implement for loops as while loops *)
     | SFor (e1, e2, e3, body) -> stmt builder
       ( SBlock [SExpr e1 ; SWhile (e2, SBlock [body ; SExpr e3]) ] )
+
     | SIf (p, b) ->
-      let pred_bb = L.append_block context "if" the_function in
-      ignore(L.build_br pred_bb builder);
+        let pred_bb = L.append_block context "if" the_function in
+        ignore(L.build_br pred_bb builder);
 
-      let body_bb = L.append_block context "if_body" the_function in
-      add_terminal (stmt (L.builder_at_end context body_bb) b)
-        (L.build_br pred_bb);
+        let body_bb = L.append_block context "if_body" the_function in
+          let merge_bb = L.append_block context "merge" the_function in
+        add_terminal (stmt (L.builder_at_end context body_bb) b)
+          (L.build_br merge_bb);
 
-      let pred_builder = L.builder_at_end context pred_bb in
-      let bool_val = expr pred_builder p in
+        let pred_builder = L.builder_at_end context pred_bb in
+        let bool_val = expr pred_builder p in
 
-      let merge_bb = L.append_block context "merge" the_function in
       ignore(L.build_cond_br bool_val body_bb merge_bb pred_builder);
       L.builder_at_end context merge_bb
+
   in
 
   (* Build the code for each statement in the function *)
