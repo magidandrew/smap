@@ -5,6 +5,21 @@
 // {
 // 	puts(str);
 // }
+void printb(int x)
+{
+	if(x){
+        printf("true");
+	}
+	else{
+		printf("false");	
+	}
+	
+}
+
+void printint(int x)
+{
+	printf("%d\n", x);
+}
 
 void printstr(char* x)
 {

@@ -94,7 +94,7 @@ Check() {
     generatedfiles="$generatedfiles ${basename}.ll ${basename}.s ${basename}.exe ${basename}.out" &&
     Run "$SMAP" "$1" ">" "${basename}.ll" &&
     Run "$LLC" "-relocation-model=pic" "${basename}.ll" ">" "${basename}.s" &&
-    Run "$CC" "-o" "${basename}.exe" "${basename}.s" "printstr.o" "printint.o" "printb.o" "testMakeStruct.o" &&
+    Run "$CC" "-o" "${basename}.exe" "${basename}.s" "polymorphicPrint.o" "list.o" "testMakeStruct.o" &&
     Run "./${basename}.exe" > "${basename}.out" &&
     Compare ${basename}.out ${reffile}.out ${basename}.diff
 
@@ -164,13 +164,6 @@ LLIFail() {
 }
 
 which "$LLI" >> $globallog || LLIFail
-
-if [ ! -f printstr.o ]
-then
-    echo "Could not find printstr.o"
-    echo "Try \"make printstr.o\""
-    exit 1
-fi
 
 if [ $# -ge 1 ]
 then

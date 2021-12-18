@@ -1,27 +1,28 @@
 // Type your code here, or load an example.
 #include <stdlib.h>
 #include <string.h>
+#include "list.h"
 
 /************hacky editing of Andrew's list struct and methods ***********************/
 //replace void* with char* because LLVM doesn't like void*.
-#define INITIAL_LIST_CAPACITY 10
+// #define INITIAL_LIST_CAPACITY 10
 
-typedef struct list{
-    char **data;
-    int capacity;
-    int size;
-} list;
+// typedef struct list{
+//     char **data;
+//     int capacity;
+//     int size;
+// } list;
 
-int init_list(list *l) {
-    l->capacity = INITIAL_LIST_CAPACITY;
-    l->size = 0;
+// int init_list(list *l) {
+//     l->capacity = INITIAL_LIST_CAPACITY;
+//     l->size = 0;
 
-    l->data = (char **) malloc(INITIAL_LIST_CAPACITY * sizeof(char *));
-    if (!l->data)
-        return -1; // failure
+//     l->data = (char **) malloc(INITIAL_LIST_CAPACITY * sizeof(char *));
+//     if (!l->data)
+//         return -1; // failure
 
-    return 0; // success
-}
+//     return 0; // success
+// }
 
 int bad_add_head(list* l,char* elt){
     init_list(l);

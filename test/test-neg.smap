@@ -1,3 +1,3 @@
 int main(){
-	printint((-43110));
+	print((-43110));
 }
