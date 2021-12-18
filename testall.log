@@ -1,0 +1,260 @@
+/usr/bin/lli
+
+###### Testing test-add.smap
+./smap.native test/test-add.smap > test-add.smap.ll
+llc -relocation-model=pic test-add.smap.ll > test-add.smap.s
+cc -o test-add.smap.exe test-add.smap.s polymorphicPrint.o list.o testMakeStruct.o
+./test-add.smap.exe
+diff -b test-add.smap.out test/test-add.smap.out > test-add.smap.diff
+###### SUCCESS
+
+###### Testing test-and.smap
+./smap.native test/test-and.smap > test-and.smap.ll
+llc -relocation-model=pic test-and.smap.ll > test-and.smap.s
+cc -o test-and.smap.exe test-and.smap.s polymorphicPrint.o list.o testMakeStruct.o
+./test-and.smap.exe
+diff -b test-and.smap.out test/test-and.smap.out > test-and.smap.diff
+###### SUCCESS
+
+###### Testing test-bitAnd.smap
+./smap.native test/test-bitAnd.smap > test-bitAnd.smap.ll
+llc -relocation-model=pic test-bitAnd.smap.ll > test-bitAnd.smap.s
+cc -o test-bitAnd.smap.exe test-bitAnd.smap.s polymorphicPrint.o list.o testMakeStruct.o
+./test-bitAnd.smap.exe
+diff -b test-bitAnd.smap.out test/test-bitAnd.smap.out > test-bitAnd.smap.diff
+###### SUCCESS
+
+###### Testing test-bitOr.smap
+./smap.native test/test-bitOr.smap > test-bitOr.smap.ll
+llc -relocation-model=pic test-bitOr.smap.ll > test-bitOr.smap.s
+cc -o test-bitOr.smap.exe test-bitOr.smap.s polymorphicPrint.o list.o testMakeStruct.o
+./test-bitOr.smap.exe
+diff -b test-bitOr.smap.out test/test-bitOr.smap.out > test-bitOr.smap.diff
+###### SUCCESS
+
+###### Testing test-bitnot.smap
+./smap.native test/test-bitnot.smap > test-bitnot.smap.ll
+llc -relocation-model=pic test-bitnot.smap.ll > test-bitnot.smap.s
+cc -o test-bitnot.smap.exe test-bitnot.smap.s polymorphicPrint.o list.o testMakeStruct.o
+./test-bitnot.smap.exe
+diff -b test-bitnot.smap.out test/test-bitnot.smap.out > test-bitnot.smap.diff
+###### SUCCESS
+
+###### Testing test-bool.smap
+./smap.native test/test-bool.smap > test-bool.smap.ll
+llc -relocation-model=pic test-bool.smap.ll > test-bool.smap.s
+cc -o test-bool.smap.exe test-bool.smap.s polymorphicPrint.o list.o testMakeStruct.o
+./test-bool.smap.exe
+diff -b test-bool.smap.out test/test-bool.smap.out > test-bool.smap.diff
+###### SUCCESS
+
+###### Testing test-bop.smap
+./smap.native test/test-bop.smap > test-bop.smap.ll
+llc -relocation-model=pic test-bop.smap.ll > test-bop.smap.s
+cc -o test-bop.smap.exe test-bop.smap.s polymorphicPrint.o list.o testMakeStruct.o
+./test-bop.smap.exe
+diff -b test-bop.smap.out test/test-bop.smap.out > test-bop.smap.diff
+###### SUCCESS
+
+###### Testing test-div.smap
+./smap.native test/test-div.smap > test-div.smap.ll
+llc -relocation-model=pic test-div.smap.ll > test-div.smap.s
+cc -o test-div.smap.exe test-div.smap.s polymorphicPrint.o list.o testMakeStruct.o
+./test-div.smap.exe
+diff -b test-div.smap.out test/test-div.smap.out > test-div.smap.diff
+###### SUCCESS
+
+###### Testing test-dummyStruct.smap
+./smap.native test/test-dummyStruct.smap > test-dummyStruct.smap.ll
+llc -relocation-model=pic test-dummyStruct.smap.ll > test-dummyStruct.smap.s
+cc -o test-dummyStruct.smap.exe test-dummyStruct.smap.s polymorphicPrint.o list.o testMakeStruct.o
+./test-dummyStruct.smap.exe
+diff -b test-dummyStruct.smap.out test/test-dummyStruct.smap.out > test-dummyStruct.smap.diff
+###### SUCCESS
+
+###### Testing test-for.smap
+./smap.native test/test-for.smap > test-for.smap.ll
+llc -relocation-model=pic test-for.smap.ll > test-for.smap.s
+cc -o test-for.smap.exe test-for.smap.s polymorphicPrint.o list.o testMakeStruct.o
+./test-for.smap.exe
+diff -b test-for.smap.out test/test-for.smap.out > test-for.smap.diff
+###### SUCCESS
+
+###### Testing test-hello.smap
+./smap.native test/test-hello.smap > test-hello.smap.ll
+llc -relocation-model=pic test-hello.smap.ll > test-hello.smap.s
+cc -o test-hello.smap.exe test-hello.smap.s polymorphicPrint.o list.o testMakeStruct.o
+./test-hello.smap.exe
+diff -b test-hello.smap.out test/test-hello.smap.out > test-hello.smap.diff
+###### SUCCESS
+
+###### Testing test-if-elif.smap
+./smap.native test/test-if-elif.smap > test-if-elif.smap.ll
+Fatal error: exception Failure("can't type check this statement")
+###### FAILED
+
+###### Testing test-if-else.smap
+./smap.native test/test-if-else.smap > test-if-else.smap.ll
+Fatal error: exception Match_failure("src/codegen.ml", 373, 25)
+###### FAILED
+
+###### Testing test-if.smap
+./smap.native test/test-if.smap > test-if.smap.ll
+llc -relocation-model=pic test-if.smap.ll > test-if.smap.s
+cc -o test-if.smap.exe test-if.smap.s polymorphicPrint.o list.o testMakeStruct.o
+./test-if.smap.exe
+diff -b test-if.smap.out test/test-if.smap.out > test-if.smap.diff
+###### SUCCESS
+
+###### Testing test-intGlobalAssignment.smap
+./smap.native test/test-intGlobalAssignment.smap > test-intGlobalAssignment.smap.ll
+llc -relocation-model=pic test-intGlobalAssignment.smap.ll > test-intGlobalAssignment.smap.s
+cc -o test-intGlobalAssignment.smap.exe test-intGlobalAssignment.smap.s polymorphicPrint.o list.o testMakeStruct.o
+./test-intGlobalAssignment.smap.exe
+diff -b test-intGlobalAssignment.smap.out test/test-intGlobalAssignment.smap.out > test-intGlobalAssignment.smap.diff
+###### SUCCESS
+
+###### Testing test-intLocalAssignment.smap
+./smap.native test/test-intLocalAssignment.smap > test-intLocalAssignment.smap.ll
+llc -relocation-model=pic test-intLocalAssignment.smap.ll > test-intLocalAssignment.smap.s
+cc -o test-intLocalAssignment.smap.exe test-intLocalAssignment.smap.s polymorphicPrint.o list.o testMakeStruct.o
+./test-intLocalAssignment.smap.exe
+diff -b test-intLocalAssignment.smap.out test/test-intLocalAssignment.smap.out > test-intLocalAssignment.smap.diff
+###### SUCCESS
+
+###### Testing test-lshift.smap
+./smap.native test/test-lshift.smap > test-lshift.smap.ll
+llc -relocation-model=pic test-lshift.smap.ll > test-lshift.smap.s
+cc -o test-lshift.smap.exe test-lshift.smap.s polymorphicPrint.o list.o testMakeStruct.o
+./test-lshift.smap.exe
+diff -b test-lshift.smap.out test/test-lshift.smap.out > test-lshift.smap.diff
+###### SUCCESS
+
+###### Testing test-mul.smap
+./smap.native test/test-mul.smap > test-mul.smap.ll
+llc -relocation-model=pic test-mul.smap.ll > test-mul.smap.s
+cc -o test-mul.smap.exe test-mul.smap.s polymorphicPrint.o list.o testMakeStruct.o
+./test-mul.smap.exe
+diff -b test-mul.smap.out test/test-mul.smap.out > test-mul.smap.diff
+###### SUCCESS
+
+###### Testing test-neg-static-var.smap
+./smap.native test/test-neg-static-var.smap > test-neg-static-var.smap.ll
+Fatal error: exception Parsing.Parse_error
+###### FAILED
+
+###### Testing test-neg.smap
+./smap.native test/test-neg.smap > test-neg.smap.ll
+llc -relocation-model=pic test-neg.smap.ll > test-neg.smap.s
+cc -o test-neg.smap.exe test-neg.smap.s polymorphicPrint.o list.o testMakeStruct.o
+./test-neg.smap.exe
+diff -b test-neg.smap.out test/test-neg.smap.out > test-neg.smap.diff
+###### SUCCESS
+
+###### Testing test-not.smap
+./smap.native test/test-not.smap > test-not.smap.ll
+llc -relocation-model=pic test-not.smap.ll > test-not.smap.s
+cc -o test-not.smap.exe test-not.smap.s polymorphicPrint.o list.o testMakeStruct.o
+./test-not.smap.exe
+diff -b test-not.smap.out test/test-not.smap.out > test-not.smap.diff
+###### SUCCESS
+
+###### Testing test-printfloat.smap
+./smap.native test/test-printfloat.smap > test-printfloat.smap.ll
+llc -relocation-model=pic test-printfloat.smap.ll > test-printfloat.smap.s
+cc -o test-printfloat.smap.exe test-printfloat.smap.s polymorphicPrint.o list.o testMakeStruct.o
+./test-printfloat.smap.exe
+diff -b test-printfloat.smap.out test/test-printfloat.smap.out > test-printfloat.smap.diff
+###### SUCCESS
+
+###### Testing test-printint.smap
+./smap.native test/test-printint.smap > test-printint.smap.ll
+llc -relocation-model=pic test-printint.smap.ll > test-printint.smap.s
+cc -o test-printint.smap.exe test-printint.smap.s polymorphicPrint.o list.o testMakeStruct.o
+./test-printint.smap.exe
+diff -b test-printint.smap.out test/test-printint.smap.out > test-printint.smap.diff
+###### SUCCESS
+
+###### Testing test-returnValInt.smap
+./smap.native test/test-returnValInt.smap > test-returnValInt.smap.ll
+llc -relocation-model=pic test-returnValInt.smap.ll > test-returnValInt.smap.s
+cc -o test-returnValInt.smap.exe test-returnValInt.smap.s polymorphicPrint.o list.o testMakeStruct.o
+./test-returnValInt.smap.exe
+diff -b test-returnValInt.smap.out test/test-returnValInt.smap.out > test-returnValInt.smap.diff
+###### SUCCESS
+
+###### Testing test-rshift.smap
+./smap.native test/test-rshift.smap > test-rshift.smap.ll
+llc -relocation-model=pic test-rshift.smap.ll > test-rshift.smap.s
+cc -o test-rshift.smap.exe test-rshift.smap.s polymorphicPrint.o list.o testMakeStruct.o
+./test-rshift.smap.exe
+diff -b test-rshift.smap.out test/test-rshift.smap.out > test-rshift.smap.diff
+###### SUCCESS
+
+###### Testing test-singletonInit.smap
+./smap.native test/test-singletonInit.smap > test-singletonInit.smap.ll
+llc -relocation-model=pic test-singletonInit.smap.ll > test-singletonInit.smap.s
+cc -o test-singletonInit.smap.exe test-singletonInit.smap.s polymorphicPrint.o list.o testMakeStruct.o
+./test-singletonInit.smap.exe
+diff -b test-singletonInit.smap.out test/test-singletonInit.smap.out > test-singletonInit.smap.diff
+###### SUCCESS
+
+###### Testing test-sub.smap
+./smap.native test/test-sub.smap > test-sub.smap.ll
+llc -relocation-model=pic test-sub.smap.ll > test-sub.smap.s
+cc -o test-sub.smap.exe test-sub.smap.s polymorphicPrint.o list.o testMakeStruct.o
+./test-sub.smap.exe
+diff -b test-sub.smap.out test/test-sub.smap.out > test-sub.smap.diff
+###### SUCCESS
+
+###### Testing test-while.smap
+./smap.native test/test-while.smap > test-while.smap.ll
+llc -relocation-model=pic test-while.smap.ll > test-while.smap.s
+cc -o test-while.smap.exe test-while.smap.s polymorphicPrint.o list.o testMakeStruct.o
+./test-while.smap.exe
+diff -b test-while.smap.out test/test-while.smap.out > test-while.smap.diff
+###### SUCCESS
+
+###### Testing test-xor.smap
+./smap.native test/test-xor.smap > test-xor.smap.ll
+llc -relocation-model=pic test-xor.smap.ll > test-xor.smap.s
+cc -o test-xor.smap.exe test-xor.smap.s polymorphicPrint.o list.o testMakeStruct.o
+./test-xor.smap.exe
+diff -b test-xor.smap.out test/test-xor.smap.out > test-xor.smap.diff
+###### SUCCESS
+
+###### Testing fail-if-elif.smap
+./smap.native < test/fail-if-elif.smap 2> fail-if-elif.smap.err >> testall.log
+diff -b fail-if-elif.smap.err test/fail-if-elif.smap.err > fail-if-elif.smap.diff
+FAILED fail-if-elif.smap.err differs from test/fail-if-elif.smap.err
+###### FAILED
+
+###### Testing fail-multipleMain.smap
+./smap.native < test/fail-multipleMain.smap 2> fail-multipleMain.smap.err >> testall.log
+diff -b fail-multipleMain.smap.err test/fail-multipleMain.smap.err > fail-multipleMain.smap.diff
+###### SUCCESS
+
+###### Testing fail-nomain.smap
+./smap.native < test/fail-nomain.smap 2> fail-nomain.smap.err >> testall.log
+diff -b fail-nomain.smap.err test/fail-nomain.smap.err > fail-nomain.smap.diff
+###### SUCCESS
+
+###### Testing fail-polytypicList.smap
+./smap.native < test/fail-polytypicList.smap 2> fail-polytypicList.smap.err >> testall.log
+diff -b fail-polytypicList.smap.err test/fail-polytypicList.smap.err > fail-polytypicList.smap.diff
+###### SUCCESS
+
+###### Testing fail-voidTypeFormal.smap
+./smap.native < test/fail-voidTypeFormal.smap 2> fail-voidTypeFormal.smap.err >> testall.log
+diff -b fail-voidTypeFormal.smap.err test/fail-voidTypeFormal.smap.err > fail-voidTypeFormal.smap.diff
+###### SUCCESS
+
+###### Testing fail-voidTypeGlobal.smap
+./smap.native < test/fail-voidTypeGlobal.smap 2> fail-voidTypeGlobal.smap.err >> testall.log
+diff -b fail-voidTypeGlobal.smap.err test/fail-voidTypeGlobal.smap.err > fail-voidTypeGlobal.smap.diff
+###### SUCCESS
+
+###### Testing fail-voidTypeLocal.smap
+./smap.native < test/fail-voidTypeLocal.smap 2> fail-voidTypeLocal.smap.err >> testall.log
+diff -b fail-voidTypeLocal.smap.err test/fail-voidTypeLocal.smap.err > fail-voidTypeLocal.smap.diff
+###### SUCCESS
