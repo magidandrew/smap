@@ -10,10 +10,10 @@
 void printb(int x)
 {
 	if(x){
-        printf("true\n");
+        printf("true");
 	}
 	else{
-		printf("false\n");	
+		printf("false");	
 	}
 	
 }
@@ -25,7 +25,7 @@ void printint(int x)
 
 void printstr(char* x)
 {
-	printf("%s\n", x);
+	printf("%s", x);
 }
 
 
@@ -44,8 +44,8 @@ int absolute(int x) {
 }
 
 
-int stringLength(char* x)
-{
+int stringLength(char* x) {
+
 	if (*x == '\0') {
 		return 0;
 	}
@@ -61,9 +61,10 @@ void stringReverse(char* x) {
 	for (int j = len; j > -1; j--) { //Not efficient but my code with recurstion was failing idk why :-(
 		printf("%c", x[j]);
 	}
-	printf("\n");
 
 }
+
+
 
 
 

@@ -9,6 +9,12 @@ source_filename = "Smap"
 
 declare i32 @printstr(i8*)
 
+declare i32 @absolute(i32)
+
+declare i32 @stringLength(i8*)
+
+declare i32 @stringReverse(i8*)
+
 declare i32 @printb(i1)
 
 declare { i8*, i32 } @testMakeStruct(i8*, i32)
@@ -27,7 +33,7 @@ entry:
   %n = alloca i32
   %t1 = alloca i32
   %t2 = alloca i32
-  %nextTerm = alloca i32
+  %next = alloca i32
   store i32 3, i32* %i
   store i32 10, i32* %n
   store i32 0, i32* %t1
@@ -35,7 +41,7 @@ entry:
   %t11 = load i32, i32* %t1
   %t22 = load i32, i32* %t2
   %tmp = add i32 %t11, %t22
-  store i32 %tmp, i32* %nextTerm
+  store i32 %tmp, i32* %next
   %t13 = load i32, i32* %t1
   %printint = call i32 @printint(i32 %t13)
   %t24 = load i32, i32* %t2
@@ -50,16 +56,16 @@ while:                                            ; preds = %while_body, %entry
   br i1 %tmp17, label %while_body, label %merge
 
 while_body:                                       ; preds = %while
-  %nextTerm6 = load i32, i32* %nextTerm
-  %printint7 = call i32 @printint(i32 %nextTerm6)
+  %next6 = load i32, i32* %next
+  %printint7 = call i32 @printint(i32 %next6)
   %t28 = load i32, i32* %t2
   store i32 %t28, i32* %t1
-  %nextTerm9 = load i32, i32* %nextTerm
-  store i32 %nextTerm9, i32* %t2
+  %next9 = load i32, i32* %next
+  store i32 %next9, i32* %t2
   %t210 = load i32, i32* %t2
   %t111 = load i32, i32* %t1
   %tmp12 = add i32 %t210, %t111
-  store i32 %tmp12, i32* %nextTerm
+  store i32 %tmp12, i32* %next
   %i13 = load i32, i32* %i
   %tmp14 = add i32 %i13, 1
   store i32 %tmp14, i32* %i
