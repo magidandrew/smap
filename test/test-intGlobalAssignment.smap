@@ -1,8 +1,8 @@
 int y = 3;
 int w = 300;
 int main(){
-	printint(w);
+	print(w);
 	w = 5;
 	w = 400;
-	printint(w);
+	print(w);
 }

@@ -2,6 +2,6 @@ int main() {
     int x = 6;
     int y = 5;
     if (y < x) {
-        printint(42);
+        print(42);
     }
 }

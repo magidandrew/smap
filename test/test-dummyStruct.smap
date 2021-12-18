@@ -6,7 +6,7 @@ int main(){
 	testMakeStruct(16);    // takes in an integer
 	testMakeStruct(false); // takes in a boolean
 	// ^ when testMakeStruct takes in a boolean, it prints that boolean out!
-	printstr("dummy struct.");
+	print("dummy struct.");
 }
 
 int takeDummy(prob int dumb){

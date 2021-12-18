@@ -63,7 +63,7 @@ test : all testall.sh
 # to test linking external code
 
 .PHONY : all
-all : smap.native printstr.o printint.o testMakeStruct.o printb.o
+all : smap.native prob.o list.o testMakeStruct.o polymorphicPrint.o
 
 # "make microc.native" compiles the compiler
 #
@@ -99,17 +99,8 @@ prob: list.o runtime/prob.c
 printbig : printbig.c
 	cc -o printbig -DBUILD_TEST printbig.c
 
-printstr : printstr.c
-	cc -o printstr -DBUILD_TEST printstr.c
-
-printstr.o :
-	cc -c -o printstr.o runtime/printstr.c
-
-printint.o :
-	cc -c -o printint.o runtime/printint.c
-
-printb.o :
-	cc -c -o printb.o runtime/printb.c
+polymorphicPrint.o :
+	cc -c -o polymorphicPrint.o runtime/polymorphicPrint.c
 
 testMakeStruct.o :
 	cc -c -o testMakeStruct.o runtime/testMakeStruct.c

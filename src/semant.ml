@@ -88,14 +88,21 @@ let check(globals, functions) =
       formals = [(ty, "x")];
       locals = [];
       body = [] } map
-    in List.fold_left add_bind StringMap.empty [ ("printint", [Void]);
-                                                 ("printb", [Void]);
-                                                 ("printf", [Void]);
-                                                 ("printstr", [Void]);
-                                                 ("testMakeStruct", [Void]);
-                                                 ("bad_add_head", [Int]);
-                                                 ("very_bad_get_head",[Int])]
-                                                 in
+    in 
+    List.fold_left add_bind StringMap.empty [ ("printint", [Void]);
+                                              ("printb", [Void]);
+                                              ("printf", [Void]);
+                                              ("printstr", [Void]);
+                                              ("testMakeStruct", [Void]);
+                                              ("bad_add_head", [Int]);
+                                              ("very_bad_get_head",[Int]);
+                                              ("init_list", [Int]);
+                                              ("push_back", [Int]);
+                                              ("push_front",[Int]);
+                                              ("get_at",[Int]);
+                                              ("print",[Int])
+                                            ]
+    in
 (* add user defined func declarations to symbol table,  *)
 (* add make sure there are no duplicate function names! *)
   let add_func map fd =

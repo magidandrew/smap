@@ -333,6 +333,20 @@ let translate (globals, functions) =
         | _
         -> L.build_call printb_func [| (expr builder arg) |]
             "printb" builder)
+    | SFunCall ("print",[(typeList,_) as arg])
+    -> (match typeList with
+        [A.Int]
+        -> L.build_call printint_func [| (expr builder arg) |]
+           "printint" builder
+        | [A.Bool]
+        -> L.build_call printb_func [| (expr builder arg) |]
+            "printb" builder
+        | [A.Float]
+        -> L.build_call printf_func [| float_format_str ; (expr builder arg) |]
+        "printf" builder
+        | _ 
+        -> L.build_call printstr_func [| (expr builder arg) |]
+           "printstr" builder)
     | SFunCall ("printb", [e]) ->
         L.build_call printb_func [| (expr builder e) |]
         "printb" builder

@@ -1,5 +1,5 @@
 int main(){
-	printint(testReturn());
+	print(testReturn());
 }
 
 int testReturn (){return 5;}
