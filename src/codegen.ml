@@ -344,7 +344,7 @@ let translate (globals, functions) =
         | [A.Float]
         -> L.build_call printf_func [| float_format_str ; (expr builder arg) |]
         "printf" builder
-        | _ 
+        | _
         -> L.build_call printstr_func [| (expr builder arg) |]
            "printstr" builder)
     | SFunCall ("printb", [e]) ->
@@ -412,7 +412,7 @@ let translate (globals, functions) =
       ignore(L.build_cond_br bool_val body_bb merge_bb pred_builder);
       L.builder_at_end context merge_bb
 
-    | SIf_Else (p, b) ->
+    (* | SIf_Else (p, b) ->
       let pred_bb = L.append_block context "if" the_function in
         ignore(L.build_br pred_bb builder);
 
@@ -438,7 +438,7 @@ SIf (predicate, then_stmt, else_stmt) ->
 	 add_terminal (stmt (L.builder_at_end context else_bb) else_stmt)
 	   build_br_merge;
 	 ignore(L.build_cond_br bool_val then_bb else_bb builder);
-	 L.builder_at_end context merge_bb
+	 L.builder_at_end context merge_bb *)
 
   in
 
