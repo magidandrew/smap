@@ -1,0 +1,9 @@
+int main() {
+	int x = 5;
+	if (x > 5) {
+		printint(1);
+	}
+	elif (x == 5) {
+		printint(42);
+	}
+}

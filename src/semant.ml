@@ -230,9 +230,11 @@ let check(globals, functions) =
     | Continue -> SContinue
     | Break -> SBreak
     | For(e1, e2, e3, st) ->
-	        SFor(check_expr e1, check_bool_expr e2, check_expr e3, check_stmt st)
+        SFor(check_expr e1, check_bool_expr e2, check_expr e3, check_stmt st)
     | While(e, s) -> SWhile(check_bool_expr e, check_stmt s)
     | If(e, s) -> SIf(check_bool_expr e, check_stmt s)
+    | If_Else(if_statement, else_body) ->
+        SIf_Else(check_stmt if_statement, check_stmt else_body)
     | Block sl ->
       let rec check_stmt_list = function
           [Return _ as s] -> [check_stmt s]

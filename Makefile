@@ -63,7 +63,7 @@ test : all testall.sh
 # to test linking external code
 
 .PHONY : all
-all : smap.native printstr.o printint.o testMakeStruct.o printb.o
+all : smap.native printstr.o printint.o testMakeStruct.o printb.o c_deps
 
 # "make microc.native" compiles the compiler
 #
@@ -82,6 +82,10 @@ smap.native :
 clean2 :
 	ocamlbuild -clean
 	rm -rf testall.log ocamlllvm *.diff
+
+c_deps: list.o prob.o
+
+c_tests: prob list
 
 # Testing the "printbig" example
 list.o:

@@ -1,0 +1,6 @@
+int main() {
+	int x = 5;
+	elif (x == 5){
+		printint(-1);
+	}
+}
