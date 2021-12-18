@@ -1,0 +1,7 @@
+int main(){
+	int x = 3988;
+	print(x);
+	x = 1;
+	x = 855;
+	print(x);
+}

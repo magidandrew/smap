@@ -1,0 +1,16 @@
+int main(){
+	prob int dummyStruct;
+	// polymorphic function example
+	takeDummy(testMakeStruct(16));
+	// ^ when testMakeStruct takes in an integer, returns a dummy struct!
+	testMakeStruct(16);    // takes in an integer
+	testMakeStruct(false); // takes in a boolean
+	// ^ when testMakeStruct takes in a boolean, it prints that boolean out!
+	print("dummy struct.");
+}
+
+int takeDummy(prob int dumb){
+	return(5); /* blah */
+}
+
+

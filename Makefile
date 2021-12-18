@@ -1,5 +1,13 @@
-# "ocamlbuild calc.native" will also build the calculator
+CC = cc
+CFLAGS = -g -Wall
 
+.PHONY : dune
+dune:
+	 dune build src/smap.exe
+
+.PHONY : dunehello
+dunehello :
+	 dune exec src/smap.exe test/hello.smap
 # calc : parser.cmo scanner.cmo calc.cmo
 # 	ocamlc -w A -o calc $^
 
@@ -30,7 +38,7 @@ scanner.cmx : parser.cmx
 
 .PHONY : clean
 clean :
-	rm -rf *.cmi *.cmo parser.ml parser.mli scanner.ml calc.out calc
+	rm -rf *.cmi *.cmo parser.ml parser.mli scanner.ml calc.out calc *.o *.dSYM; make clean2
 
 .PHONY : smap
 smap : smap.native
@@ -43,6 +51,9 @@ smap : smap.native
 ############### microc makefile stuff ########################################
 
 # "make test" Compiles everything and runs the regression tests
+.PHONY : testhello
+testhello :
+	 ./testhello.sh
 
 .PHONY : test
 test : all testall.sh
@@ -52,7 +63,7 @@ test : all testall.sh
 # to test linking external code
 
 .PHONY : all
-all : smap.native printstr.o
+all : smap.native prob.o list.o testMakeStruct.o polymorphicPrint.o c_deps
 
 # "make microc.native" compiles the compiler
 #
@@ -63,7 +74,7 @@ all : smap.native printstr.o
 
 smap.native :
 	opam config exec -- \
-	ocamlbuild -use-ocamlfind smap.native
+	ocamlbuild -use-ocamlfind src/smap.native
 
 # "make clean" removes all generated files
 
@@ -72,16 +83,31 @@ clean2 :
 	ocamlbuild -clean
 	rm -rf testall.log ocamlllvm *.diff
 
+c_deps: list.o prob.o
+
+c_tests: prob list
+
 # Testing the "printbig" example
+list.o:
+	$(CC) $(CFLAGS) -c -o list.o runtime/list.c
+
+list: list.o runtime/list.c
+	$(CC) $(CFLAGS) -o list -DBUILD_TEST runtime/list.c
+
+prob.o:
+	$(CC) $(CFLAGS) -c -o prob.o runtime/prob.c -lm
+
+prob: list.o runtime/prob.c
+	$(CC) $(CFLAGS) list.o -o prob -DBUILD_TEST runtime/prob.c -lm
 
 printbig : printbig.c
 	cc -o printbig -DBUILD_TEST printbig.c
 
-printstr : printstr.c
-	cc -o printstr -DBUILD_TEST printstr.c
+polymorphicPrint.o :
+	cc -c -o polymorphicPrint.o runtime/polymorphicPrint.c
 
-printstr.o : printstr.c
-	cc -c printstr.c
+testMakeStruct.o :
+	cc -c -o testMakeStruct.o runtime/testMakeStruct.c
 
 # Building the tarball
 

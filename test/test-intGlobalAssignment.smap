@@ -1,0 +1,8 @@
+int y = 3;
+int w = 300;
+int main(){
+	print(w);
+	w = 5;
+	w = 400;
+	print(w);
+}

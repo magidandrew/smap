@@ -1,0 +1,14 @@
+void rec_print(int number) {
+    int next_number = number -1;
+    if(number > 0) {
+        print(number);
+        rec_print(next_number);
+    }
+}
+
+int main() {
+
+    int x = 10;
+    rec_print(x);
+
+}

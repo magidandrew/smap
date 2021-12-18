@@ -1,0 +1,7 @@
+(ocamllex scanner)
+(ocamlyacc parser)
+(executable
+ (name smap)
+ (libraries llvm llvm.analysis)
+)
+;(env (dev (flags (:standard -warn-error -A)))) ; make warnings non-fatal
