@@ -4,7 +4,7 @@
 
 ./smap.native $1 > $basename.ll;
 llc -relocation-model=pic $basename.ll > $basename.s;
-cc -o $basename.exe $basename.s printint.o;
+cc -o $basename.exe $basename.s polymorphicPrint.o list.o testMakeStruct.o;
 ./$basename.exe
 
 echo "removing files (.ll, .s, .exe)"
