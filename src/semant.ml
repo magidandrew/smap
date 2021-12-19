@@ -88,7 +88,7 @@ let check(globals, functions) =
       formals = [(ty, "x")];
       locals = [];
       body = [] } map
-    in 
+    in
     List.fold_left add_bind StringMap.empty [ ("printint", [Void]);
                                               ("printb", [Void]);
                                               ("printf", [Void]);

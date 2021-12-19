@@ -412,22 +412,29 @@ let translate (globals, functions) =
       ignore(L.build_cond_br bool_val body_bb merge_bb pred_builder);
       L.builder_at_end context merge_bb
 
-    (* | SIf_Else (p, b) ->
+    | SIf_Else (p, b) ->
+
+      let if_node = (match p with SIf(lhs, rhs) -> (lhs, rhs)
+                  | _ -> raise(Failure("If_Else SIf block matching error"))) in
+
       let pred_bb = L.append_block context "if" the_function in
         ignore(L.build_br pred_bb builder);
 
-        let body_bb = L.append_block context "if_body" the_function in
-          let merge_bb = L.append_block context "merge" the_function in
-        add_terminal (stmt (L.builder_at_end context body_bb) b)
-          (L.build_br merge_bb);
+      let body_bb = L.append_block context "if_body" the_function in
+          let else_bb = L.append_block context "else_body" the_function in
+            let merge_bb = L.append_block context "merge" the_function in
+              add_terminal (stmt (L.builder_at_end context body_bb) b)
+                (L.build_br merge_bb);
+
+              add_terminal (stmt (L.builder_at_end context else_bb) b)
+              (L.build_br merge_bb);
 
         let pred_builder = L.builder_at_end context pred_bb in
-        let bool_val = expr pred_builder p in
+          let bool_val = expr pred_builder (fst if_node) in
+            ignore(L.build_cond_br bool_val body_bb else_bb pred_builder);
+            L.builder_at_end context merge_bb
 
-      ignore(L.build_cond_br bool_val body_bb merge_bb pred_builder);
-      L.builder_at_end context merge_bb
-
-SIf (predicate, then_stmt, else_stmt) ->
+(* SIf (predicate, then_stmt, else_stmt) ->
          let bool_val = expr builder predicate in
 	 let merge_bb = L.append_block context "merge" the_function in
          let build_br_merge = L.build_br merge_bb in (* partial function *)

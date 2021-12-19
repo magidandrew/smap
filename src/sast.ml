@@ -28,7 +28,8 @@ and sx =
 type svdecl =
   SVdecl of bind * sexpr
 
-type sstmt = SBlock of sstmt list
+type sstmt =
+| SBlock of sstmt list
 | SExpr of sexpr
 | SReturn of sexpr
 | SIf of sexpr * sstmt
@@ -63,7 +64,7 @@ let rec string_of_sexpr (t, e) =
   | SFunCall(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_sexpr el) ^ ")"
   | SNoexpr -> ""
-				  ) ^ ")"				     
+				  ) ^ ")"
 
 let rec string_of_sstmt = function
     SBlock(stmts) ->
