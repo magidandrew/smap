@@ -143,6 +143,15 @@ let translate (globals, functions) =
   let printf_t : L.lltype = L.var_arg_function_type i32_t [| L.pointer_type i8_t |] in
   let printf_func : L.llvalue = L.declare_function "printf" printf_t the_module in
 
+  let push_back_t : L.lltype = L.var_arg_function_type i32_t [|L.pointer_type list_t; L.pointer_type i8_t|] in
+  let push_back_func : L.llvalue = L.declare_function "push_back" push_back_t the_module in
+  
+  let init_list_t : L.lltype = L.var_arg_function_type i32_t [|L.pointer_type list_t|] in
+  let init_list_func : L.llvalue = L.declare_function "init_list" init_list_t the_module in
+
+  let print_list_int_t : L.lltype = L.var_arg_function_type i32_t [|L.pointer_type list_t|] in
+  let print_list_int_func : L.llvalue = L.declare_function "print_list_int" print_list_int_t the_module in
+
   let bad_add_head_t : L.lltype = L.var_arg_function_type i32_t [| L.pointer_type list_t; L.pointer_type i8_t |] in
   let bad_add_head_func : L.llvalue = L.declare_function "bad_add_head" bad_add_head_t the_module in
 
@@ -205,57 +214,75 @@ let translate (globals, functions) =
     | SId s
     -> L.build_load (lookup s) s builder
     | SList_lit elts
-    -> let defaultZero =
-           let zero = L.const_int i32_t 0 in
-               L.const_named_struct list_t [|zero; zero; zero|]
-       in
-       (match elts with
-       ([A.Int],SInt_lit(v))::rest (* ([A.Int],SInt_lit(v))::rest *)
-           -> (*let h = L.build_load (expr builder ([A.Int],SInt_lit(v))) "tmpElt" builder in*)
-            let value = L.const_int i32_t v in
+    -> (match elts with
+            elt::rest (* ([A.Int],SInt_lit(v))::rest *)
+            -> (*let h = L.build_load (expr builder ([A.Int],SInt_lit(v))) "tmpElt" builder in*)
+            let value = expr builder elt in
             let tmp = L.build_alloca (L.pointer_type i32_t) "tmpElt" builder in
-            (*let tmpDeRef = L.build_alloca i32_t "tmpEltDeref" builder in   *)
             let heapAddr = L.build_malloc i32_t "eltAddr" builder in
-            let tmp' = ignore(L.build_store heapAddr tmp builder); tmp in
-            (* reference:
-               %5 = load i32*, i32** %1, align 8, !dbg !18
-               store i32 73, i32* %5, align 4, !dbg !19
-               //defreference
-                %6 = load i32*, i32** %1, align 8, !dbg !22
-                %7 = load i32, i32* %6, align 4, !dbg !23
-                 store i32 %7, i32* %2, align 4, !dbg !21
-
-              %tmpEltWithVal = load i32*, i32** %tmpElt
-              store i32 5, i32* %tmpEltWithVal
-
-              store %struct.list* %1, %struct.list** %2, align 8, !dbg !26
-
-              L.build_call printint_func [| (expr builder e) |]
-              "printint" builder
-
-              val build_bitcast : llvalue -> lltype -> string -> llbuilder -> llvalue
-
-            *)
+            let tmp' = ignore(L.build_store heapAddr tmp builder); tmp in          
             let tmp'' = L.build_load tmp' "tmpEltWithVal" builder in
             let tmp''' = ignore (L.build_store value tmp'' builder); tmp'' in
             let asChar = L.build_bitcast tmp''' (L.pointer_type i8_t) "eltAsChar" builder in
-            (*
-            let dref = L.build_load tmp "deref" builder in
-            let dref' = L.build_load dref "dref'" builder in
-            let _ = ignore (L.build_store dref' tmpDeRef builder); dref' in*)
+            
+            (* 
+               allocInitInt helper function
+               Description: 
+               Allocate and intitalize an integer list elt, then cast to ( char * )
+               For ex: int * tmp = malloc(sizeOf(int)); 
+                       *tmp = 5; 
+                       char * tmp2 = ( char* ) tmp; 
+               After this step, ready to pass vals to the push_front function!
+            *)
+            let allocInitInt v = 
+              (* 5 *)
+              let value = expr builder v in 
+              (* int * tmp *)
+              let tmp = L.build_alloca (L.pointer_type i32_t) "tmp" builder in 
+              (* malloc(sizeOf(int)) *)
+              let heapAddr = L.build_malloc i32_t "tmpAddr" builder in 
+              (* tmp = malloc(sizeOf(int)); *)
+              let tmp' = ignore(L.build_store heapAddr tmp builder); tmp in  
+              (* *tmp *)        
+              let tmp'' = L.build_load tmp' "tmpWithVal" builder in
+              (* *tmp = 5 *)
+              let tmp''' = ignore (L.build_store value tmp'' builder); tmp'' in
+              (* char * tmp2 = ( char* ) tmp;  *)
+              let asChar = L.build_bitcast tmp''' (L.pointer_type i8_t) "asChar" builder
+              in asChar
+            in
+            (* 
+               addInt helper function
+               Description: Add int val (cast as a char* ) to the list
+            *)
+            let addInt lst c = 
+                L.build_call push_back_func [| lst; c |]
+                "push_back" builder
+            in            
+            (* allocate list struct *)
             let aList = L.build_alloca (L.pointer_type list_t) "theList" in
+            (* get pointer to list struct *)
             let anAllocatedList = L.build_malloc list_t "listAddr" builder in
-            (*let tmpList = L.build_alloca (list_t) "tmpList" builder in
-            let _ = ignore(L.build_store defaultZero tmpList builder); tmpList in
-            let tmpListPtr = L.build_alloca (L.pointer_type list_t) "tmpListPtr" builder in
-            let _ = ignore (L.build_store tmpList tmpListPtr builder); tmp'' in*)
-            let _ =  L.build_call bad_add_head_func [| anAllocatedList; asChar |]
-            "add_bad_head" builder in anAllocatedList
+            (* initialize the list with list_init *)
+            let _ =  L.build_call init_list_func [| anAllocatedList|]
+            "init_list" builder in
+            (* add any starting elts to the list *)
+            let values = List.map allocInitInt (elt::rest)
+            in
+            let _ = List.map (addInt anAllocatedList) values
+            (* return the pointer to the now-intialized list*)
+            in anAllocatedList
            | _
-           -> let zero = L.const_int i32_t 0 in
-                  L.const_named_struct list_t [|zero; zero; zero|]
-        | _
-        -> defaultZero)
+           -> raise (Failure "Only support integer lists at the moment >.<\"")
+        | []
+        -> 
+        let aList = L.build_alloca (L.pointer_type list_t) "theList" in
+        (* get pointer to list struct *)
+        let anAllocatedList = L.build_malloc list_t "listAddr" builder in
+        (* initialize the list with list_init *)
+        let _ =  L.build_call init_list_func [| anAllocatedList|]
+        "init_list" builder 
+         in anAllocatedList)
 
     | SUnop(op, ((t, _) as e))
     -> let e' = expr builder e in (match op with
@@ -344,18 +371,17 @@ let translate (globals, functions) =
         | [A.Float]
         -> L.build_call printf_func [| float_format_str ; (expr builder arg) |]
         "printf" builder
-        | _
+        | [A.String]
         -> L.build_call printstr_func [| (expr builder arg) |]
-           "printstr" builder)
-    | SFunCall ("printb", [e]) ->
-        L.build_call printb_func [| (expr builder e) |]
-        "printb" builder
-    | SFunCall ("printstr", [e]) ->
-      L.build_call printstr_func [| (expr builder e) |]
-      "printstr" builder
-    | SFunCall ("printf", [e]) ->
-      L.build_call printf_func [| float_format_str ; (expr builder e) |]
-      "printf" builder
+        "printstr" builder
+        | [A.List; A.Int]
+        -> L.build_call print_list_int_func [| (expr builder arg) |]
+        "print_list_int" builder
+        | _
+        -> raise(Failure("printing type "^A.string_of_typ_name typeList ^ "not yet supported")))
+    | SFunCall ("print_list_int", [e]) ->
+        L.build_call print_list_int_func [| (expr builder e) |]
+        "print_list_int" builder
     | SFunCall (f, args) ->
        let (fdef, fdecl) = StringMap.find f function_decls in
        let llargs = List.rev (List.map (expr builder) (List.rev args)) in
