@@ -267,8 +267,15 @@ let check(globals, functions) =
         SFor(check_expr e1, check_bool_expr e2, check_expr e3, check_stmt st)
     | While(e, s) -> SWhile(check_bool_expr e, check_stmt s)
     | If(e, s) -> SIf(check_bool_expr e, check_stmt s)
-    | If_Else(if_statement, else_body) ->
-        SIf_Else(check_stmt if_statement, check_stmt else_body)
+    | Elif(e, s) -> SElif(check_expr e, check_stmt s)
+    | If_Else(if_stmt, else_body) ->
+        SIf_Else(check_stmt if_stmt, check_stmt else_body)
+    | If_Elif(if_stmt, fst_elif, elif_lst) ->
+      let rec check_elif_list = function
+        | s :: ss -> check_stmt s :: check_elif_list ss
+        | [] -> []
+      in
+      SIf_Elif(check_stmt if_stmt, check_stmt fst_elif, check_elif_list elif_lst)
     | Block sl ->
       let rec check_stmt_list = function
           [Return _ as s] -> [check_stmt s]

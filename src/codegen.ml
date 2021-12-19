@@ -145,7 +145,7 @@ let translate (globals, functions) =
 
   let push_back_t : L.lltype = L.var_arg_function_type i32_t [|L.pointer_type list_t; L.pointer_type i8_t|] in
   let push_back_func : L.llvalue = L.declare_function "push_back" push_back_t the_module in
-  
+
   let init_list_t : L.lltype = L.var_arg_function_type i32_t [|L.pointer_type list_t|] in
   let init_list_func : L.llvalue = L.declare_function "init_list" init_list_t the_module in
 
@@ -220,30 +220,30 @@ let translate (globals, functions) =
             let value = expr builder elt in
             let tmp = L.build_alloca (L.pointer_type i32_t) "tmpElt" builder in
             let heapAddr = L.build_malloc i32_t "eltAddr" builder in
-            let tmp' = ignore(L.build_store heapAddr tmp builder); tmp in          
+            let tmp' = ignore(L.build_store heapAddr tmp builder); tmp in
             let tmp'' = L.build_load tmp' "tmpEltWithVal" builder in
             let tmp''' = ignore (L.build_store value tmp'' builder); tmp'' in
             let asChar = L.build_bitcast tmp''' (L.pointer_type i8_t) "eltAsChar" builder in
-            
-            (* 
+
+            (*
                allocInitInt helper function
-               Description: 
+               Description:
                Allocate and intitalize an integer list elt, then cast to ( char * )
-               For ex: int * tmp = malloc(sizeOf(int)); 
-                       *tmp = 5; 
-                       char * tmp2 = ( char* ) tmp; 
+               For ex: int * tmp = malloc(sizeOf(int));
+                       *tmp = 5;
+                       char * tmp2 = ( char* ) tmp;
                After this step, ready to pass vals to the push_front function!
             *)
-            let allocInitInt v = 
+            let allocInitInt v =
               (* 5 *)
-              let value = expr builder v in 
+              let value = expr builder v in
               (* int * tmp *)
-              let tmp = L.build_alloca (L.pointer_type i32_t) "tmp" builder in 
+              let tmp = L.build_alloca (L.pointer_type i32_t) "tmp" builder in
               (* malloc(sizeOf(int)) *)
-              let heapAddr = L.build_malloc i32_t "tmpAddr" builder in 
+              let heapAddr = L.build_malloc i32_t "tmpAddr" builder in
               (* tmp = malloc(sizeOf(int)); *)
-              let tmp' = ignore(L.build_store heapAddr tmp builder); tmp in  
-              (* *tmp *)        
+              let tmp' = ignore(L.build_store heapAddr tmp builder); tmp in
+              (* *tmp *)
               let tmp'' = L.build_load tmp' "tmpWithVal" builder in
               (* *tmp = 5 *)
               let tmp''' = ignore (L.build_store value tmp'' builder); tmp'' in
@@ -251,14 +251,14 @@ let translate (globals, functions) =
               let asChar = L.build_bitcast tmp''' (L.pointer_type i8_t) "asChar" builder
               in asChar
             in
-            (* 
+            (*
                addInt helper function
                Description: Add int val (cast as a char* ) to the list
             *)
-            let addInt lst c = 
+            let addInt lst c =
                 L.build_call push_back_func [| lst; c |]
                 "push_back" builder
-            in            
+            in
             (* allocate list struct *)
             let aList = L.build_alloca (L.pointer_type list_t) "theList" in
             (* get pointer to list struct *)
@@ -275,13 +275,13 @@ let translate (globals, functions) =
            | _
            -> raise (Failure "Only support integer lists at the moment >.<\"")
         | []
-        -> 
+        ->
         let aList = L.build_alloca (L.pointer_type list_t) "theList" in
         (* get pointer to list struct *)
         let anAllocatedList = L.build_malloc list_t "listAddr" builder in
         (* initialize the list with list_init *)
         let _ =  L.build_call init_list_func [| anAllocatedList|]
-        "init_list" builder 
+        "init_list" builder
          in anAllocatedList)
 
     | SUnop(op, ((t, _) as e))
@@ -439,7 +439,6 @@ let translate (globals, functions) =
       L.builder_at_end context merge_bb
 
     | SIf_Else (p, b) ->
-
       let if_node = (match p with SIf(lhs, rhs) -> (lhs, rhs)
                   | _ -> raise(Failure("If_Else SIf block matching error"))) in
 
@@ -449,7 +448,7 @@ let translate (globals, functions) =
       let body_bb = L.append_block context "if_body" the_function in
           let else_bb = L.append_block context "else_body" the_function in
             let merge_bb = L.append_block context "merge" the_function in
-              add_terminal (stmt (L.builder_at_end context body_bb) b)
+              add_terminal (stmt (L.builder_at_end context body_bb) (snd if_node))
                 (L.build_br merge_bb);
 
               add_terminal (stmt (L.builder_at_end context else_bb) b)
@@ -459,6 +458,47 @@ let translate (globals, functions) =
           let bool_val = expr pred_builder (fst if_node) in
             ignore(L.build_cond_br bool_val body_bb else_bb pred_builder);
             L.builder_at_end context merge_bb
+
+    | SIf_Elif(if_stmt, fst_elif, elif_lst) ->
+      let if_node = (match if_stmt with
+          SIf(lhs, rhs) -> (lhs, rhs)
+        | _ -> raise(Failure("If_Elif SIf block matching error"))) in
+      let elif_node = (match fst_elif with
+          SElif(lhs, rhs) -> (lhs, rhs)
+        | _ -> raise(Failure("If_Elif SElif block matching error"))) in
+
+      let pred_bb = L.append_block context "if" the_function in
+        ignore(L.build_br pred_bb builder);
+
+      let body_bb = L.append_block context "if_body" the_function in
+
+        let elif_pred_bb = L.append_block context "elif" the_function in
+
+        let elif_bb = L.append_block context "elif_body" the_function in
+
+            let merge_bb = L.append_block context "merge" the_function in
+
+            (* if stmt body *)
+              add_terminal (stmt (L.builder_at_end context body_bb) (snd if_node))
+                (L.build_br merge_bb);
+            (* elif conditional *)
+              let pred_builder = L.builder_at_end context elif_pred_bb in
+              let elif_val = expr pred_builder (fst elif_node) in
+                ignore(L.build_cond_br elif_val elif_bb merge_bb pred_builder);
+            (* elif stmt body *)
+              add_terminal (stmt (L.builder_at_end context elif_bb) (snd elif_node))
+              (L.build_br merge_bb);
+
+      (* let rec elif_builder elifs = function
+      | s :: s ->
+      | [] -> None *)
+
+  (* if conditional *)
+      let pred_builder = L.builder_at_end context pred_bb in
+        let bool_val = expr pred_builder (fst if_node) in
+          ignore(L.build_cond_br bool_val body_bb elif_pred_bb pred_builder);
+
+      L.builder_at_end context merge_bb
 
 (* SIf (predicate, then_stmt, else_stmt) ->
          let bool_val = expr builder predicate in

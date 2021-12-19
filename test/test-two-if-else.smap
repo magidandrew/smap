@@ -1,0 +1,17 @@
+int main() {
+	int x = 5;
+	int y = 6;
+	if (x > y) {
+		print(42);
+	}
+	else {
+		print(1);
+	}
+	if (x < y) {
+		print(24);
+	}
+	else {
+		print(2);
+	}
+	return 0;
+}

@@ -104,10 +104,10 @@ printbig : printbig.c
 	cc -o printbig -DBUILD_TEST printbig.c
 
 polymorphicPrint.o :
-	cc -c -o polymorphicPrint.o runtime/polymorphicPrint.c
+	$(CC) $(CFLAGS) -c -o polymorphicPrint.o runtime/polymorphicPrint.c
 
 testMakeStruct.o :
-	cc -c -o testMakeStruct.o runtime/testMakeStruct.c
+	$(CC) $(CFLAGS) -c -o testMakeStruct.o runtime/testMakeStruct.c
 
 # Building the tarball
 
