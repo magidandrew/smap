@@ -1,4 +1,3 @@
- 
 type binary_op = Add | Sub | Mul | Div | Concat | CompEq | CompLt | CompLeq | CompGt | CompNeq | RShift | LShift | BitAnd | BitOr | Xor
 type unary_op = BitNot | Not | Bang | Octothorpe | Neg
 type assign_op = PlusEqual | MinusEqual | TimesEqual | DivEqual | Equal
