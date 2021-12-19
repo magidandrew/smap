@@ -124,6 +124,18 @@ char *get_at(list *l, int i) {
     return NULL;
 }
 
+list* set_at(list *l, int i, char* val) {
+    if (check_empty(l))
+        return NULL;
+
+    // check if index is within bounds of array
+    if (i < l->size && i >= 0){
+        l->data[i] = val;
+        return l;
+    }   
+    return NULL;
+}
+
 void print_list_int(list *l) {
     printf("[");
     for (int i=0; i<(l->size)-1; i++){

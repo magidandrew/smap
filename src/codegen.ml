@@ -152,6 +152,9 @@ let translate (globals, functions) =
   let get_at_t : L.lltype = L.var_arg_function_type (L.pointer_type i8_t) [|L.pointer_type list_t; i32_t|] in
   let get_at_func : L.llvalue = L.declare_function "get_at" get_at_t the_module in
 
+  let set_at_t : L.lltype = L.var_arg_function_type (L.pointer_type list_t) [|L.pointer_type list_t; i32_t; L.pointer_type i8_t|] in
+  let set_at_func : L.llvalue = L.declare_function "set_at" set_at_t the_module in
+
   let print_list_int_t : L.lltype = L.var_arg_function_type i32_t [|L.pointer_type list_t|] in
   let print_list_int_func : L.llvalue = L.declare_function "print_list_int" print_list_int_t the_module in
 
@@ -218,8 +221,8 @@ let translate (globals, functions) =
     -> L.const_int i32_t 0
     | SId s
     -> L.build_load (lookup s) s builder
-    | SListElement ((typs,SId(s)),index,rest)
-    -> let theList = L.build_load (lookup s) s builder in
+    | SListElement (listId,index,rest)
+    -> let theList = expr builder listId in
        let elt = L.build_call get_at_func [| theList; expr builder index|]
                  "get_at" builder in
        let eltAsPtr = L.build_bitcast elt (L.pointer_type i32_t) "eltAsPtr" builder  in  
@@ -342,14 +345,39 @@ let translate (globals, functions) =
     | A.Xor     -> L.build_xor
 	  ) e1' e2' "tmp" builder
     | SAssign (e1, op, e2)
-    -> let e1' = (match e1 with (_,SId nm) -> lookup nm | _ -> raise (Failure("assignments to exprs dont work yet")))
-       and e2' = expr builder e2 in
-       (match op with (*PlusEqual | MinusEqual | TimesEqual | DivEqual | Equal*)
-          PlusEqual -> raise (Failure("special assignments need binops to be able to work"))
-        | MinusEqual -> raise (Failure("special assignments need binops to be able to work"))
-        | TimesEqual -> raise (Failure("special assignments need binops to be able to work"))
-        | DivEqual -> raise (Failure("special assignments need binops to be able to work"))
-        | Equal -> ignore(L.build_store e2' e1' builder); e1')
+    -> (match e1 with
+        (_,SId nm) 
+        -> let e1' = lookup nm 
+           and e2' = expr builder e2 in 
+          (match op with (*PlusEqual | MinusEqual | TimesEqual | DivEqual | Equal*)
+              PlusEqual -> raise (Failure("special assignments need binops to be able to work"))
+            | MinusEqual -> raise (Failure("special assignments need binops to be able to work"))
+            | TimesEqual -> raise (Failure("special assignments need binops to be able to work"))
+            | DivEqual -> raise (Failure("special assignments need binops to be able to work"))
+            | Equal -> ignore(L.build_store e2' e1' builder); e1')
+        | (ty, SListElement (listId,index,rest))
+        -> let allocInitInt v =
+              (* 5 *)
+              let value = expr builder v in
+              (* int * tmp *)
+              let tmp = L.build_alloca (L.pointer_type i32_t) "tmp" builder in
+              (* malloc(sizeOf(int)) *)
+              let heapAddr = L.build_malloc i32_t "tmpAddr" builder in
+              (* tmp = malloc(sizeOf(int)); *)
+              let tmp' = ignore(L.build_store heapAddr tmp builder); tmp in
+              (* *tmp *)
+              let tmp'' = L.build_load tmp' "tmpWithVal" builder in
+              (* *tmp = 5 *)
+              let tmp''' = ignore (L.build_store value tmp'' builder); tmp'' in
+              (* char * tmp2 = ( char* ) tmp;  *)
+              let asChar = L.build_bitcast tmp''' (L.pointer_type i8_t) "asChar" builder
+              in asChar
+            in           
+            let theList = expr builder listId
+            and i = expr builder index
+            and e2' = allocInitInt e2 in 
+            let _ = L.build_call set_at_func [| theList; i; e2'|] "set_at" builder 
+            in theList )         
     | SFunCall ("printint", [e])
     -> L.build_call printint_func [| (expr builder e) |]
        "printint" builder
