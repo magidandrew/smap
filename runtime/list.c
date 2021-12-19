@@ -119,9 +119,9 @@ char *get_at(list *l, int i) {
 
     // check if index is within bounds of array
     if (i < l->size && i >= 0)
-        return NULL;
+        return l->data[i];
 
-    return l->data[i];
+    return NULL;
 }
 
 void print_list_int(list *l) {

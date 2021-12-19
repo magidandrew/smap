@@ -124,6 +124,17 @@ let check(globals, functions) =
 
   (* Define rules for the type checking *)
 
+  (***************** list type checking helpers ************************)
+  let getEltType lst:typ_name = 
+    let rec eatList (h::t) = 
+      if (h = List) 
+      then eatList t 
+      else (h::t)     
+    in
+    eatList lst
+  in
+  (*********************************************************************)
+
   (* rule for checking/transforming an expr AST node *)
   let rec check_expr = function
       FunCall (fname,args) ->
@@ -141,9 +152,12 @@ let check(globals, functions) =
                       | typs
                       -> if (List.hd typs) != List
                          then raise( Failure ("Cannot use bracket syntax on non list-type"))
-                         else let e1' = check_expr e1
-                              and rest' = List.map check_expr rest in
-                         (typs, SListElement ((typs,SId(s)),e1',rest'))
+                         else let (ity,_) as e1' = check_expr e1 in
+                              let rest' = List.map check_expr rest in
+                              let res = (getEltType typs, SListElement ((getEltType typs,SId(s)),e1',rest')) in
+                              if (ity = [Int])
+                              then res
+                              else raise( Failure ("Index must be of type int"))
                     )
     | ListAddHead (e1, e2)
     -> let e1' = check_expr e1

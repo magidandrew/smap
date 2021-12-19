@@ -1,0 +1,6 @@
+int main(){
+    int z = 4;
+    int w = 85;
+    list int x = [0,1,2,3,z,99,7200,w-1];
+    print(x[6]);
+}

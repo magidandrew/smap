@@ -149,6 +149,9 @@ let translate (globals, functions) =
   let init_list_t : L.lltype = L.var_arg_function_type i32_t [|L.pointer_type list_t|] in
   let init_list_func : L.llvalue = L.declare_function "init_list" init_list_t the_module in
 
+  let get_at_t : L.lltype = L.var_arg_function_type (L.pointer_type i8_t) [|L.pointer_type list_t; i32_t|] in
+  let get_at_func : L.llvalue = L.declare_function "get_at" get_at_t the_module in
+
   let print_list_int_t : L.lltype = L.var_arg_function_type i32_t [|L.pointer_type list_t|] in
   let print_list_int_func : L.llvalue = L.declare_function "print_list_int" print_list_int_t the_module in
 
@@ -203,6 +206,8 @@ let translate (globals, functions) =
   let rec expr builder ((_, e) : sexpr) = match e with
     SInt_lit i
     -> L.const_int i32_t i
+    | SIndex i
+    -> expr builder i
     | SString_lit s
     -> L.build_global_stringptr s "the_str" builder
     | SBool_lit b
@@ -213,6 +218,13 @@ let translate (globals, functions) =
     -> L.const_int i32_t 0
     | SId s
     -> L.build_load (lookup s) s builder
+    | SListElement ((typs,SId(s)),index,rest)
+    -> let theList = L.build_load (lookup s) s builder in
+       let elt = L.build_call get_at_func [| theList; expr builder index|]
+                 "get_at" builder in
+       let eltAsPtr = L.build_bitcast elt (L.pointer_type i32_t) "eltAsPtr" builder  in  
+       let eltDeRef = L.build_load eltAsPtr "eltDeref" builder in
+       eltDeRef     
     | SList_lit elts
     -> (match elts with
             elt::rest (* ([A.Int],SInt_lit(v))::rest *)
