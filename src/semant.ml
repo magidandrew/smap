@@ -152,13 +152,17 @@ let check(globals, functions) =
                       | typs
                       -> if (List.hd typs) != List
                          then raise( Failure ("Cannot use bracket syntax on non list-type"))
-                         else let (ity,_) as e1' = check_expr e1 in
-                              let rest' = List.map check_expr rest in
-                              let res = (getEltType typs, SListElement ((getEltType typs,SId(s)),e1',rest')) in
-                              if (ity = [Int])
-                              then res
-                              else raise( Failure ("Index must be of type int"))
-                    )
+                         else 
+                          let check_index = (fun ty (Index i) ->
+                            let v = check_expr i in
+                            if fst v = [Int] then (ty,SIndex(v))
+                            else raise (Failure ("index must be of type int but it's"^ string_of_typ_name (fst v))) )
+                          in
+                          let eltType = getEltType typs in
+                          let checked = List.map (check_index eltType) (e1::rest) in
+                          let e1' = List.hd checked
+                          and rest' = List.tl checked in
+                          (eltType, SListElement ((eltType,SId(s)),e1',rest')) )
     | ListAddHead (e1, e2)
     -> let e1' = check_expr e1
        and e2' = check_expr e2 in
@@ -174,9 +178,6 @@ let check(globals, functions) =
           | _
           -> raise( Failure ("Cannot use push-front syntax on non list-type")))
     (*| ListAddTail (e1, e2) -> *)
-    | Index i -> let v = check_expr i in
-                 if fst v == [Int] then ([Int],SIndex(v))
-                 else raise (Failure ("index must be of type int "))
     | Noexpr -> ([],SNoexpr)
     | List_lit (elts) ->
       let checked_elts = (List.map check_expr elts) in (*make sure each elt type checks on its own*)
