@@ -134,7 +134,7 @@ let translate (globals, functions) =
   let absolute_t: L.lltype = L.function_type i32_t [| i32_t |] in
   let absolute_func : L.llvalue = L.declare_function "absolute" absolute_t the_module in
 
-  let floatCeil_t: L.lltype = L.function_type i32_t [| float_t |] in
+  let floatCeil_t: L.lltype = L.function_type float_t [| float_t |] in
   let floatCeil_func : L.llvalue = L.declare_function "floatCeil" floatCeil_t the_module in
 
   let stringLength_t: L.lltype = L.function_type i32_t [| L.pointer_type i8_t |] in
