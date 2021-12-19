@@ -64,7 +64,23 @@ void stringReverse(char* x) {
 
 }
 
+float floatCeil(float x) {
 
+	/*float num = x;
+	int intpart = (int)x;
+	double fractional = num - intpart;
+
+	if(fractional >= 0.5) {
+		float number_return = (float)(intpart + 1);
+		return number_return;
+	}
+
+	return (float)intpart;*/
+
+	return x;
+
+
+}
 
 
 

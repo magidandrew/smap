@@ -93,6 +93,7 @@ let check(globals, functions) =
                                               ("printb", [Void]);
                                               ("printf", [Void]);
                                               ("printstr", [Void]);
+                                              ("floatCeil", [Float]);
                                               ("stringLength", [Int]);
                                               ("absolute", [Int]);
                                               ("stringReverse", [Void]);

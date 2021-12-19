@@ -134,6 +134,9 @@ let translate (globals, functions) =
   let absolute_t: L.lltype = L.function_type i32_t [| i32_t |] in
   let absolute_func : L.llvalue = L.declare_function "absolute" absolute_t the_module in
 
+  let floatCeil_t: L.lltype = L.function_type i32_t [| float_t |] in
+  let floatCeil_func : L.llvalue = L.declare_function "floatCeil" floatCeil_t the_module in
+
   let stringLength_t: L.lltype = L.function_type i32_t [| L.pointer_type i8_t |] in
   let stringLength_func: L.llvalue = L.declare_function "stringLength" stringLength_t the_module in
 
@@ -367,7 +370,10 @@ let translate (globals, functions) =
     "stringReverse" builder
     | SFunCall ("absolute", [e]) ->
     L.build_call absolute_func [| (expr builder e) |]
-    "absolute" builder
+    "absolute" builder 
+    | SFunCall ("floatCeil", [e]) ->
+    L.build_call floatCeil_func [| (expr builder e) |]
+    "floatCeil" builder
     | SFunCall ("printstr", [e]) ->
       L.build_call printstr_func [| (expr builder e) |]
       "printstr" builder
