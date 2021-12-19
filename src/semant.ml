@@ -93,9 +93,10 @@ let check(globals, functions) =
                                               ("printb", [Void]);
                                               ("printf", [Void]);
                                               ("printstr", [Void]);
-                                              ("floatCeil", [Float]);
                                               ("stringLength", [Int]);
                                               ("absolute", [Int]);
+                                              ("ceilFloat", [Float]);
+                                              ("ascii", [Int]);
                                               ("stringReverse", [Void]);
                                               ("testMakeStruct", [Void]);
                                               ("bad_add_head", [Int]);

@@ -1,9 +1,5 @@
 int main() {
-
-
-    float x = 10.7;
-    float ceil_value = floatCeil(x);
+    float x = ceilFloat(10.1);
     print(x);
-
-
+    print(10.1);
 }

@@ -10,10 +10,10 @@
 void printb(int x)
 {
 	if(x){
-        printf("true");
+        printf("true\n");
 	}
 	else{
-		printf("false");	
+		printf("false\n");	
 	}
 	
 }
@@ -25,7 +25,7 @@ void printint(int x)
 
 void printstr(char* x)
 {
-	printf("%s", x);
+	printf("%s\n", x);
 }
 
 
@@ -38,14 +38,13 @@ int absolute(int x) {
 	if (x < 0) {
 		return -x;
 	}
-	
+
 	return x;
 
 }
 
 
 int stringLength(char* x) {
-
 	if (*x == '\0') {
 		return 0;
 	}
@@ -61,26 +60,24 @@ void stringReverse(char* x) {
 	for (int j = len; j > -1; j--) { //Not efficient but my code with recurstion was failing idk why :-(
 		printf("%c", x[j]);
 	}
+	printf("\n");
 
 }
 
-float floatCeil(float x) {
 
-	/*float num = x;
-	int intpart = (int)x;
-	double fractional = num - intpart;
+int ascii(char* x) {
 
-	if(fractional >= 0.5) {
-		float number_return = (float)(intpart + 1);
-		return number_return;
-	}
+	int ascii_val = (int) *x;
 
-	return (float)intpart;*/
-
-	return x;
-
+	return ascii_val;
 
 }
+
+
+float ceilFloat(float x) {
+	return 100.0;
+}
+
 
 
 
