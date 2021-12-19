@@ -1,5 +1,4 @@
 int main(){
-    list int y = [99];
-   // printint(very_bad_get_head(y)); 
-   print(99);
+   list int y = [99];
+   print(y);
 }

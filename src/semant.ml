@@ -89,18 +89,15 @@ let check(globals, functions) =
       locals = [];
       body = [] } map
     in 
-    List.fold_left add_bind StringMap.empty [ ("printint", [Void]);
-                                              ("printb", [Void]);
-                                              ("printf", [Void]);
-                                              ("printstr", [Void]);
-                                              ("testMakeStruct", [Void]);
+    List.fold_left add_bind StringMap.empty [ ("testMakeStruct", [Void]);
                                               ("bad_add_head", [Int]);
                                               ("very_bad_get_head",[Int]);
                                               ("init_list", [Int]);
                                               ("push_back", [Int]);
                                               ("push_front",[Int]);
                                               ("get_at",[Int]);
-                                              ("print",[Int])
+                                              ("print",[Int]);
+                                              ("print_int_list",[Int])
                                             ]
     in
 (* add user defined func declarations to symbol table,  *)
@@ -136,6 +133,36 @@ let check(globals, functions) =
     | Bool_lit bl -> ([Bool],SBool_lit bl)
     | Int_lit num -> ([Int], SInt_lit num)
     | Float_lit flt -> ([Float], SFloat_lit flt)
+    | ListElement (s,e1,rest) 
+    -> let result = (findVar scope s) in
+                    (match (result) with
+                      [] 
+                      -> raise (Failure ("Semant: Could not find identifier "^s^" in tbl "^(print_scope scope)))
+                      | typs 
+                      -> if (List.hd typs) != List 
+                         then raise( Failure ("Cannot use bracket syntax on non list-type"))
+                         else let e1' = check_expr e1 
+                              and rest' = List.map check_expr rest in
+                         (typs, SListElement ((typs,SId(s)),e1',rest'))
+                    )
+    | ListAddHead (e1, e2) 
+    -> let e1' = check_expr e1 
+       and e2' = check_expr e2 in
+        (match e1' with
+          (typs,SId(s)) 
+          -> if (typs == fst e2') then (fst e1',SListAddHead(e1',e2')) 
+             else raise (Failure ("Expected type of " ^ string_of_typ_name (fst e1') ^
+                         "but found type " ^string_of_typ_name (fst e2') ^ "instead"))
+          | (typs, SListElement(_,_,_)) 
+          -> if (typs == fst e2') then (fst e1',SListAddHead(e1',e2'))
+             else raise (Failure ("Expected type of " ^ string_of_typ_name (fst e1') ^
+             "but found type " ^string_of_typ_name (fst e2') ^ "instead"))
+          | _ 
+          -> raise( Failure ("Cannot use push-front syntax on non list-type")))
+    (*| ListAddTail (e1, e2) -> *)
+    | Index i -> let v = check_expr i in 
+                 if fst v == [Int] then ([Int],SIndex(v))
+                 else raise (Failure ("index must be of type int "))
     | Noexpr -> ([],SNoexpr)
     | List_lit (elts) ->
       let checked_elts = (List.map check_expr elts) in (*make sure each elt type checks on its own*)

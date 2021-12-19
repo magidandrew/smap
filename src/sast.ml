@@ -16,7 +16,7 @@ and sx =
 |   SList_lit of sexpr list
 |   SId of string
 |   SCast of typ_name * sexpr
-|   SListElement of sexpr * sexpr list
+|   SListElement of sexpr * sexpr * sexpr list
 |   SListAddHead of sexpr * sexpr
 |   SListAddTail of sexpr * sexpr
 |   SLength of sexpr

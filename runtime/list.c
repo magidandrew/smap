@@ -126,9 +126,10 @@ char *get_at(list *l, int i) {
 
 void print_list_int(list *l) {
     printf("[");
-    for (int i=0; i<l->size; i++)
+    for (int i=0; i<(l->size)-1; i++){
         printf("%d, ", *(int *)l->data[i]);
-    printf("]\n");
+    }
+    printf("%d]\n", *(int *)l->data[(l->size)-1]);
 }
 
 #ifdef BUILD_TEST

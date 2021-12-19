@@ -1,0 +1,4 @@
+int main(){
+   list int y = [99,1,2,3,4];
+   print(y);
+}

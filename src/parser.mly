@@ -98,7 +98,7 @@ expr:
 /* identifiers                                                              */
 | id                                              { $1                       }
 /* List expressions                                                         */
-| LBRACKET expr_list_opt RBRACKET                 { List_lit($2)             } /* list literal */
+| LBRACKET expr_list_opt RBRACKET                 { List_lit(List.rev $2)             } /* list literal */
 | id ADDHEAD ASSIGN expr                          { ListAddHead($1,$4)       } /* add head     */
 | id ADDTAIL ASSIGN expr                          { ListAddTail($1,$4)       } /* add tail     */
 | expr CONCAT expr                                { Binop($1, Concat, $3)    }
