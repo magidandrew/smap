@@ -85,6 +85,7 @@ char* int_to_char(int x) {
 
 int ceilFloat(double x) {
 
+	
 	int y = (int) x;
 	float z = x - y;
 
@@ -115,6 +116,20 @@ int characterLocation(char* x, char *y) {
 int isCompDivisible(int x) {
 
 	if(x%2 == 0) {
+		return 1;
+	}
+
+	return 0;
+
+}
+
+
+int divisible(int x, int y) {
+
+	if(x < y) {
+		return 0;
+	}
+	if(x%y == 0) {
 		return 1;
 	}
 

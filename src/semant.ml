@@ -98,6 +98,7 @@ let check(globals, functions) =
                                               ("ceilFloat", [Int]);
                                               ("ascii", [Int]);
                                               ("isCompDivisible", [Int]);
+                                              ("divisible", [Int]);
                                               ("characterLocation", [Int]);
                                               ("divisible", [Int]);
                                               ("int_to_char", [String]);

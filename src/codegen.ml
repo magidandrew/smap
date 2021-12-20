@@ -140,6 +140,9 @@ let translate (globals, functions) =
   let isCompDivisible_t: L.lltype = L.function_type i32_t [| i32_t |] in
   let isCompDivisible_func : L.llvalue = L.declare_function "isCompDivisible" isCompDivisible_t the_module in
 
+  let divisible_t: L.lltype = L.function_type i32_t [| i32_t;i32_t |] in
+  let divisible_func : L.llvalue = L.declare_function "divisible" divisible_t the_module in
+
   let ceilFloat_t: L.lltype = L.function_type i32_t [| float_t |] in
   let ceilFloat_func : L.llvalue = L.declare_function "ceilFloat" ceilFloat_t the_module in
 
@@ -395,6 +398,9 @@ let translate (globals, functions) =
     | SFunCall ("characterLocation", [e]) ->
     L.build_call characterLocation_func [| (expr builder e) |]
     "characterLocation" builder
+    | SFunCall ("divisible", [e;e2]) ->
+    L.build_call divisible_func [| (expr builder e); (expr builder e2) |]
+    "divisible" builder
     | SFunCall ("ascii", [e]) ->
     L.build_call ascii_func [| (expr builder e) |]
     "ascii" builder
