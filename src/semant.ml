@@ -99,6 +99,7 @@ let check(globals, functions) =
                                               ("ascii", [Int]);
                                               ("isCompDivisible", [Int]);
                                               ("divisible", [Int]);
+                                              ("power", [Int]);
                                               ("characterLocation", [Int]);
                                               ("divisible", [Int]);
                                               ("int_to_char", [String]);

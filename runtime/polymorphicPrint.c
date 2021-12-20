@@ -138,6 +138,24 @@ int divisible(int x, int y) {
 }
 
 
+int power(int x, int y) { //Exponentiation by squaring
+
+	int result = 1;
+    for (;;)
+    {
+        if (y & 1)
+            result *= x;
+        y >>= 1;
+        if (!y)
+            break;
+        x *= x;
+    }
+
+    return result;
+
+}
+
+
 #ifdef BUILD_TEST
 int main()
 {

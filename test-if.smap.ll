@@ -17,6 +17,8 @@ declare i32 @isCompDivisible(i32)
 
 declare i32 @divisible(i32, i32)
 
+declare i32 @power(i32, i32)
+
 declare i32 @ceilFloat(double)
 
 declare i32 @ascii(i8*)
