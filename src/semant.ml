@@ -97,6 +97,9 @@ let check(globals, functions) =
                                               ("absolute", [Int]);
                                               ("ceilFloat", [Float]);
                                               ("ascii", [Int]);
+                                              ("isCompDivisible", [Int]);
+                                              ("divisible", [Int]);
+                                              ("int_to_char", [String]);
                                               ("stringReverse", [Void]);
                                               ("testMakeStruct", [Void]);
                                               ("bad_add_head", [Int]);

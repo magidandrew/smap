@@ -14,7 +14,13 @@ declare i32 @printstr(i8*)
 
 declare i32 @absolute(i32)
 
+declare i32 @isCompDivisible(i32)
+
 declare double @ceilFloat(double)
+
+declare i32 @ascii(i8*)
+
+declare i8* @int_to_char(i32)
 
 declare i32 @stringLength(i8*)
 

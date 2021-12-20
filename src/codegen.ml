@@ -134,11 +134,17 @@ let translate (globals, functions) =
   let absolute_t: L.lltype = L.function_type i32_t [| i32_t |] in
   let absolute_func : L.llvalue = L.declare_function "absolute" absolute_t the_module in
 
+  let isCompDivisible_t: L.lltype = L.function_type i32_t [| i32_t |] in
+  let isCompDivisible_func : L.llvalue = L.declare_function "isCompDivisible" isCompDivisible_t the_module in
+
   let ceilFloat_t: L.lltype = L.function_type float_t [| float_t |] in
   let ceilFloat_func : L.llvalue = L.declare_function "ceilFloat" ceilFloat_t the_module in
 
   let ascii_t: L.lltype = L.function_type i32_t [| L.pointer_type i8_t |] in
   let ascii_func : L.llvalue = L.declare_function "ascii" ascii_t the_module in
+
+  let int_to_char_t: L.lltype = L.function_type str [| i32_t|] in
+  let int_to_char_func : L.llvalue = L.declare_function "int_to_char" int_to_char_t the_module in
 
   let stringLength_t: L.lltype = L.function_type i32_t [| L.pointer_type i8_t |] in
   let stringLength_func: L.llvalue = L.declare_function "stringLength" stringLength_t the_module in
@@ -377,6 +383,12 @@ let translate (globals, functions) =
     | SFunCall ("ceilFloat", [e]) ->
     L.build_call ceilFloat_func [| (expr builder e) |]
     "ceilFloat" builder
+    | SFunCall ("int_to_char", [e]) ->
+    L.build_call int_to_char_func [| (expr builder e) |]
+    "int_to_char" builder
+    | SFunCall ("isCompDivisible", [e]) ->
+    L.build_call isCompDivisible_func [| (expr builder e) |]
+    "isCompDivisible" builder
     | SFunCall ("ascii", [e]) ->
     L.build_call ascii_func [| (expr builder e) |]
     "ascii" builder

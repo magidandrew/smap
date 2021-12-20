@@ -1,6 +1,7 @@
-
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <regex.h>
 // void printstr(const char *str)
 // {
 // 	puts(str);
@@ -10,10 +11,10 @@
 void printb(int x)
 {
 	if(x){
-        printf("true\n");
+        printf("true");
 	}
 	else{
-		printf("false\n");	
+		printf("false");	
 	}
 	
 }
@@ -25,7 +26,7 @@ void printint(int x)
 
 void printstr(char* x)
 {
-	printf("%s\n", x);
+	printf("%s", x);
 }
 
 
@@ -68,9 +69,17 @@ void stringReverse(char* x) {
 int ascii(char* x) {
 
 	int ascii_val = (int) *x;
-
 	return ascii_val;
+}
 
+
+char* int_to_char(int x) {
+    
+    char z = x;
+	char *str = malloc(2);
+	str[0] = z;
+	str[1] = '\0';
+    return str;
 }
 
 
@@ -78,7 +87,31 @@ float ceilFloat(float x) {
 	return 100.0;
 }
 
+int characterLocation(char* x, char *y) {
 
+    int z = 0;
+	for(;*x;*x++) {
+	    
+	    if(*x == y[0]) {
+	        return z;
+	    }
+	    z = z + 1;
+	}
+
+	return -1;
+
+}
+
+
+int isCompDivisible(int x) {
+
+	if(x%2 == 0) {
+		return 1;
+	}
+
+	return 0;
+
+}
 
 
 #ifdef BUILD_TEST
