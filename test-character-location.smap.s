@@ -1,11 +1,6 @@
 	.text
 	.file	"Smap"
-	.section	.rodata.cst8,"aM",@progbits,8
-	.p2align	3               # -- Begin function main
-.LCPI0_0:
-	.quad	4622044297570340045     # double 10.4
-	.text
-	.globl	main
+	.globl	main                    # -- Begin function main
 	.p2align	4, 0x90
 	.type	main,@function
 main:                                   # @main
@@ -13,13 +8,10 @@ main:                                   # @main
 # %bb.0:                                # %entry
 	subq	$24, %rsp
 	.cfi_def_cfa_offset 32
-	movabsq	$4622044297570340045, %rax # imm = 0x4024CCCCCCCCCCCD
-	movq	%rax, 16(%rsp)
-	movsd	.LCPI0_0(%rip), %xmm0   # xmm0 = mem[0],zero
-	callq	ceilFloat@PLT
-	movl	%eax, 12(%rsp)
-	movl	%eax, %edi
-	callq	printint@PLT
+	movl	$10, 12(%rsp)
+	leaq	.Lthe_str(%rip), %rdi
+	movq	%rdi, 16(%rsp)
+	callq	printstr@PLT
 	xorl	%eax, %eax
 	addq	$24, %rsp
 	.cfi_def_cfa_offset 8
@@ -43,5 +35,10 @@ main:                                   # @main
 .Lfmt.1:
 	.asciz	"%f\n"
 	.size	.Lfmt.1, 4
+
+	.type	.Lthe_str,@object       # @the_str
+.Lthe_str:
+	.asciz	"hello\";\n    string y = \"e"
+	.size	.Lthe_str, 26
 
 	.section	".note.GNU-stack","",@progbits

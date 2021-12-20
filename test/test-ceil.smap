@@ -1,5 +1,11 @@
 int main() {
-    float x = ceilFloat(10.1);
-    print(x);
-    print(10.1);
+
+    float x = 10.4;
+    
+    int y = ceilFloat(x);
+
+    print(y);
+
+    return 0;
+
 }

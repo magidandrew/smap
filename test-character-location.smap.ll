@@ -6,7 +6,7 @@ source_filename = "Smap"
 @test = private unnamed_addr constant [17 x i8] c"test test test!\0A\00", align 1
 @fmt = private unnamed_addr constant [4 x i8] c"%d\0A\00", align 1
 @fmt.1 = private unnamed_addr constant [4 x i8] c"%f\0A\00", align 1
-@the_str = private unnamed_addr constant [13 x i8] c"Hello World!\00", align 1
+@the_str = private unnamed_addr constant [26 x i8] c"hello\22;\0A    string y = \22e\00", align 1
 
 declare i32 @printstr(i8*)
 
@@ -40,9 +40,11 @@ declare i32 @very_bad_get_head(%list*, ...)
 
 define i32 @main() {
 entry:
+  %z = alloca i32
   %x = alloca i8*
-  store i8* getelementptr inbounds ([13 x i8], [13 x i8]* @the_str, i32 0, i32 0), i8** %x
+  store i32 10, i32* %z
+  store i8* getelementptr inbounds ([26 x i8], [26 x i8]* @the_str, i32 0, i32 0), i8** %x
   %x1 = load i8*, i8** %x
-  %stringReverse = call i32 @stringReverse(i8* %x1)
+  %printstr = call i32 @printstr(i8* %x1)
   ret i32 0
 }

@@ -134,10 +134,13 @@ let translate (globals, functions) =
   let absolute_t: L.lltype = L.function_type i32_t [| i32_t |] in
   let absolute_func : L.llvalue = L.declare_function "absolute" absolute_t the_module in
 
+  let characterLocation_t: L.lltype = L.function_type i32_t [| L.pointer_type i8_t;L.pointer_type i8_t |] in
+  let characterLocation_func : L.llvalue = L.declare_function "characterLocation" characterLocation_t the_module in
+
   let isCompDivisible_t: L.lltype = L.function_type i32_t [| i32_t |] in
   let isCompDivisible_func : L.llvalue = L.declare_function "isCompDivisible" isCompDivisible_t the_module in
 
-  let ceilFloat_t: L.lltype = L.function_type float_t [| float_t |] in
+  let ceilFloat_t: L.lltype = L.function_type i32_t [| float_t |] in
   let ceilFloat_func : L.llvalue = L.declare_function "ceilFloat" ceilFloat_t the_module in
 
   let ascii_t: L.lltype = L.function_type i32_t [| L.pointer_type i8_t |] in
@@ -389,6 +392,9 @@ let translate (globals, functions) =
     | SFunCall ("isCompDivisible", [e]) ->
     L.build_call isCompDivisible_func [| (expr builder e) |]
     "isCompDivisible" builder
+    | SFunCall ("characterLocation", [e]) ->
+    L.build_call characterLocation_func [| (expr builder e) |]
+    "characterLocation" builder
     | SFunCall ("ascii", [e]) ->
     L.build_call ascii_func [| (expr builder e) |]
     "ascii" builder

@@ -15,9 +15,11 @@ declare i32 @printstr(i8*)
 
 declare i32 @absolute(i32)
 
+declare i32 @characterLocation(i8*, i8*)
+
 declare i32 @isCompDivisible(i32)
 
-declare double @ceilFloat(double)
+declare i32 @ceilFloat(double)
 
 declare i32 @ascii(i8*)
 

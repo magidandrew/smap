@@ -83,8 +83,17 @@ char* int_to_char(int x) {
 }
 
 
-float ceilFloat(float x) {
-	return 100.0;
+int ceilFloat(double x) {
+
+	int y = (int) x;
+	float z = x - y;
+
+	if(z >= 0.5) {
+		return y+1;
+	}
+
+	return y;
+
 }
 
 int characterLocation(char* x, char *y) {

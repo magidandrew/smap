@@ -95,9 +95,10 @@ let check(globals, functions) =
                                               ("printstr", [Void]);
                                               ("stringLength", [Int]);
                                               ("absolute", [Int]);
-                                              ("ceilFloat", [Float]);
+                                              ("ceilFloat", [Int]);
                                               ("ascii", [Int]);
                                               ("isCompDivisible", [Int]);
+                                              ("characterLocation", [Int]);
                                               ("divisible", [Int]);
                                               ("int_to_char", [String]);
                                               ("stringReverse", [Void]);
