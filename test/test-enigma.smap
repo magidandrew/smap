@@ -41,11 +41,19 @@ list int encryption_decryption(list int rotor_one_e_input,list int rotor_one_e_o
 	
 }
 
-/*
-list int initialize_input_text(list int user_text, int size_message) {
+
+list int initialize_input_text(string message_user,list int input_list_message) {
     
+    int message_length_input = stringLength(message_user);
+    int message_length_init = 0;
+
+    /*for(message_length_init = 0; message_length_init < message_length_input;message_length_init=message_length_init+1) {
+        print(message_length_init);
+    }*/
+
+    return input_list_message;
 }
-*/
+
 
 
 int main() {
@@ -53,10 +61,9 @@ int main() {
     int location_on_initialization_array = 0;
     int plugboard_input_count = 0;
     list int temp = [1];
-    string messagez = "ZEROSIXHUNDREEDHOURSWEATHERTODAYISCLEARRAININTHEEVENINGHEILHITLER";
     list int input_text = [1];
-    int what_is_len = corresponding_int(messagez,0);
-
+    string messagez = "ZEROSIXHUNDREEDHOURSWEATHERTODAYISCLEARRAININTHEEVENINGHEILHITLER";
+    
 
 
     //ToDo: Define the key -> SIG (Rotor) PMP (Ring)
@@ -101,8 +108,10 @@ int main() {
     rotor_three_out = rotor_shift(rotor_three_out,location_on_initialization_array);
     
     temp = encryption_decryption(rotor_one_in,rotor_one_out,rotor_two_in,rotor_two_out,rotor_three_in,rotor_three_out,input_text);
+    
+    input_text = initialize_input_text(messagez,input_text);
 
-    print(what_is_len);
+    print(input_text[0]);
     
 
 
