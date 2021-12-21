@@ -28,13 +28,7 @@ int main() {
     list int rotor_one_in = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25];
 
 
-    print(rotor_three_out[0]);
-    print(rotor_three_out[9]);
-    print(rotor_three_in[9]);
-    print(rotor_two_out[9]);
-    print(rotor_two_in[9]);
-    print(rotor_one_out[9]);
-    print(rotor_one_in[9]);
+    
 
 
     return 0;
