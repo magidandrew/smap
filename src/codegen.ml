@@ -280,22 +280,72 @@ let translate (globals, functions) =
        -> raise (Failure("semant should have caught this misuse of .length!")) )
     | SListElement (listId,index,rest)
     -> let eltType = fst index in
-       let theList = expr builder listId in
-       let elt = L.build_call get_at_func [| theList; expr builder index|]
+       (match eltType with
+         A.List::tl 
+         -> let theList = expr builder listId in
+              let rec deRef ((typs,i)::rest) handle = 
+              let elt = L.build_call get_at_func [| handle; expr builder (typs,i)|]
+                  "get_at" builder in
+             
+              match typs with
+                [A.Int] 
+                -> let eltAsPtr = L.build_bitcast elt (L.pointer_type i32_t) "eltAsPtr" builder  in
+                L.build_load eltAsPtr "eltDeref" builder
+              | [A.Float] 
+              ->  let eltAsPtr = L.build_bitcast elt (L.pointer_type float_t) "eltAsPtr" builder in
+              L.build_load eltAsPtr "eltDeref" builder
+              | [A.Char] 
+              -> let eltAsPtr = L.build_bitcast elt (L.pointer_type i8_t) "eltAsPtr" builder in
+                 L.build_load eltAsPtr "eltDeref" builder
+              | [A.String]
+              -> let eltAsPtr = L.build_bitcast elt (L.pointer_type list_t) "eltAsPtr" builder in
+              L.build_load eltAsPtr "eltDeref" builder
+              | A.List::t 
+              -> 
+              if (List.length rest) = 0 
+              then L.build_bitcast theList (L.pointer_type list_t) "eltAsPtr" builder
+              else deRef rest (L.build_bitcast elt (L.pointer_type list_t) "eltAsPtr" builder)
+              | [A.Bool] 
+              -> raise(Failure("fill in for bool"))
+              | A.Prob::tl 
+              -> raise(Failure("fill in for prob someday... >.<\""))
+            in            
+            deRef (index::rest) theList  
+         |_ 
+         -> let theList = expr builder listId in
+            let elt = L.build_call get_at_func [| theList; expr builder index|]
                  "get_at" builder in
-       let eltAsPtr = match eltType with
+            let eltAsPtr = match eltType with
                        [A.Int] -> L.build_bitcast elt (L.pointer_type i32_t) "eltAsPtr" builder  
                        | [A.Float] -> L.build_bitcast elt (L.pointer_type float_t) "eltAsPtr" builder
                        | [A.Char] -> L.build_bitcast elt (L.pointer_type i8_t) "eltAsPtr" builder 
                        | [A.Bool] -> raise(Failure("fill in for bool"))
-                       | [A.Prob] -> raise(Failure("fill in for prob someday... >.<\""))
+                       | A.Prob::tl -> raise(Failure("fill in for prob someday... >.<\""))
                       in  
-       let eltDeRef = L.build_load eltAsPtr "eltDeref" builder in
-       eltDeRef     
+            let eltDeRef = L.build_load eltAsPtr "eltDeref" builder in
+            eltDeRef)     
     | SList_lit elts
     -> (match theTyp with
-        [A.List;A.List;A.Char]
-        -> raise(Failure("lists of strings aren't supported yet D: "))
+        [A.List;A.List;u]
+        -> (*create the sublists*)
+        let sublists = List.map (expr builder) elts in
+        (* cast the list pointers to char pointers*)
+        let toChar l = L.build_bitcast l (L.pointer_type i8_t) "toChar" builder in
+        let charPtrs = List.map toChar sublists in
+        let addElt lst c =
+          L.build_call push_back_func [| lst; c |]
+          "push_back" builder
+        in
+        (* allocate list struct *)
+        let aList = L.build_alloca (L.pointer_type list_t) "theList" in
+        (* get pointer to list struct *)
+        let anAllocatedList = L.build_malloc list_t "listAddr" builder in
+        (* initialize the list with list_init *)
+        let _ =  L.build_call init_list_func [| anAllocatedList|]
+        "init_list" builder in
+        let _ = List.map (addElt anAllocatedList) charPtrs
+        (* return the pointer to the now-intialized list*)
+        in anAllocatedList
         | [A.List;u] (*simple list of one type - (no lists of lists here)*)
         -> (match elts with 
             [] (*CASE: EMPTY LIST *)

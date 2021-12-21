@@ -127,10 +127,18 @@ let check(globals, functions) =
   (* Define rules for the type checking *)
 
   (***************** list type checking helpers ************************)
-  let getEltType lst:typ_name = 
+  (* let getEltType lst:typ_name = 
     let rec eatList (h::t) = 
       if (h = List) 
       then eatList t 
+      else (h::t)     
+    in
+    eatList lst
+  in *)
+  let getEltType lst:typ_name = 
+    let eatList (h::t) = 
+      if (h = List) 
+      then t 
       else (h::t)     
     in
     eatList lst
@@ -182,16 +190,34 @@ let check(globals, functions) =
                       ->  if (List.hd typs) != List
                           then raise( Failure ("Cannot use bracket syntax on non list-type"))
                           else 
-                            let check_index = (fun ty (Index i) ->
+                            (*********************************)
+                            let rec check_index2 ty indicies =
+                              match indicies with
+                              [] -> []
+                              | ((Index i)::rest) ->
+
+                              let v = check_expr i in
+                              let recurse = check_index2 (List.tl ty) rest in
+                              if fst v = [Int] then ((ty,SIndex(v))::recurse)
+                              else raise (Failure ("index must be of type int but it's"^ string_of_typ_name (fst v)))
+                            in
+                            let checkers = check_index2 (List.tl typs) (e1::rest) in
+                            let e1' = List.hd checkers 
+                            and rest' = List.tl checkers in
+                            let inner = fst (List.hd (List.rev checkers)) in
+                            let res = (inner, SListElement ((inner,SId(s)),e1',rest')) in res)
+                            (********************************)
+                            (* let check_index = (fun ty (Index i) ->
                               let v = check_expr i in
                               if fst v = [Int] then (ty,SIndex(v))
                               else raise (Failure ("index must be of type int but it's"^ string_of_typ_name (fst v))) )
                             in
+                            
                             let eltType = getEltType typs in
                             let checked = List.map (check_index eltType) (e1::rest) in
                             let e1' = List.hd checked
                             and rest' = List.tl checked in
-                            (eltType, SListElement ((eltType,SId(s)),e1',rest')) )
+                            (eltType, SListElement ((eltType,SId(s)),e1',rest')) ) *)
     | ListAddHead (e1, e2)
     -> let e1' = check_expr e1
        and e2' = check_expr e2 in
