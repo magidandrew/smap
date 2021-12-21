@@ -1,5 +1,12 @@
 int main(){
     string song = ['y','o','\n','h','i','8'];
+    list char duet = "yodelayheehoo~~~!";
+    string melody = "birthday";
+    duet[4] = 'O';    
+    melody[4] = '8';
+    println(melody);
+    println(melody[0]);
+    println(duet);
     print(song);
     return(0);
 }
