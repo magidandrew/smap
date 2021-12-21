@@ -166,6 +166,9 @@ let translate (globals, functions) =
   let list_length_t : L.lltype = L.var_arg_function_type i32_t [|L.pointer_type list_t|] in
   let list_length_func : L.llvalue = L.declare_function "list_length" list_length_t the_module in
 
+  let modulus_operation_t: L.lltype = L.var_arg_function_type i32_t [|i32_t;i32_t|] in
+  let modulus_operation_func : L.llvalue = L.declare_function "modulus_operation" modulus_operation_t the_module in
+
   let get_length_t :L.lltype = L.var_arg_function_type i32_t [|L.pointer_type prob_t|] in
   let get_length_func : L.llvalue = L.declare_function "get_length" get_length_t the_module in
 
@@ -494,6 +497,9 @@ let translate (globals, functions) =
     | SFunCall ("corresponding_int", [e;e2]) ->
     L.build_call corresponding_int_func [| (expr builder e);(expr builder e2) |]
     "corresponding_int" builder
+    | SFunCall ("modulus_operation", [e;e2]) ->
+    L.build_call modulus_operation_func [| (expr builder e);(expr builder e2) |]
+    "modulus_operation" builder
     | SFunCall ("very_bad_get_head", [e])
     -> let arg = (expr builder e) in
        L.build_call very_bad_get_head_func [| arg |]

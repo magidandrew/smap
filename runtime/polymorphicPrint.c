@@ -47,6 +47,10 @@ int corresponding_int(char* x, int index) {
 }
 
 
+int modulus_operation(int x, int y) {
+	return x%y;
+}
+
 
 
 #ifdef BUILD_TEST
