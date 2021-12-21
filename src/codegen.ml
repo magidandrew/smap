@@ -134,6 +134,9 @@ let translate (globals, functions) =
   let printb_t: L.lltype = L.function_type i32_t [| i1_t |] in
   let printb_func : L.llvalue = L.declare_function "printb" printb_t the_module in
 
+  let stringLength_t: L.lltype = L.function_type i32_t [| L.pointer_type i8_t |] in
+  let stringLength_func: L.llvalue = L.declare_function "stringLength" stringLength_t the_module in
+
   let testMakeStruct_t: L.lltype = L.function_type dummy_t [| L.pointer_type i8_t;i32_t |] in
   let testMakeStruct_func : L.llvalue = L.declare_function "testMakeStruct" testMakeStruct_t the_module in
 
@@ -482,6 +485,9 @@ let translate (globals, functions) =
     | SFunCall ("printint", [e])
     -> L.build_call printint_func [| (expr builder e) |]
        "printint" builder
+    | SFunCall ("stringLength", [e]) ->
+       L.build_call stringLength_func [| (expr builder e) |]
+       "stringLength" builder
     | SFunCall ("very_bad_get_head", [e])
     -> let arg = (expr builder e) in
        L.build_call very_bad_get_head_func [| arg |]

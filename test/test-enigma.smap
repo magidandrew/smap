@@ -42,6 +42,9 @@ list int encryption_decryption(list int rotor_one_e_input,list int rotor_one_e_o
 }
 
 
+list int initialize_input_text(list int user_text, int size_message) {
+    
+}
 
 
 
@@ -50,8 +53,11 @@ int main() {
     int location_on_initialization_array = 0;
     int plugboard_input_count = 0;
     list int temp = [1];
-    string message = "ZEROSIXHUNDREEDHOURSWEATHERTODAYISCLEARRAININTHEEVENINGHEILHITLER";
+    string messagez = "ZEROSIXHUNDREEDHOURSWEATHERTODAYISCLEARRAININTHEEVENINGHEILHITLER";
     list int input_text = [1];
+    int what_is_len = stringLength(messagez);
+
+
 
 
 
@@ -99,7 +105,7 @@ int main() {
     
     temp = encryption_decryption(rotor_one_in,rotor_one_out,rotor_two_in,rotor_two_out,rotor_three_in,rotor_three_out,input_text);
 
-    print(temp[0]);
+    print(what_is_len);
     
 
 

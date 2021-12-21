@@ -26,6 +26,33 @@ void printstr(char* x)
 	printf("%s", x);
 }
 
+
+//Methods for enigma
+
+int stringLength(char* x) {
+	if (*x == '\0') {
+		return 0;
+	}
+
+  return (1 + stringLength(++x));
+	
+}
+
+
+int corresponding_int(char* x, int index) {
+
+	char current_elem = x[index];
+	int ascii_val = (int) current_elem;
+	ascii_val = ascii_val - 65;
+
+	return ascii_val;
+
+
+}
+
+
+
+
 #ifdef BUILD_TEST
 int main()
 {
