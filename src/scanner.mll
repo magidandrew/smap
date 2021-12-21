@@ -99,7 +99,7 @@ rule tokenize = parse
 | "return"              { RETURN }
 
 (* literals *)
-| ['''] ((letter | digit | punc | ['"'] | otherChar ) as c)['''] { CHAR_LIT(c)}                     (* char literal   *)
+| ['''] ((letter | digit | punc | ['"'] | otherChar | whitespace ) as c)['''] { CHAR_LIT(c)}                     (* char literal   *)
 | ['"'] ((letter | digit | punc | ['''] | otherChar| whitespace)* as s )['"'] { STRING_LIT(s)}       (* string literal *)
 | ['0'-'9']+ as lit                                      { INT_LIT(int_of_string lit) }     (* int literal    *)
 | ['0'-'9']* ['.'] ['0'-'9']+ as flit                    { FLOAT_LIT(float_of_string flit)} (* float literal  *)

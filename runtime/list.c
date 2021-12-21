@@ -157,6 +157,14 @@ void print_list_float(list *l) {
     printf("%f]\n", *(double*)l->data[(l->size)-1]);
 }
 
+void print_list_char(list *l) {
+    printf("\"");
+    for (int i=0; i<(l->size)-1; i++){
+        printf("%c", *l->data[i]);
+    }
+    printf("%c\"\n", *l->data[(l->size)-1]);
+}
+
 #ifdef BUILD_TEST
 int main() {
 	list l;

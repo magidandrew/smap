@@ -131,6 +131,12 @@ let translate (globals, functions) =
   let printstr_t: L.lltype = L.function_type i32_t [| L.pointer_type i8_t |] in
   let printstr_func : L.llvalue = L.declare_function "printstr" printstr_t the_module in
 
+  let printchar_t : L.lltype = L.function_type i32_t [| i8_t |] in
+  let printchar_func : L.llvalue = L.declare_function "printchar" printchar_t the_module in
+
+  let print_list_char_t : L.lltype = L.function_type i32_t [| L.pointer_type list_t |] in
+  let print_list_char_func : L.llvalue = L.declare_function "print_list_char" print_list_char_t the_module in
+
   let printb_t: L.lltype = L.function_type i32_t [| i1_t |] in
   let printb_func : L.llvalue = L.declare_function "printb" printb_t the_module in
 
@@ -175,7 +181,6 @@ let translate (globals, functions) =
   let print_list_float_t : L.lltype = L.var_arg_function_type i32_t [|L.pointer_type list_t|] in
   let print_list_float_func : L.llvalue = L.declare_function "print_list_float" print_list_float_t the_module in
 
-(*list *get_vals(prob *p) { return &p->vals; }*)
   let get_vals_t : L.lltype = L.var_arg_function_type (L.pointer_type list_t) [|L.pointer_type prob_t|] in
   let get_vals_func : L.llvalue = L.declare_function "get_vals" get_vals_t the_module in
 
@@ -247,6 +252,8 @@ let translate (globals, functions) =
     -> L.const_int i1_t (if b then 1 else 0)
     | SFloat_lit l
     -> L.const_float float_t l
+    | SChar_lit l
+    -> L.const_int i8_t (Char.code l)
     | SNoexpr
     -> L.const_int i32_t 0
     | SId s
@@ -270,7 +277,7 @@ let translate (globals, functions) =
        let eltAsPtr = match eltType with
                        [A.Int] -> L.build_bitcast elt (L.pointer_type i32_t) "eltAsPtr" builder  
                        | [A.Float] -> L.build_bitcast elt (L.pointer_type float_t) "eltAsPtr" builder
-                       | [A.Char] -> raise(Failure("fill in for char"))
+                       | [A.Char] -> L.build_bitcast elt (L.pointer_type i8_t) "eltAsPtr" builder 
                        | [A.Bool] -> raise(Failure("fill in for bool"))
                        | [A.Prob] -> raise(Failure("fill in for prob someday... >.<\""))
                       in  
@@ -309,7 +316,7 @@ let translate (globals, functions) =
               let tmp = match (vtype) with
                          [A.Int] -> L.build_alloca (L.pointer_type i32_t) "tmp" builder
                          | [A.Float] -> L.build_alloca (L.pointer_type float_t) "tmp" builder
-                         | [A.Char] -> raise(Failure("fill in for char"))
+                         | [A.Char] -> L.build_alloca (L.pointer_type i8_t) "tmp" builder
                          | [A.Bool] -> raise(Failure("fill in for bool"))
                          | [A.Prob] -> raise(Failure("fill in for prob someday... >.<\""))
               in
@@ -317,7 +324,7 @@ let translate (globals, functions) =
               let heapAddr = match (vtype) with
                               [A.Int] -> L.build_malloc i32_t "tmpAddr" builder
                               | [A.Float] -> L.build_malloc float_t "tmpAddr" builder
-                              | [A.Char] -> raise(Failure("fill in for char"))
+                              | [A.Char] -> L.build_malloc i8_t "tmpAddr" builder
                               | [A.Bool] -> raise(Failure("fill in for bool"))
                               | [A.Prob] -> raise(Failure("fill in for prob someday... >.<\""))
               in
@@ -452,7 +459,7 @@ let translate (globals, functions) =
               let tmp = match (vtype) with
                         [A.Int] -> L.build_alloca (L.pointer_type i32_t) "tmp" builder
                         | [A.Float] -> L.build_alloca (L.pointer_type float_t) "tmp" builder
-                        | [A.Char] -> raise(Failure("fill in for char"))
+                        | [A.Char] -> L.build_alloca (L.pointer_type i8_t) "tmp" builder
                         | [A.Bool] -> raise(Failure("fill in for bool"))
                         | [A.Prob] -> raise(Failure("fill in for prob someday... >.<\""))
               in
@@ -460,7 +467,7 @@ let translate (globals, functions) =
               let heapAddr = match (vtype) with
                               [A.Int] -> L.build_malloc i32_t "tmpAddr" builder
                               | [A.Float] -> L.build_malloc float_t "tmpAddr" builder
-                              | [A.Char] -> raise(Failure("fill in for char"))
+                              | [A.Char] -> L.build_malloc i8_t "tmpAddr" builder
                               | [A.Bool] -> raise(Failure("fill in for bool"))
                               | [A.Prob] -> raise(Failure("fill in for prob someday... >.<\""))
               in
@@ -499,12 +506,12 @@ let translate (globals, functions) =
        L.build_call printstr_func [| newLine_str |] "printstr" builder
     | SFunCall ("print",[(typeList,_) as arg])
     -> (match typeList with
-        [A.Int]
+          [A.Int]
         -> L.build_call printint_func [| (expr builder arg) |]
            "printint" builder
-        | [A.Prob;A.Int] ->
-          L.build_call print_prob_int_debug_func [| (expr builder arg) |]
-           "print_prob_int_debug" builder
+        | [A.Char] ->
+          L.build_call printchar_func [| (expr builder arg) |]
+           "printchar" builder
         | [A.Bool]
         -> L.build_call printb_func [| (expr builder arg) |]
             "printb" builder
@@ -520,6 +527,9 @@ let translate (globals, functions) =
         | [A.List; A.Float]
         -> L.build_call print_list_float_func [| (expr builder arg) |]
         "print_list_float" builder
+        | [A.List; A.Char]
+        -> L.build_call print_list_char_func [| (expr builder arg) |]
+        "print_list_char" builder
         | _
         -> raise(Failure("printing type "^A.string_of_typ_name typeList ^ "not yet supported")))
     | SFunCall ("print_list_int", [e]) ->

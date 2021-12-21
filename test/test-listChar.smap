@@ -1,0 +1,5 @@
+int main (){
+    list char song = ['y','0','d','e','l'];
+    println(song);
+    return(0);
+}

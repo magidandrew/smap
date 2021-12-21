@@ -5,9 +5,7 @@ int main(){
 	list float probs = num#;
 	for(i=0; i < num.length; i = i+1){
 		println(probs[i]);
-		//print(num.length);
 	}
-	//print(num.length);
 }
 
 

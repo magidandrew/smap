@@ -143,6 +143,7 @@ let check(globals, functions) =
       (theFunc.typ_name, SFunCall(fname, (List.map check_expr args)))
     | String_lit str -> ([String], SString_lit str)
     | Bool_lit bl -> ([Bool],SBool_lit bl)
+    | Char_lit c -> ([Char],SChar_lit c)
     | Int_lit num -> ([Int], SInt_lit num)
     | Float_lit flt -> ([Float], SFloat_lit flt)
     | Length p 

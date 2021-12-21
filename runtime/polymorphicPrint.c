@@ -26,6 +26,10 @@ void printstr(char* x)
 	printf("%s", x);
 }
 
+void printchar(char c){
+	printf("%c",c);
+}
+
 #ifdef BUILD_TEST
 int main()
 {
