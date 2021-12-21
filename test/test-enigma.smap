@@ -12,6 +12,26 @@ int character_location(list int x,int y){
 }
 
 
+list int rotor_shift(list int rotor_input,int position){
+	int character_holder=rotor_input[0];
+    int k=0;
+    int l=0;
+    int m=0;
+	for(k=0;k<position;k=k+1){
+		character_holder=rotor_input[0];
+        for(l=0;l<25;l=l+1){
+            m = m + 1;
+			rotor_input[l]=rotor_input[m];
+			if(l==24){
+				rotor_input[25]=character_holder;
+			}
+		}
+	}
+    return rotor_input;
+	
+}
+
+
 int main() {
 
     //ToDo: Rotor 3 initialize
