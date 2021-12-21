@@ -43,11 +43,7 @@ int corresponding_int(char* x, int index) {
 
 	char current_elem = x[index];
 	int ascii_val = (int) current_elem;
-	ascii_val = ascii_val - 65;
-
-	return ascii_val;
-
-
+	return ascii_val - 65;
 }
 
 

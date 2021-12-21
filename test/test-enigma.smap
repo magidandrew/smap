@@ -55,10 +55,7 @@ int main() {
     list int temp = [1];
     string messagez = "ZEROSIXHUNDREEDHOURSWEATHERTODAYISCLEARRAININTHEEVENINGHEILHITLER";
     list int input_text = [1];
-    int what_is_len = stringLength(messagez);
-
-
-
+    int what_is_len = corresponding_int(messagez,0);
 
 
 

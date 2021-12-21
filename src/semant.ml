@@ -93,6 +93,7 @@ let check(globals, functions) =
                                               ("bad_add_head", [Int]);
                                               ("message_to_int_list", [Void]);
                                               ("stringLength", [Int]);
+                                              ("corresponding_int", [Int]);
                                               ("very_bad_get_head",[Int]);
                                               ("init_list", [Int]);
                                               ("push_back", [Int]);

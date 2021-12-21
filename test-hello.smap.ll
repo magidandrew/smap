@@ -16,6 +16,8 @@ declare i32 @printb(i1)
 
 declare i32 @stringLength(i8*)
 
+declare i32 @corresponding_int(i8*, i32)
+
 declare { i8*, i32 } @testMakeStruct(i8*, i32)
 
 declare i32 @printint(i32)
