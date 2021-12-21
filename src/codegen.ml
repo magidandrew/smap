@@ -490,7 +490,7 @@ let translate (globals, functions) =
        "printint" builder
     | SFunCall ("stringLength", [e]) ->
        L.build_call stringLength_func [| (expr builder e) |]
-       "stringLength" builder (*corresponding_int*)
+       "stringLength" builder
     | SFunCall ("corresponding_int", [e;e2]) ->
     L.build_call corresponding_int_func [| (expr builder e);(expr builder e2) |]
     "corresponding_int" builder

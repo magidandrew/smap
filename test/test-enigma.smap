@@ -8,7 +8,6 @@ int character_location(list int x,int y){
             return i;
         }
     }
-    
     return j;
 	
 }
@@ -43,14 +42,22 @@ list int encryption_decryption(list int rotor_one_e_input,list int rotor_one_e_o
 }
 
 
+int return_cor_int(string what_message, int what_index) {
+    int res = corresponding_int(what_message,what_index);
+    return res;
+}
+
+
 list int initialize_input_text(string message_user,list int input_list_message) {
     
     int message_length_input = stringLength(message_user);
     int message_length_init = 0;
+    int current_int_val = 0;
 
-    /*for(message_length_init = 0; message_length_init < message_length_input;message_length_init=message_length_init+1) {
-        print(message_length_init);
-    }*/
+    for(message_length_init = 0; message_length_init < message_length_input;message_length_init=message_length_init+1) {
+        current_int_val = return_cor_int(message_user,message_length_init);
+        input_list_message[message_length_init] = current_int_val;
+    }
 
     return input_list_message;
 }
@@ -64,7 +71,7 @@ int main() {
     list int temp = [1];
     list int input_text = [1];
     string messagez = "ZEROSIXHUNDREEDHOURSWEATHERTODAYISCLEARRAININTHEEVENINGHEILHITLER";
-    
+    int counts = corresponding_int(messagez,3);
 
 
     //ToDo: Define the key -> SIG (Rotor) PMP (Ring)
