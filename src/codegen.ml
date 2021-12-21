@@ -59,7 +59,7 @@ let translate (globals, functions) =
   | A.Bool -> i1_t
   | A.Float -> float_t
   | A.Void -> void_t
-  | A.String -> str
+  | A.String -> L.pointer_type list_t
   | A.Prob -> L.pointer_type prob_t (*need to change to prob_t eventually*)
   | A.List -> L.pointer_type list_t
   | _ -> void_t (*add in prob, string, and list types later! *)
@@ -247,7 +247,16 @@ let translate (globals, functions) =
     | SIndex i
     -> expr builder i
     | SString_lit s
-    -> L.build_global_stringptr s "the_str" builder
+    -> let len = String.length s in
+       let rec explode i m str acc = 
+        if i = m then acc
+        else let c = (String.get str i) in 
+        c::(explode (i+1) m str acc) in 
+       let chars = explode 0 len s [] in
+       let toCharNode c = ([A.Char],SChar_lit c) in
+       let asList = ([A.List;A.Char], SList_lit(List.map toCharNode chars)) in
+       (* L.build_global_stringptr s "the_str" builder *)
+       expr builder asList
     | SBool_lit b
     -> L.const_int i1_t (if b then 1 else 0)
     | SFloat_lit l
@@ -519,8 +528,8 @@ let translate (globals, functions) =
         -> L.build_call printf_func [| float_format_str ; (expr builder arg) |]
         "printf" builder
         | [A.String]
-        -> L.build_call printstr_func [| (expr builder arg) |]
-        "printstr" builder
+        -> L.build_call print_list_char_func [| (expr builder arg) |]
+        "print_list_char" builder
         | [A.List; A.Int]
         -> L.build_call print_list_int_func [| (expr builder arg) |]
         "print_list_int" builder

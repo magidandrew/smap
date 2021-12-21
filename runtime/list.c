@@ -146,7 +146,7 @@ void print_list_int(list *l) {
     for (int i=0; i<(l->size)-1; i++){
         printf("%d, ", *(int *)l->data[i]);
     }
-    printf("%d]\n", *(int *)l->data[(l->size)-1]);
+    printf("%d]", *(int *)l->data[(l->size)-1]);
 }
 
 void print_list_float(list *l) {
@@ -154,15 +154,14 @@ void print_list_float(list *l) {
     for (int i=0; i<(l->size)-1; i++){
         printf("%f, ", *(double *)l->data[i]);
     }
-    printf("%f]\n", *(double*)l->data[(l->size)-1]);
+    printf("%f]", *(double*)l->data[(l->size)-1]);
 }
 
 void print_list_char(list *l) {
-    printf("\"");
     for (int i=0; i<(l->size)-1; i++){
         printf("%c", *l->data[i]);
     }
-    printf("%c\"\n", *l->data[(l->size)-1]);
+    printf("%c", *l->data[(l->size)-1]);
 }
 
 #ifdef BUILD_TEST

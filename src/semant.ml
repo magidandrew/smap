@@ -3,6 +3,7 @@
 open Ast
 open Sast
 
+
 module StdLib = Pervasives
 module StringMap = Map.Make(struct
 type t = string
@@ -151,6 +152,7 @@ let check(globals, functions) =
       (match List.hd (fst p') with
           List -> ([Int],SLength(p'))
         | Prob -> ([Int],SLength(p'))
+        | String -> ([Int],SLength(p'))
         | _ -> raise( Failure ("length is only supported for prob and list type")))
     | ProbColon (lhs, rhs) -> 
       let lhs' = check_expr lhs
@@ -165,20 +167,31 @@ let check(globals, functions) =
                     (match (result) with
                       []
                       -> raise (Failure ("Semant: Could not find identifier "^s^" in tbl "^(print_scope scope)))
+                      | [String] 
+                      -> let check_index = 
+                         (fun ty (Index i) ->
+                         let v = check_expr i in
+                         if fst v = [Int] then (ty,SIndex(v))
+                         else raise (Failure ("index must be of type int but it's"^ string_of_typ_name (fst v))) )
+                         in
+                         let checked = List.map (check_index [Char]) (e1::rest) in
+                         let e1' = List.hd checked
+                         and rest' = List.tl checked in 
+                         ([Char], SListElement (([Char],SId(s)),e1',rest'))
                       | typs
-                      -> if (List.hd typs) != List
-                         then raise( Failure ("Cannot use bracket syntax on non list-type"))
-                         else 
-                          let check_index = (fun ty (Index i) ->
-                            let v = check_expr i in
-                            if fst v = [Int] then (ty,SIndex(v))
-                            else raise (Failure ("index must be of type int but it's"^ string_of_typ_name (fst v))) )
-                          in
-                          let eltType = getEltType typs in
-                          let checked = List.map (check_index eltType) (e1::rest) in
-                          let e1' = List.hd checked
-                          and rest' = List.tl checked in
-                          (eltType, SListElement ((eltType,SId(s)),e1',rest')) )
+                      ->  if (List.hd typs) != List
+                          then raise( Failure ("Cannot use bracket syntax on non list-type"))
+                          else 
+                            let check_index = (fun ty (Index i) ->
+                              let v = check_expr i in
+                              if fst v = [Int] then (ty,SIndex(v))
+                              else raise (Failure ("index must be of type int but it's"^ string_of_typ_name (fst v))) )
+                            in
+                            let eltType = getEltType typs in
+                            let checked = List.map (check_index eltType) (e1::rest) in
+                            let e1' = List.hd checked
+                            and rest' = List.tl checked in
+                            (eltType, SListElement ((eltType,SId(s)),e1',rest')) )
     | ListAddHead (e1, e2)
     -> let e1' = check_expr e1
        and e2' = check_expr e2 in

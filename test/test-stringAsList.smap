@@ -1,0 +1,5 @@
+int main(){
+    string song = ['y','o','\n','h','i','8'];
+    print(song);
+    return(0);
+}
