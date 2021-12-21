@@ -28,7 +28,10 @@ list int rotor_shift(list int rotor_input,int position){
 			}
 		}
 	}
+<<<<<<< HEAD
     
+=======
+>>>>>>> e85bfdb624f15f4e02ad85637b72e38510986720
     return rotor_input;
 	
 }
