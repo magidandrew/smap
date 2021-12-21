@@ -114,7 +114,8 @@ let rec string_of_expr = function
   | Assign(v, o, e) -> string_of_expr v ^ " " ^ string_of_assign o ^ " " ^ string_of_expr e
   | FunCall(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
-  | Noexpr -> ""
+  | Noexpr -> "" 
+  | _ -> "can't print this expr yet"
 
 (* !NON EXHUASTIVE PATTERN MATCHING! *)
 let rec string_of_stmt = function

@@ -13,6 +13,11 @@ int init_list(list *l) {
     return 0; // success
 }
 
+//return length of list
+ int list_length (list * l){
+     return l->size;
+ }
+
 // checks if list is at capacity
 // ret 1 if needs resizing, ret 0 if doesn't
 int check_resizing(list *l) {
@@ -142,6 +147,14 @@ void print_list_int(list *l) {
         printf("%d, ", *(int *)l->data[i]);
     }
     printf("%d]\n", *(int *)l->data[(l->size)-1]);
+}
+
+void print_list_float(list *l) {
+    printf("[");
+    for (int i=0; i<(l->size)-1; i++){
+        printf("%f, ", *(double *)l->data[i]);
+    }
+    printf("%f]\n", *(double*)l->data[(l->size)-1]);
 }
 
 #ifdef BUILD_TEST

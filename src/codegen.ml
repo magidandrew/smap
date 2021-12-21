@@ -60,7 +60,7 @@ let translate (globals, functions) =
   | A.Float -> float_t
   | A.Void -> void_t
   | A.String -> str
-  | A.Prob -> dummy_t (*need to change to prob_t eventually*)
+  | A.Prob -> L.pointer_type prob_t (*need to change to prob_t eventually*)
   | A.List -> L.pointer_type list_t
   | _ -> void_t (*add in prob, string, and list types later! *)
   in
@@ -72,8 +72,8 @@ let translate (globals, functions) =
       ; i32_t
       ; i32_t |] false;
   L.struct_set_body prob_t
-	  [| L.pointer_type list_t
-		; L.pointer_type list_t
+	  [| list_t
+		; list_t
     ; i32_t |] false;
   in
 
@@ -149,6 +149,20 @@ let translate (globals, functions) =
   let init_list_t : L.lltype = L.var_arg_function_type i32_t [|L.pointer_type list_t|] in
   let init_list_func : L.llvalue = L.declare_function "init_list" init_list_t the_module in
 
+  let init_prob_t : L.lltype = L.var_arg_function_type i32_t [|L.pointer_type prob_t; 
+                                                               L.pointer_type list_t; 
+                                                               L.pointer_type list_t|] in
+  let init_prob_func : L.llvalue = L.declare_function "init_prob" init_prob_t the_module in
+
+  let peek_t : L.lltype = L.var_arg_function_type (L.pointer_type i8_t) [|L.pointer_type prob_t|] in
+  let peek_func : L.llvalue = L.declare_function "peek" peek_t the_module in
+  
+  let list_length_t : L.lltype = L.var_arg_function_type i32_t [|L.pointer_type list_t|] in
+  let list_length_func : L.llvalue = L.declare_function "list_length" list_length_t the_module in
+
+  let get_length_t :L.lltype = L.var_arg_function_type i32_t [|L.pointer_type prob_t|] in
+  let get_length_func : L.llvalue = L.declare_function "get_length" get_length_t the_module in
+
   let get_at_t : L.lltype = L.var_arg_function_type (L.pointer_type i8_t) [|L.pointer_type list_t; i32_t|] in
   let get_at_func : L.llvalue = L.declare_function "get_at" get_at_t the_module in
 
@@ -157,6 +171,19 @@ let translate (globals, functions) =
 
   let print_list_int_t : L.lltype = L.var_arg_function_type i32_t [|L.pointer_type list_t|] in
   let print_list_int_func : L.llvalue = L.declare_function "print_list_int" print_list_int_t the_module in
+
+  let print_list_float_t : L.lltype = L.var_arg_function_type i32_t [|L.pointer_type list_t|] in
+  let print_list_float_func : L.llvalue = L.declare_function "print_list_float" print_list_float_t the_module in
+
+(*list *get_vals(prob *p) { return &p->vals; }*)
+  let get_vals_t : L.lltype = L.var_arg_function_type (L.pointer_type list_t) [|L.pointer_type prob_t|] in
+  let get_vals_func : L.llvalue = L.declare_function "get_vals" get_vals_t the_module in
+
+  let get_probs_t : L.lltype = L.var_arg_function_type (L.pointer_type list_t) [|L.pointer_type prob_t|] in
+  let get_probs_func : L.llvalue = L.declare_function "get_probs" get_probs_t the_module in
+
+  let print_prob_int_debug_t : L.lltype = L.var_arg_function_type i32_t [|L.pointer_type prob_t|] in
+  let print_prob_int_debug_func : L.llvalue = L.declare_function "print_prob_int_debug" print_prob_int_debug_t the_module in
 
   let bad_add_head_t : L.lltype = L.var_arg_function_type i32_t [| L.pointer_type list_t; L.pointer_type i8_t |] in
   let bad_add_head_func : L.llvalue = L.declare_function "bad_add_head" bad_add_head_t the_module in
@@ -183,10 +210,12 @@ let translate (globals, functions) =
     L.builder_at_end context (L.entry_block the_function) in
     let test_str =
       L.build_global_stringptr "test test test!\n" "test" builder in
+    let newLine_str = 
+      L.build_global_stringptr "\n" "newLine" builder in
     let int_format_str =
-    L.build_global_stringptr "%d\n" "fmt" builder
+    L.build_global_stringptr "%d" "fmt" builder
     and float_format_str =
-    L.build_global_stringptr "%f\n" "fmt" builder in
+    L.build_global_stringptr "%f" "fmt" builder in
 
   let local_vars =
     let add_formal m (t, n) p = (* add formal parameters to scope *)
@@ -222,6 +251,17 @@ let translate (globals, functions) =
     -> L.const_int i32_t 0
     | SId s
     -> L.build_load (lookup s) s builder
+    | SLength(p)
+    -> let p' = expr builder p in
+      (match List.hd (fst p) with
+         A.Prob 
+         -> L.build_call get_length_func [| p' |]
+         "get_length" builder
+       | A.List 
+       -> L.build_call list_length_func [| p' |]
+       "list_length" builder
+       |_ 
+       -> raise (Failure("semant should have caught this misuse of .length!")) )
     | SListElement (listId,index,rest)
     -> let eltType = fst index in
        let theList = expr builder listId in
@@ -243,7 +283,7 @@ let translate (globals, functions) =
         | [A.List;u] (*simple list of one type - (no lists of lists here)*)
         -> (match elts with 
             [] (*CASE: EMPTY LIST *)
-            -> let aList = L.build_alloca (L.pointer_type list_t) "theList" in
+            -> 
             (* get pointer to list struct *)
             let anAllocatedList = L.build_malloc list_t "listAddr" builder in
             (* initialize the list with list_init *)
@@ -310,16 +350,43 @@ let translate (globals, functions) =
           in anAllocatedList)        
     |_ 
     -> raise (Failure "Only support simple lists at the moment >.<\""))
-
+    | SProbColon (lhs,rhs)
+    -> let lhs' = expr builder lhs
+       and rhs' = expr builder rhs in
+        (* get pointer to prob struct *)
+        let anAllocatedProb = L.build_malloc prob_t "probAddr" builder in
+        (* initialize the prob with prob_init *)
+        let _ =  L.build_call init_prob_func [| anAllocatedProb; lhs'; rhs'|]
+        "init_prob" builder in
+        (* let vs = L.build_call get_vals_func [| anAllocatedProb|]
+        "get_vals" builder in
+        let _ = L.build_call print_list_int_func [| (vs) |]
+        "print_list_int" builder in *)
+        anAllocatedProb
     | SUnop(op, ((t, _) as e))
     -> let e' = expr builder e in (match op with
-        A.Neg when t = [A.Float] -> L.build_fneg
-        | A.Neg
-        -> L.build_neg
+        A.Neg when t = [A.Float] -> L.build_fneg  e' "tmp" builder
+        | A.Neg 
+        -> L.build_neg e' "tmp" builder
         | A.BitNot
-        -> L.build_not
+        -> L.build_not e' "tmp" builder
+        | A.Bang
+        -> let cPtr = L.build_call peek_func [| e'|] "peek" builder in
+           (* let vs = L.build_call get_vals_func [| e'|] "get_vals" builder in
+           let cPtr = L.build_call get_at_func [|vs; L.const_int i32_t 0|] "get_at" builder in  *)
+           let eltAsPtr = match theTyp with
+                         [A.Int] -> L.build_bitcast cPtr (L.pointer_type i32_t) "eltAsPtr" builder  
+                       | [A.Float] -> L.build_bitcast cPtr (L.pointer_type float_t) "eltAsPtr" builder
+                       | [A.Char] -> L.build_bitcast cPtr (L.pointer_type i8_t) "eltAsPtr" builder
+                       | [A.Bool] -> L.build_bitcast cPtr (L.pointer_type i1_t) "eltAsPtr" builder
+                       | [A.List] -> L.build_bitcast cPtr (L.pointer_type list_t) "eltAsPtr" builder
+                      in  
+           let eltDeRef = L.build_load eltAsPtr "eltDeref" builder in
+           eltDeRef  
+        | A.Octothorpe
+        -> L.build_call get_probs_func [| e'|] "get_probs" builder 
         | A.Not
-        -> L.build_not) e' "tmp" builder
+        -> L.build_not e' "tmp" builder)
     | SBinop (([Float],_ ) as e1, op, e2) ->
 	  let e1' = expr builder e1
 	  and e2' = expr builder e2 in
@@ -427,11 +494,17 @@ let translate (globals, functions) =
         | _
         -> L.build_call printb_func [| (expr builder arg) |]
             "printb" builder)
+    | SFunCall ("println",arg)
+    -> let _ = expr builder (theTyp,SFunCall("print",arg)) in
+       L.build_call printstr_func [| newLine_str |] "printstr" builder
     | SFunCall ("print",[(typeList,_) as arg])
     -> (match typeList with
         [A.Int]
         -> L.build_call printint_func [| (expr builder arg) |]
            "printint" builder
+        | [A.Prob;A.Int] ->
+          L.build_call print_prob_int_debug_func [| (expr builder arg) |]
+           "print_prob_int_debug" builder
         | [A.Bool]
         -> L.build_call printb_func [| (expr builder arg) |]
             "printb" builder
@@ -444,6 +517,9 @@ let translate (globals, functions) =
         | [A.List; A.Int]
         -> L.build_call print_list_int_func [| (expr builder arg) |]
         "print_list_int" builder
+        | [A.List; A.Float]
+        -> L.build_call print_list_float_func [| (expr builder arg) |]
+        "print_list_float" builder
         | _
         -> raise(Failure("printing type "^A.string_of_typ_name typeList ^ "not yet supported")))
     | SFunCall ("print_list_int", [e]) ->

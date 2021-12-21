@@ -1,5 +1,6 @@
 CC = cc
 CFLAGS = -g -Wall
+LIBS = -lm
 
 .PHONY : dune
 dune:
@@ -89,16 +90,16 @@ c_tests: prob list
 
 # Testing the "printbig" example
 list.o:
-	$(CC) $(CFLAGS) -c -o list.o runtime/list.c
+	$(CC) $(CFLAGS) -c -o list.o runtime/list.c $(LIBS)
 
 list: list.o runtime/list.c
-	$(CC) $(CFLAGS) -o list -DBUILD_TEST runtime/list.c
+	$(CC) $(CFLAGS) -o list -DBUILD_TEST $(LIBS)
 
 prob.o:
-	$(CC) $(CFLAGS) -c -o prob.o runtime/prob.c -lm
+	$(CC) $(CFLAGS) -c -o prob.o runtime/prob.c $(LIBS)
 
 prob: list.o runtime/prob.c
-	$(CC) $(CFLAGS) list.o -o prob -DBUILD_TEST runtime/prob.c -lm
+	$(CC) $(CFLAGS) list.o -o prob -DBUILD_TEST runtime/prob.c $(LIBS)
 
 printbig : printbig.c
 	cc -o printbig -DBUILD_TEST printbig.c

@@ -1,0 +1,14 @@
+int main(){
+	prob int num = [0.25,0.5,0.25] : [1,2,3];
+	prob int num2 = num;
+	int i;
+	list float probs = num#;
+	for(i=0; i < num.length; i = i+1){
+		println(probs[i]);
+		//print(num.length);
+	}
+	//print(num.length);
+}
+
+
+

@@ -137,8 +137,20 @@ char *peek(prob *p) {
     }
 
     // error
-    fprintf(stderr, "probability peek error: no matching value found\n");
+    fprintf(stderr, "probability peek error: no matching value found.\n");
+    int val_0 = *(int*)p->vals.data[0];
+    double probs_0 = *(double*)p->probs.data[0];
+    fprintf(stderr, "Rand is %f. Length is %d. \nprobs[0] is %f. vals[0] is %d.",rnd,p->length, probs_0,val_0);
     return NULL;
+}
+
+int print_prob_int_debug(prob* p){
+    printf("Prob's length is %d\n",p->length);
+    for(int i =0;i<3;i++){
+        printf("probs[%d] = %f\n",i, *(double*)p->probs.data[i]);
+        printf("vals[%d] = %d\n",i, *(int*)p->vals.data[i]);
+    }
+    return 0;
 }
 
 // changes the probabilities of the target argument

@@ -97,6 +97,7 @@ let check(globals, functions) =
                                               ("push_front",[Int]);
                                               ("get_at",[Int]);
                                               ("print",[Int]);
+                                              ("println", [Int]);
                                               ("print_int_list",[Int])
                                             ]
     in
@@ -144,6 +145,20 @@ let check(globals, functions) =
     | Bool_lit bl -> ([Bool],SBool_lit bl)
     | Int_lit num -> ([Int], SInt_lit num)
     | Float_lit flt -> ([Float], SFloat_lit flt)
+    | Length p 
+    -> let p' = check_expr p in
+      (match List.hd (fst p') with
+          List -> ([Int],SLength(p'))
+        | Prob -> ([Int],SLength(p'))
+        | _ -> raise( Failure ("length is only supported for prob and list type")))
+    | ProbColon (lhs, rhs) -> 
+      let lhs' = check_expr lhs
+      and rhs' = check_expr rhs in
+      if (fst lhs') = [List;Float]
+      then if List.hd (fst rhs') = List 
+           then (getEltType (fst rhs'),(SProbColon (lhs',rhs')))
+           else raise( Failure ("RHS of prob type must be a list"))
+      else raise( Failure ("LHS of prob type must be a list of floats. Found "^string_of_typ_name (fst lhs')^" instead"))
     | ListElement (s,e1,rest)
     -> let result = (findVar scope s) in
                     (match (result) with
@@ -205,6 +220,8 @@ let check(globals, functions) =
       Neg when t = [Int] || t = [Float] -> t
       | Not when t = [Bool] -> [Bool]
       | BitNot when t = [Int] -> [Int]
+      | Bang when (List.hd t) = Prob -> List.tl t
+      | Octothorpe when (List.hd t) = Prob -> [List;Float]
       | _ -> raise (Failure ("illegal unary operator " ^
       string_of_uop op ^ string_of_typ_name t ^
       " in " ^ string_of_expr ex))
