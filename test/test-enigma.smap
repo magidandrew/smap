@@ -32,13 +32,9 @@ list int rotor_shift(list int rotor_input,int position){
 	
 }
 
-
-
-list int encryption_decryption(list int rotor_one_e_input,list int rotor_one_e_output,list int rotor_two_e_input,list int rotor_two_e_output,list int rotor_three_e_input,list int rotor_three_e_output, list int text){
-	
-	
-	return rotor_one_e_input;
-	
+int return_cor_int(string what_message, int what_index) {
+    int res = corresponding_int(what_message,what_index);
+    return res;
 }
 
 
@@ -46,14 +42,81 @@ list int initialize_input_text(string message_user,list int input_list_message) 
     
     int message_length_input = stringLength(message_user);
     int message_length_init = 0;
+    int current_int_val = 0;
 
-    /*for(message_length_init = 0; message_length_init < message_length_input;message_length_init=message_length_init+1) {
-        print(message_length_init);
-    }*/
+    for(message_length_init = 0; message_length_init < message_length_input;message_length_init=message_length_init+1) {
+        current_int_val = return_cor_int(message_user,message_length_init);
+        input_list_message[message_length_init] = current_int_val;
+    }
 
     return input_list_message;
 }
 
+
+int character_location_status(list int xx, int yy) {
+
+    int my_response = character_location(xx,yy);
+
+    return my_response;
+
+}
+
+int my_modulus_result(int base) {
+    int modulus_results = modulus_operation(base,26);
+    return modulus_results;
+}
+
+list int encryption_decryption(list int rotor_one_e_input,list int rotor_one_e_output,list int rotor_two_e_input,list int rotor_two_e_output,list int rotor_three_e_input,list int rotor_three_e_output, list int text, int length_input_text){
+	
+	int modulus_result = 0;
+    int modulus_result_t = 0;
+    int char_loc_holder = 0;
+	int count_rotor_one=0;
+    int count_rotor_two=0;
+    int count_rotor_three=0;
+	int text_len = length_input_text;
+    int loop_counter_e_d = 0;
+    list int input_output_char = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25];
+
+    
+    for(loop_counter_e_d=0;loop_counter_e_d<text_len;loop_counter_e_d=loop_counter_e_d+1) {
+        
+        char_loc_holder = character_location_status(input_output_char, text[loop_counter_e_d]);
+        rotor_shift(rotor_three_e_input,1);
+        rotor_shift(rotor_three_e_output,1);
+        count_rotor_three = count_rotor_three + 1;
+        
+        if(count_rotor_three>0) {
+            modulus_result = my_modulus_result(count_rotor_three);
+            if(modulus_result == 0) {
+                print(modulus_result);
+                rotor_shift(rotor_two_e_input,1);
+			    rotor_shift(rotor_two_e_output,1);
+                count_rotor_two = count_rotor_two + 1;
+                
+                if(count_rotor_two>0) {
+                    modulus_result_t = my_modulus_result(count_rotor_two);
+                    if(modulus_result_t == 0) {
+                        rotor_shift(rotor_one_e_input,1);
+                        rotor_shift(rotor_one_e_output,1);
+                        count_rotor_one = count_rotor_one + 1;  
+                    }
+                    
+                }
+
+            }
+
+        }
+
+        //print(char_loc_holder);
+
+    }
+
+
+
+	return rotor_one_e_input;
+	
+}
 
 
 int main() {
@@ -61,10 +124,9 @@ int main() {
     int location_on_initialization_array = 0;
     int plugboard_input_count = 0;
     list int temp = [1];
-    list int input_text = [1];
+    list int input_text = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1];
     string messagez = "ZEROSIXHUNDREEDHOURSWEATHERTODAYISCLEARRAININTHEEVENINGHEILHITLER";
-    
-
+    int length_input = stringLength(messagez);
 
     //ToDo: Define the key -> SIG (Rotor) PMP (Ring)
     list int key = [18,8,6];
@@ -107,12 +169,44 @@ int main() {
     location_on_initialization_array=character_location(rotor_three_out,ring_setting[2]);
     rotor_three_out = rotor_shift(rotor_three_out,location_on_initialization_array);
     
-    temp = encryption_decryption(rotor_one_in,rotor_one_out,rotor_two_in,rotor_two_out,rotor_three_in,rotor_three_out,input_text);
-    
+
+    //ToDo: Initialize the message
+
     input_text = initialize_input_text(messagez,input_text);
 
-    print(input_text[0]);
+    //ToDo: Initialize the encryption_decryption function
+    print("Rotor One: ");
+    print(rotor_one_in);
+    print("Rotor Two: ");
+    print(rotor_two_in);
+    print("Rotor Three: ");
+    print(rotor_three_in);
+
+    print("Rotor One Out: ");
+    print(rotor_one_out);
+    print("Rotor Two Out: ");
+    print(rotor_two_out);
+    print("Rotor Three Out: ");
+    print(rotor_three_out);
     
+    temp = encryption_decryption(rotor_one_in,rotor_one_out,rotor_two_in,rotor_two_out,rotor_three_in,rotor_three_out,input_text,length_input);
+
+    print(temp);
+    
+
+    print("Rotor One: ");
+    print(rotor_one_in);
+    print("Rotor Two: ");
+    print(rotor_two_in);
+    print("Rotor Three: ");
+    print(rotor_three_in);
+
+    print("Rotor One Out: ");
+    print(rotor_one_out);
+    print("Rotor Two Out: ");
+    print(rotor_two_out);
+    print("Rotor Three Out: ");
+    print(rotor_three_out);
 
 
     return 0;

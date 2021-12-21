@@ -97,6 +97,7 @@ let check(globals, functions) =
                                               ("very_bad_get_head",[Int]);
                                               ("init_list", [Int]);
                                               ("push_back", [Int]);
+                                              ("modulus_operation", [Int]);
                                               ("push_front",[Int]);
                                               ("get_at",[Int]);
                                               ("print",[Int]);
