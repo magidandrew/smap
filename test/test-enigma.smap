@@ -41,11 +41,11 @@ list int encryption_decryption(list int rotor_one_e_input,list int rotor_one_e_o
 	
 }
 
-
+/*
 list int initialize_input_text(list int user_text, int size_message) {
     
 }
-
+*/
 
 
 int main() {
