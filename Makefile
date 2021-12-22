@@ -1,6 +1,6 @@
 CC = cc
 CFLAGS = -g -Wall
-LIBS = -lm
+LIBS = -lm -lncurses
 
 .PHONY : dune
 dune:
@@ -109,6 +109,9 @@ polymorphicPrint.o :
 
 testMakeStruct.o :
 	$(CC) $(CFLAGS) -c -o testMakeStruct.o runtime/testMakeStruct.c
+
+ncurses.o :
+	$(CC) $(CFLAGS) -c -o ncurses.o runtime/ncurses.c
 
 # Building the tarball
 

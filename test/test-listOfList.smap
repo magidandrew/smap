@@ -1,11 +1,13 @@
 int main (){
-    int i = 0;
-    list list char x = [['g','h'],['h','e','l','l','o']];
+   int i = 0;
+   list list char x = [['g','h'],['h','e','l','l','o']];
+   list list char y = ["hey"];
+   println(x[0]);
+   println(y[0]);
    println(x[0][0]);
    println(x[1][1]);
    for(i; i< 5; i= i+1){
-       print(x[1][i]);
-
+       print(x[1][i]); 
    }
     return (0);
 }

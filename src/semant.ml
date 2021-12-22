@@ -150,7 +150,16 @@ let check(globals, functions) =
       FunCall (fname,args) ->
       let theFunc = find_func fname in
       (theFunc.typ_name, SFunCall(fname, (List.map check_expr args)))
-    | String_lit str -> ([String], SString_lit str)
+    | String_lit s -> 
+      let len = String.length s in
+       let rec explode i m str acc = 
+        if i = m then acc
+        else let c = (String.get str i) in 
+        c::(explode (i+1) m str acc) in 
+       let chars = explode 0 len s [] in
+       let toCharNode c = ([Char],SChar_lit c) in
+       let asList = ([List;Char], SList_lit(List.map toCharNode chars)) in
+       asList
     | Bool_lit bl -> ([Bool],SBool_lit bl)
     | Char_lit c -> ([Char],SChar_lit c)
     | Int_lit num -> ([Int], SInt_lit num)

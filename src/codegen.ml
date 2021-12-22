@@ -303,7 +303,7 @@ let translate (globals, functions) =
               | A.List::t 
               -> 
               if (List.length rest) = 0 
-              then L.build_bitcast theList (L.pointer_type list_t) "eltAsPtr" builder
+              then L.build_bitcast elt (L.pointer_type list_t) "eltAsPtr" builder
               else deRef rest (L.build_bitcast elt (L.pointer_type list_t) "eltAsPtr" builder)
               | [A.Bool] 
               -> raise(Failure("fill in for bool"))
@@ -356,17 +356,17 @@ let translate (globals, functions) =
             let _ =  L.build_call init_list_func [| anAllocatedList|]
             "init_list" builder
             in anAllocatedList
-        | (elt::rest) (*CASE: NON-EMPTY LIST *)
-        -> (*
-              allocInitElt helper function
-              Description:
-              Allocate and intitalize a list elt, then cast to ( char * )
-              For ex: int * tmp = malloc(sizeOf(int));
-                      *tmp = 5;
-                      char * tmp2 = ( char* ) tmp;
-              After this step, ready to pass vals to the push_front function!
-           *) 
-          let allocInitElt v =
+          | (elt::rest) (*CASE: NON-EMPTY LIST *)
+          -> (*
+                allocInitElt helper function
+                Description:
+                Allocate and intitalize a list elt, then cast to ( char * )
+                For ex: int * tmp = malloc(sizeOf(int));
+                        *tmp = 5;
+                        char * tmp2 = ( char* ) tmp;
+                After this step, ready to pass vals to the push_front function!
+            *) 
+              let allocInitElt v =
               (* save type of element *)
               let vtype = fst v in
               (* 5 *)
@@ -414,8 +414,8 @@ let translate (globals, functions) =
           let _ = List.map (addElt anAllocatedList) values
           (* return the pointer to the now-intialized list*)
           in anAllocatedList)        
-    |_ 
-    -> raise (Failure "Only support simple lists at the moment >.<\""))
+        |_ 
+        -> raise (Failure "Only support simple lists at the moment >.<\""))
     | SProbColon (lhs,rhs)
     -> let lhs' = expr builder lhs
        and rhs' = expr builder rhs in
