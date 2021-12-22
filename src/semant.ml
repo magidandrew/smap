@@ -232,16 +232,21 @@ let check(globals, functions) =
        and e2' = check_expr e2 in
         (match e1' with
           (typs,SId(s))
-          -> if (typs == fst e2') then (fst e1',SListAddHead(e1',e2'))
-             else raise (Failure ("Expected type of " ^ string_of_typ_name (fst e1') ^
-                         "but found type " ^string_of_typ_name (fst e2') ^ "instead"))
+          -> (fst e1',SListAddHead(e1',e2'))
           | (typs, SListElement(_,_,_))
-          -> if (typs == fst e2') then (fst e1',SListAddHead(e1',e2'))
-             else raise (Failure ("Expected type of " ^ string_of_typ_name (fst e1') ^
-             "but found type " ^string_of_typ_name (fst e2') ^ "instead"))
+          -> (fst e1',SListAddHead(e1',e2'))
           | _
           -> raise( Failure ("Cannot use push-front syntax on non list-type")))
-    (*| ListAddTail (e1, e2) -> *)
+    | ListAddTail (e1, e2) ->
+      let e1' = check_expr e1
+       and e2' = check_expr e2 in
+        (match e1' with
+          (typs,SId(s))
+          -> (fst e1',SListAddTail(e1',e2'))
+          | (typs, SListElement(_,_,_))
+          -> (fst e1',SListAddTail(e1',e2'))
+          | _
+          -> raise( Failure ("Cannot use push-front syntax on non list-type")))
     | Noexpr -> ([],SNoexpr)
     | List_lit (elts) ->
       let checked_elts = (List.map check_expr elts) in (*make sure each elt type checks on its own*)
