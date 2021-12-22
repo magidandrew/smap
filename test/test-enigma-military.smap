@@ -315,11 +315,12 @@ int main() {
     
     input_text = plugboard_redirect(input_text,plugboard_input_count,first_plugs_init,second_plugs_init,length_input);
     print(input_text);
-    
+    plugboard_input_count = plugboard_input_count + 1;
+
 
     //ToDo: Initialize the encryption_decryption function
     temp = encryption_decryption(rotor_one_in,rotor_one_out,rotor_two_in,rotor_two_out,rotor_three_in,rotor_three_out,input_text,length_input);
-    temp = plugboard_redirect(temp,plugboard_input_count,first_plugs_init,second_plugs_init,length_input);
+    
     print("Output text: ");
 
     for(final_output_counter=0;final_output_counter<length_input;final_output_counter=final_output_counter+1) {
