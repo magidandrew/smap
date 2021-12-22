@@ -540,11 +540,48 @@ let translate (globals, functions) =
               let asChar = L.build_bitcast tmp''' (L.pointer_type i8_t) "asChar" builder
               in asChar
             in 
-            let theList = expr builder listId
-            and i = expr builder index
-            and e2' = allocInitElt e2 in 
-            let _ = L.build_call set_at_func [| theList; i; e2'|] "set_at" builder 
-            in theList )         
+            match rest with
+             [] 
+             -> let theList = expr builder listId
+                and i = expr builder index
+                and e2' = allocInitElt e2 in 
+                let _ = L.build_call set_at_func [| theList; i; e2'|] "set_at" builder 
+                in theList
+             | _
+             -> let theList = expr builder listId in
+                let rec deRef ((typs,i)::rest) handle = 
+                let elt = L.build_call get_at_func [| handle; expr builder (typs,i)|]
+                    "get_at" builder in                
+                    match typs with
+                      [A.Int] 
+                      -> let eltAsPtr = L.build_bitcast elt (L.pointer_type i32_t) "eltAsPtr" builder  in
+                      L.build_load eltAsPtr "eltDeref" builder
+                    | [A.Float] 
+                    ->  let eltAsPtr = L.build_bitcast elt (L.pointer_type float_t) "eltAsPtr" builder in
+                    L.build_load eltAsPtr "eltDeref" builder
+                    | [A.Char] 
+                    -> let eltAsPtr = L.build_bitcast elt (L.pointer_type i8_t) "eltAsPtr" builder in
+                        L.build_load eltAsPtr "eltDeref" builder
+                    | [A.String]
+                    -> let eltAsPtr = L.build_bitcast elt (L.pointer_type list_t) "eltAsPtr" builder in
+                    L.build_load eltAsPtr "eltDeref" builder
+                    | A.List::t 
+                    -> 
+                    if (List.length rest) = 0 
+                    then L.build_bitcast elt (L.pointer_type list_t) "eltAsPtr" builder
+                    else deRef rest (L.build_bitcast elt (L.pointer_type list_t) "eltAsPtr" builder)
+                    | [A.Bool] 
+                    -> raise(Failure("fill in for bool"))
+                    | A.Prob::tl 
+                    -> raise(Failure("fill in for prob someday... >.<\""))
+                in
+                let lastIndex = List.hd (List.rev rest)
+                and allbutLastIndex = index::(List.rev (List.tl (List.rev rest))) in 
+                let listToIndexInto = deRef allbutLastIndex theList  
+                and i = expr builder lastIndex
+                and e2' = allocInitElt e2 in 
+                let _ = L.build_call set_at_func [| listToIndexInto; i; e2'|] "set_at" builder 
+                in listToIndexInto )         
     | SFunCall ("printint", [e])
     -> L.build_call printint_func [| (expr builder e) |]
        "printint" builder
