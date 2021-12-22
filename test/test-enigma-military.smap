@@ -171,6 +171,49 @@ list int encryption_decryption(list int rotor_one_e_input,list int rotor_one_e_o
 }
 
 
+
+//ToDo: Implement the plugboard redirect
+list int plugboard_redirect(string text_redirect,int count_for_input){
+	//substitute a character with different character
+	list int list_of_char_redirect = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25];
+	list int sub_list_char = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25];
+		
+	list int temp_sub_val_holder = [1,1];
+	list int loc_holder = [1,1];
+	int loc_holding_for_text = 0;
+    int counter=0;
+	
+	/*
+	//provide machine setting credentials
+	while((counter!=10)&&(count_for_input==0)){
+		//taking input of two credentials
+		cout<<"First plug at: ";
+		cin>>temp_sub_val_holder[0];
+		cout<<"First plug end at: ";
+		cin>>temp_sub_val_holder[1];
+		loc_holder[0] = character_location(list_of_char_redirect,list_of_char_redirect[temp_sub_val_holder[0]]);
+		loc_holder[1] = character_location(list_of_char_redirect,list_of_char_redirect[temp_sub_val_holder[1]]);
+		sub_list_char[(loc_holder[0])] = list_of_char_redirect[(loc_holder[1])];
+		sub_list_char[(loc_holder[1])] = list_of_char_redirect[(loc_holder[0])];
+		++counter;
+		
+	}
+	
+	for(int i=0;i<text.length();i++){
+		loc_holding_for_text = character_location(list_of_char_redirect,text[i]);
+		text[i] = sub_list_char[loc_holding_for_text];
+	}
+	system("cls");	*/
+
+
+	return list_of_char_redirect;
+	
+	
+	
+}
+
+
+
 int main() {
 
 
