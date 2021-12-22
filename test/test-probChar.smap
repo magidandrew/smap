@@ -1,0 +1,10 @@
+int main(){
+	prob char c = [0.3,0.7,0.25] : ['a','b','v'];
+	prob char c2 = c;
+	int i;
+	list float probs = c#;
+	for(i=0; i < c.length; i = i+1){
+		println(probs[i]);
+	}
+    //print(c!);
+}

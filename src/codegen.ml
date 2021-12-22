@@ -59,7 +59,7 @@ let translate (globals, functions) =
   | A.Bool -> i1_t
   | A.Float -> float_t
   | A.Void -> void_t
-  | A.String -> str
+  | A.String -> L.pointer_type list_t
   | A.Prob -> L.pointer_type prob_t (*need to change to prob_t eventually*)
   | A.List -> L.pointer_type list_t
   | _ -> void_t (*add in prob, string, and list types later! *)
@@ -133,14 +133,19 @@ let translate (globals, functions) =
 
   let corresponding_char_t: L.lltype = L.function_type i32_t [| i32_t |] in
   let corresponding_char_func : L.llvalue = L.declare_function "corresponding_char" corresponding_char_t the_module in
+  let printchar_t : L.lltype = L.function_type i32_t [| i8_t |] in
+  let printchar_func : L.llvalue = L.declare_function "printchar" printchar_t the_module in
+
+  let print_list_char_t : L.lltype = L.function_type i32_t [| L.pointer_type list_t |] in
+  let print_list_char_func : L.llvalue = L.declare_function "print_list_char" print_list_char_t the_module in
 
   let printb_t: L.lltype = L.function_type i32_t [| i1_t |] in
   let printb_func : L.llvalue = L.declare_function "printb" printb_t the_module in
 
-  let stringLength_t: L.lltype = L.function_type i32_t [| L.pointer_type i8_t |] in
+  let stringLength_t: L.lltype = L.function_type i32_t [| L.pointer_type list_t |] in
   let stringLength_func: L.llvalue = L.declare_function "stringLength" stringLength_t the_module in
 
-  let corresponding_int_t: L.lltype = L.function_type i32_t [| L.pointer_type i8_t;i32_t |] in
+  let corresponding_int_t: L.lltype = L.function_type i32_t [| L.pointer_type list_t;i32_t |] in
   let corresponding_int_func: L.llvalue = L.declare_function "corresponding_int" corresponding_int_t the_module in
 
   let testMakeStruct_t: L.lltype = L.function_type dummy_t [| L.pointer_type i8_t;i32_t |] in
@@ -151,6 +156,9 @@ let translate (globals, functions) =
 
   let printf_t : L.lltype = L.var_arg_function_type i32_t [| L.pointer_type i8_t |] in
   let printf_func : L.llvalue = L.declare_function "printf" printf_t the_module in
+
+  let push_front_t : L.lltype = L.var_arg_function_type i32_t [|L.pointer_type list_t; L.pointer_type i8_t|] in
+  let push_front_func : L.llvalue = L.declare_function "push_front" push_front_t the_module in
 
   let push_back_t : L.lltype = L.var_arg_function_type i32_t [|L.pointer_type list_t; L.pointer_type i8_t|] in
   let push_back_func : L.llvalue = L.declare_function "push_back" push_back_t the_module in
@@ -187,7 +195,6 @@ let translate (globals, functions) =
   let print_list_float_t : L.lltype = L.var_arg_function_type i32_t [|L.pointer_type list_t|] in
   let print_list_float_func : L.llvalue = L.declare_function "print_list_float" print_list_float_t the_module in
 
-(*list *get_vals(prob *p) { return &p->vals; }*)
   let get_vals_t : L.lltype = L.var_arg_function_type (L.pointer_type list_t) [|L.pointer_type prob_t|] in
   let get_vals_func : L.llvalue = L.declare_function "get_vals" get_vals_t the_module in
 
@@ -248,17 +255,95 @@ let translate (globals, functions) =
                      Not_found -> StringMap.find n global_vars in
 
   let rec expr builder ((theTyp, e) : sexpr) = 
+  (*
+  allocInitElt helper function
+  Description:
+  Allocate and intitalize a list elt, then cast to ( char * )
+  For ex: int * tmp = malloc(sizeOf(int));
+  *tmp = 5;
+  char * tmp2 = ( char* ) tmp;
+  After this step, ready to pass vals to the push_front function!
+  *) 
+  let allocInitElt v =
+  (* save type of element *)
+  let vtype = fst v in
+  (* 5 *)
+  let value = expr builder v in
+  (* int * tmp *)
+  let tmp = match (vtype) with
+               [A.Int] -> L.build_alloca (L.pointer_type i32_t) "tmp" builder
+             | [A.Float] -> L.build_alloca (L.pointer_type float_t) "tmp" builder
+             | [A.Char] -> L.build_alloca (L.pointer_type i8_t) "tmp" builder
+             | [A.Bool] -> raise(Failure("fill in for bool"))
+             | [A.Prob] -> raise(Failure("fill in for prob someday... >.<\""))
+  in
+  (* malloc(sizeOf(int)) *)
+  let heapAddr = match (vtype) with
+                       [A.Int] -> L.build_malloc i32_t "tmpAddr" builder
+                     | [A.Float] -> L.build_malloc float_t "tmpAddr" builder
+                     | [A.Char] -> L.build_malloc i8_t "tmpAddr" builder
+                     | [A.Bool] -> raise(Failure("fill in for bool"))
+                     | [A.Prob] -> raise(Failure("fill in for prob someday... >.<\""))
+  in
+  (* tmp = malloc(sizeOf(int)); *)
+  let tmp' = ignore(L.build_store heapAddr tmp builder); tmp in
+  (* *tmp *)
+  let tmp'' = L.build_load tmp' "tmpWithVal" builder in
+  (* *tmp = 5 *)
+  let tmp''' = ignore (L.build_store value tmp'' builder); tmp'' in
+  (* char * tmp2 = ( char* ) tmp;  *)
+  let asChar = L.build_bitcast tmp''' (L.pointer_type i8_t) "asChar" builder
+  in asChar
+  in 
+  (* multidimensional indexing for lists helper function *)
+  let rec deRef ((typs,i)::rest) handle = 
+    let elt = L.build_call get_at_func [| handle; expr builder (typs,i)|]
+        "get_at" builder in                
+        match typs with
+          [A.Int] 
+          -> let eltAsPtr = L.build_bitcast elt (L.pointer_type i32_t) "eltAsPtr" builder  in
+          L.build_load eltAsPtr "eltDeref" builder
+        | [A.Float] 
+        ->  let eltAsPtr = L.build_bitcast elt (L.pointer_type float_t) "eltAsPtr" builder in
+        L.build_load eltAsPtr "eltDeref" builder
+        | [A.Char] 
+        -> let eltAsPtr = L.build_bitcast elt (L.pointer_type i8_t) "eltAsPtr" builder in
+            L.build_load eltAsPtr "eltDeref" builder
+        | [A.String]
+        -> let eltAsPtr = L.build_bitcast elt (L.pointer_type list_t) "eltAsPtr" builder in
+        L.build_load eltAsPtr "eltDeref" builder
+        | A.List::t 
+        -> 
+        if (List.length rest) = 0 
+        then L.build_bitcast elt (L.pointer_type list_t) "eltAsPtr" builder
+        else deRef rest (L.build_bitcast elt (L.pointer_type list_t) "eltAsPtr" builder)
+        | [A.Bool] 
+        -> raise(Failure("fill in for bool"))
+        | A.Prob::tl 
+        -> raise(Failure("fill in for prob someday... >.<\""))
+    in
     match e with
     SInt_lit i
     -> L.const_int i32_t i
     | SIndex i
     -> expr builder i
     | SString_lit s
-    -> L.build_global_stringptr s "the_str" builder
+    -> let len = String.length s in
+       let rec explode i m str acc = 
+        if i = m then acc
+        else let c = (String.get str i) in 
+        c::(explode (i+1) m str acc) in 
+       let chars = explode 0 len s [] in
+       let toCharNode c = ([A.Char],SChar_lit c) in
+       let asList = ([A.List;A.Char], SList_lit(List.map toCharNode chars)) in
+       (* L.build_global_stringptr s "the_str" builder *)
+       expr builder asList
     | SBool_lit b
     -> L.const_int i1_t (if b then 1 else 0)
     | SFloat_lit l
     -> L.const_float float_t l
+    | SChar_lit l
+    -> L.const_int i8_t (Char.code l)
     | SNoexpr
     -> L.const_int i32_t 0
     | SId s
@@ -272,26 +357,71 @@ let translate (globals, functions) =
        | A.List 
        -> L.build_call list_length_func [| p' |]
        "list_length" builder
+       | A.String
+       -> L.build_call list_length_func [| p' |]
+       "list_length" builder
        |_ 
-       -> raise (Failure("semant should have caught this misuse of .length!")) )
+       -> raise (Failure("semant should have caught this misuse of .length! "^A.string_of_typ_name (fst p))) )
     | SListElement (listId,index,rest)
     -> let eltType = fst index in
-       let theList = expr builder listId in
-       let elt = L.build_call get_at_func [| theList; expr builder index|]
+       (match eltType with
+         A.List::tl 
+         -> let theList = expr builder listId in
+              
+            deRef (index::rest) theList  
+         |_ 
+         -> let theList = expr builder listId in
+            let elt = L.build_call get_at_func [| theList; expr builder index|]
                  "get_at" builder in
-       let eltAsPtr = match eltType with
+            let eltAsPtr = match eltType with
                        [A.Int] -> L.build_bitcast elt (L.pointer_type i32_t) "eltAsPtr" builder  
                        | [A.Float] -> L.build_bitcast elt (L.pointer_type float_t) "eltAsPtr" builder
-                       | [A.Char] -> raise(Failure("fill in for char"))
+                       | [A.Char] -> L.build_bitcast elt (L.pointer_type i8_t) "eltAsPtr" builder 
                        | [A.Bool] -> raise(Failure("fill in for bool"))
-                       | [A.Prob] -> raise(Failure("fill in for prob someday... >.<\""))
+                       | A.Prob::tl -> raise(Failure("fill in for prob someday... >.<\""))
                       in  
-       let eltDeRef = L.build_load eltAsPtr "eltDeref" builder in
-       eltDeRef     
+            let eltDeRef = L.build_load eltAsPtr "eltDeref" builder in
+            eltDeRef)  
+    | SListAddHead (e1,e2)
+    ->  let e1' = expr builder e1
+        and toAdd = match fst e2 with
+                    (A.List::t) 
+                    -> expr builder e2
+                    | _ 
+                    -> allocInitElt e2
+        in let _ = L.build_call push_front_func [| e1'; toAdd |]
+           "push_front" builder in e1'  
+    | SListAddTail (e1,e2)
+    ->  let e1' = expr builder e1
+        and toAdd = match fst e2 with
+                    (A.List::t) 
+                    -> expr builder e2
+                    | _ 
+                    -> allocInitElt e2
+        in let _ = L.build_call push_back_func [| e1'; toAdd |]
+           "push_back" builder in e1'           
     | SList_lit elts
     -> (match theTyp with
-        [A.List;A.List;A.Char]
-        -> raise(Failure("lists of strings aren't supported yet D: "))
+        [A.List;A.List;u]
+        -> (*create the sublists*)
+        let sublists = List.map (expr builder) elts in
+        (* cast the list pointers to char pointers*)
+        let toChar l = L.build_bitcast l (L.pointer_type i8_t) "toChar" builder in
+        let charPtrs = List.map toChar sublists in
+        let addElt lst c =
+          L.build_call push_back_func [| lst; c |]
+          "push_back" builder
+        in
+        (* allocate list struct *)
+        let aList = L.build_alloca (L.pointer_type list_t) "theList" in
+        (* get pointer to list struct *)
+        let anAllocatedList = L.build_malloc list_t "listAddr" builder in
+        (* initialize the list with list_init *)
+        let _ =  L.build_call init_list_func [| anAllocatedList|]
+        "init_list" builder in
+        let _ = List.map (addElt anAllocatedList) charPtrs
+        (* return the pointer to the now-intialized list*)
+        in anAllocatedList
         | [A.List;u] (*simple list of one type - (no lists of lists here)*)
         -> (match elts with 
             [] (*CASE: EMPTY LIST *)
@@ -302,47 +432,8 @@ let translate (globals, functions) =
             let _ =  L.build_call init_list_func [| anAllocatedList|]
             "init_list" builder
             in anAllocatedList
-        | (elt::rest) (*CASE: NON-EMPTY LIST *)
-        -> (*
-              allocInitElt helper function
-              Description:
-              Allocate and intitalize a list elt, then cast to ( char * )
-              For ex: int * tmp = malloc(sizeOf(int));
-                      *tmp = 5;
-                      char * tmp2 = ( char* ) tmp;
-              After this step, ready to pass vals to the push_front function!
-           *) 
-          let allocInitElt v =
-              (* save type of element *)
-              let vtype = fst v in
-              (* 5 *)
-              let value = expr builder v in
-              (* int * tmp *)
-              let tmp = match (vtype) with
-                         [A.Int] -> L.build_alloca (L.pointer_type i32_t) "tmp" builder
-                         | [A.Float] -> L.build_alloca (L.pointer_type float_t) "tmp" builder
-                         | [A.Char] -> raise(Failure("fill in for char"))
-                         | [A.Bool] -> raise(Failure("fill in for bool"))
-                         | [A.Prob] -> raise(Failure("fill in for prob someday... >.<\""))
-              in
-              (* malloc(sizeOf(int)) *)
-              let heapAddr = match (vtype) with
-                              [A.Int] -> L.build_malloc i32_t "tmpAddr" builder
-                              | [A.Float] -> L.build_malloc float_t "tmpAddr" builder
-                              | [A.Char] -> raise(Failure("fill in for char"))
-                              | [A.Bool] -> raise(Failure("fill in for bool"))
-                              | [A.Prob] -> raise(Failure("fill in for prob someday... >.<\""))
-              in
-              (* tmp = malloc(sizeOf(int)); *)
-              let tmp' = ignore(L.build_store heapAddr tmp builder); tmp in
-              (* *tmp *)
-              let tmp'' = L.build_load tmp' "tmpWithVal" builder in
-              (* *tmp = 5 *)
-              let tmp''' = ignore (L.build_store value tmp'' builder); tmp'' in
-              (* char * tmp2 = ( char* ) tmp;  *)
-              let asChar = L.build_bitcast tmp''' (L.pointer_type i8_t) "asChar" builder
-              in asChar
-          in 
+          | (elt::rest) (*CASE: NON-EMPTY LIST *)
+          -> 
           let addElt lst c =
             L.build_call push_back_func [| lst; c |]
             "push_back" builder
@@ -360,8 +451,8 @@ let translate (globals, functions) =
           let _ = List.map (addElt anAllocatedList) values
           (* return the pointer to the now-intialized list*)
           in anAllocatedList)        
-    |_ 
-    -> raise (Failure "Only support simple lists at the moment >.<\""))
+        |_ 
+        -> raise (Failure "Only support simple lists at the moment >.<\""))
     | SProbColon (lhs,rhs)
     -> let lhs' = expr builder lhs
        and rhs' = expr builder rhs in
@@ -447,50 +538,23 @@ let translate (globals, functions) =
             | DivEqual -> raise (Failure("special assignments need binops to be able to work"))
             | Equal -> ignore(L.build_store e2' e1' builder); e1')
         | (ty, SListElement (listId,index,rest))
-        -> (*
-              allocInitElt helper function
-              Description:
-              Allocate and intitalize a list elt, then cast to ( char * )
-              For ex: int * tmp = malloc(sizeOf(int));
-                      *tmp = 5;
-                      char * tmp2 = ( char* ) tmp;
-          *)  
-          let allocInitElt v =
-              (* save type of element *)
-              let vtype = fst v in
-              (* 5 *)
-              let value = expr builder v in
-              (* int * tmp *)
-              let tmp = match (vtype) with
-                        [A.Int] -> L.build_alloca (L.pointer_type i32_t) "tmp" builder
-                        | [A.Float] -> L.build_alloca (L.pointer_type float_t) "tmp" builder
-                        | [A.Char] -> raise(Failure("fill in for char"))
-                        | [A.Bool] -> raise(Failure("fill in for bool"))
-                        | [A.Prob] -> raise(Failure("fill in for prob someday... >.<\""))
-              in
-              (* malloc(sizeOf(int)) *)
-              let heapAddr = match (vtype) with
-                              [A.Int] -> L.build_malloc i32_t "tmpAddr" builder
-                              | [A.Float] -> L.build_malloc float_t "tmpAddr" builder
-                              | [A.Char] -> raise(Failure("fill in for char"))
-                              | [A.Bool] -> raise(Failure("fill in for bool"))
-                              | [A.Prob] -> raise(Failure("fill in for prob someday... >.<\""))
-              in
-              (* tmp = malloc(sizeOf(int)); *)
-              let tmp' = ignore(L.build_store heapAddr tmp builder); tmp in
-              (* *tmp *)
-              let tmp'' = L.build_load tmp' "tmpWithVal" builder in
-              (* *tmp = 5 *)
-              let tmp''' = ignore (L.build_store value tmp'' builder); tmp'' in
-              (* char * tmp2 = ( char* ) tmp;  *)
-              let asChar = L.build_bitcast tmp''' (L.pointer_type i8_t) "asChar" builder
-              in asChar
-            in 
-            let theList = expr builder listId
-            and i = expr builder index
-            and e2' = allocInitElt e2 in 
-            let _ = L.build_call set_at_func [| theList; i; e2'|] "set_at" builder 
-            in theList )         
+        -> match rest with
+             [] 
+             -> let theList = expr builder listId
+                and i = expr builder index
+                and e2' = allocInitElt e2 in 
+                let _ = L.build_call set_at_func [| theList; i; e2'|] "set_at" builder 
+                in theList
+             | _
+             -> let theList = expr builder listId in
+                
+                let lastIndex = List.hd (List.rev rest)
+                and allbutLastIndex = index::(List.rev (List.tl (List.rev rest))) in 
+                let listToIndexInto = deRef allbutLastIndex theList  
+                and i = expr builder lastIndex
+                and e2' = allocInitElt e2 in 
+                let _ = L.build_call set_at_func [| listToIndexInto; i; e2'|] "set_at" builder 
+                in listToIndexInto )         
     | SFunCall ("printint", [e])
     -> L.build_call printint_func [| (expr builder e) |]
        "printint" builder
@@ -523,12 +587,12 @@ let translate (globals, functions) =
        L.build_call printstr_func [| newLine_str |] "printstr" builder
     | SFunCall ("print",[(typeList,_) as arg])
     -> (match typeList with
-        [A.Int]
+          [A.Int]
         -> L.build_call printint_func [| (expr builder arg) |]
            "printint" builder
-        | [A.Prob;A.Int] ->
-          L.build_call print_prob_int_debug_func [| (expr builder arg) |]
-           "print_prob_int_debug" builder
+        | [A.Char] ->
+          L.build_call printchar_func [| (expr builder arg) |]
+           "printchar" builder
         | [A.Bool]
         -> L.build_call printb_func [| (expr builder arg) |]
             "printb" builder
@@ -536,14 +600,17 @@ let translate (globals, functions) =
         -> L.build_call printf_func [| float_format_str ; (expr builder arg) |]
         "printf" builder
         | [A.String]
-        -> L.build_call printstr_func [| (expr builder arg) |]
-        "printstr" builder
+        -> L.build_call print_list_char_func [| (expr builder arg) |]
+        "print_list_char" builder
         | [A.List; A.Int]
         -> L.build_call print_list_int_func [| (expr builder arg) |]
         "print_list_int" builder
         | [A.List; A.Float]
         -> L.build_call print_list_float_func [| (expr builder arg) |]
         "print_list_float" builder
+        | [A.List; A.Char]
+        -> L.build_call print_list_char_func [| (expr builder arg) |]
+        "print_list_char" builder
         | _
         -> raise(Failure("printing type "^A.string_of_typ_name typeList ^ "not yet supported")))
     | SFunCall ("print_list_int", [e]) ->

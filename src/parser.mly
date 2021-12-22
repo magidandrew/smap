@@ -83,7 +83,7 @@ expr:
 | expr TIMESEQUAL expr     { Assign($1, TimesEqual, $3) }
 | expr DIVEQUAL expr       { Assign($1, DivEqual, $3)   }
 /* unary expressions                                                        */
-| LPAREN MINUS expr RPAREN                        { Unop(Neg, $3)            } /* what is our syntax for negative numbers? */
+| MINUS expr                                      { Unop(Neg, $2)            } /* what is our syntax for negative numbers? */
 | BITNOT expr                                     { Unop(BitNot, $2)         }
 | NOT expr                                        { Unop(Not, $2)            }
 | expr NOT                                        { Unop(Bang, $1)           }

@@ -1,6 +1,6 @@
 
 #include <stdio.h>
-
+#include "list.h"
 // void printstr(const char *str)
 // {
 // 	puts(str);
@@ -29,20 +29,17 @@ void printstr(char* x)
 
 //Methods for enigma
 
-int stringLength(char* x) {
-	if (*x == '\0') {
-		return 0;
-	}
+int stringLength(list* x) {
 
-  return (1 + stringLength(++x));
+  return x->size;
 	
 }
 
 
-int corresponding_int(char* x, int index) {
+int corresponding_int(list* x, int index) {
 
-	char current_elem = x[index];
-	int ascii_val = (int) current_elem;
+	char* current_elem = get_at(x,index);
+	int ascii_val = (int) (*current_elem);
 	return ascii_val - 65;
 }
 
@@ -60,6 +57,10 @@ int modulus_operation(int x, int y) {
 }
 
 
+
+void printchar(char c){
+	printf("%c",c);
+}
 
 #ifdef BUILD_TEST
 int main()

@@ -1,4 +1,4 @@
 int main() {
 	int x = -1;
-	printint(x);
+	print(x);
 }

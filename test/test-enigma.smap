@@ -41,7 +41,7 @@ int return_cor_int(string what_message, int what_index) {
 
 list int initialize_input_text(string message_user,list int input_list_message) {
     
-    int message_length_input = stringLength(message_user);
+    int message_length_input = message_user.length;
     int message_length_init = 0;
     int current_int_val = 0;
 
@@ -175,9 +175,10 @@ int main() {
     int final_output_counter = 0;
     int location_on_initialization_array = 0;
     int plugboard_input_count = 0;
+    int some_counter = 0;
     list int temp = [1];
     list int input_text = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1];
-    string messagez = "ZEROSIXHUNDREEDHOURSWEATHERTODAYISCLEARRAININTHEEVENINGHEILHITLER";
+    list char messagez = "ZEROSIXHUNDREEDHOURSWEATHERTODAYISCLEARRAININTHEEVENINGHEILHITLER";
     int length_input = stringLength(messagez);
 
     //ToDo: Define the key -> SIG (Rotor) PMP (Ring)
@@ -237,8 +238,7 @@ int main() {
     for(final_output_counter=0;final_output_counter<length_input;final_output_counter=final_output_counter+1) {
         corresponding_char(temp[final_output_counter]);
     }
-    
-    
+
 
 
     return 0;
