@@ -1,0 +1,12 @@
+
+int main() {
+    
+    int z = 10;
+    string x = "hello";
+    string y = "e";
+
+    int location = characterLocation(x,y);
+
+    print(location);
+
+}

@@ -1,0 +1,13 @@
+int main() {
+
+    int x = 20;
+    int y = 5;
+    int z = isCompDivisible(x);
+    if(z==1){
+    	print("is even");
+    }
+    else {
+    	print("is odd");
+    }
+
+}

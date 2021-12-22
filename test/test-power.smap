@@ -1,0 +1,12 @@
+int main() {
+
+    int x = 2;
+
+    int y = 4;
+
+    int z = power(x,y);
+
+    print(z);
+
+    return 0;
+}

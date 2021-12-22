@@ -96,6 +96,15 @@ let check(globals, functions) =
                                               ("message_to_int_list", [Void]);
                                               ("stringLength", [Int]);
                                               ("corresponding_int", [Int]);
+                                              ("absolute", [Int]);
+                                              ("ceilFloat", [Int]);
+                                              ("ascii", [Int]);
+                                              ("isCompDivisible", [Int]);
+                                              ("divisible", [Int]);
+                                              ("power", [Int]);
+                                              ("characterLocation", [Int]);
+                                              ("int_to_char", [String]);
+                                              ("stringReverse", [Void]);
                                               ("very_bad_get_head",[Int]);
                                               ("init_list", [Int]);
                                               ("push_back", [Int]);

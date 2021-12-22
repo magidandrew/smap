@@ -1,0 +1,8 @@
+int main() {
+
+    string x = "Hello World!";
+    int my_len = stringLength(x);
+    print(my_len);
+    return 0;
+    
+}

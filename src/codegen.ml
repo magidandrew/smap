@@ -145,6 +145,33 @@ let translate (globals, functions) =
   let stringLength_t: L.lltype = L.function_type i32_t [| L.pointer_type list_t |] in
   let stringLength_func: L.llvalue = L.declare_function "stringLength" stringLength_t the_module in
 
+  let stringReverse_t: L.lltype = L.function_type i32_t [| L.pointer_type list_t |] in
+  let stringReverse_func: L.llvalue = L.declare_function "stringReverse" stringReverse_t the_module in  
+
+  let absolute_t: L.lltype = L.function_type i32_t [| i32_t |] in
+  let absolute_func : L.llvalue = L.declare_function "absolute" absolute_t the_module in
+
+  let characterLocation_t: L.lltype = L.function_type i32_t [| L.pointer_type list_t;L.pointer_type list_t |] in
+  let characterLocation_func : L.llvalue = L.declare_function "characterLocation" characterLocation_t the_module in
+
+  let isCompDivisible_t: L.lltype = L.function_type i32_t [| i32_t |] in
+  let isCompDivisible_func : L.llvalue = L.declare_function "isCompDivisible" isCompDivisible_t the_module in
+
+  let divisible_t: L.lltype = L.function_type i32_t [| i32_t;i32_t |] in
+  let divisible_func : L.llvalue = L.declare_function "divisible" divisible_t the_module in
+
+  let power_t: L.lltype = L.function_type i32_t [| i32_t;i32_t |] in
+  let power_func : L.llvalue = L.declare_function "power" power_t the_module in
+
+  let ceilFloat_t: L.lltype = L.function_type i32_t [| float_t |] in
+  let ceilFloat_func : L.llvalue = L.declare_function "ceilFloat" ceilFloat_t the_module in
+
+  let ascii_t: L.lltype = L.function_type i32_t [| L.pointer_type list_t |] in
+  let ascii_func : L.llvalue = L.declare_function "ascii" ascii_t the_module in
+
+  let int_to_char_t: L.lltype = L.function_type str [| i32_t|] in
+  let int_to_char_func : L.llvalue = L.declare_function "int_to_char" int_to_char_t the_module in
+
   let corresponding_int_t: L.lltype = L.function_type i32_t [| L.pointer_type list_t;i32_t |] in
   let corresponding_int_func: L.llvalue = L.declare_function "corresponding_int" corresponding_int_t the_module in
 
@@ -561,6 +588,9 @@ let translate (globals, functions) =
     | SFunCall ("stringLength", [e]) ->
        L.build_call stringLength_func [| (expr builder e) |]
        "stringLength" builder
+    | SFunCall ("stringReverse", [e]) ->
+       L.build_call stringReverse_func [| (expr builder e) |]
+       "stringReverse" builder
     | SFunCall ("corresponding_char", [e]) ->
        L.build_call corresponding_char_func [| (expr builder e) |]
        "corresponding_char" builder
@@ -570,6 +600,30 @@ let translate (globals, functions) =
     | SFunCall ("modulus_operation", [e;e2]) ->
     L.build_call modulus_operation_func [| (expr builder e);(expr builder e2) |]
     "modulus_operation" builder
+    | SFunCall ("absolute", [e]) ->
+    L.build_call absolute_func [| (expr builder e) |]
+    "absolute" builder
+    | SFunCall ("ceilFloat", [e]) ->
+    L.build_call ceilFloat_func [| (expr builder e) |]
+    "ceilFloat" builder
+    | SFunCall ("int_to_char", [e]) ->
+    L.build_call int_to_char_func [| (expr builder e) |]
+    "int_to_char" builder
+    | SFunCall ("characterLocation", [e;e2]) ->
+    L.build_call characterLocation_func [| (expr builder e); (expr builder e2) |]
+    "characterLocation" builder
+    | SFunCall ("isCompDivisible", [e]) ->
+    L.build_call isCompDivisible_func [| (expr builder e) |]
+    "isCompDivisible" builder
+    | SFunCall ("divisible", [e;e2]) ->
+    L.build_call divisible_func [| (expr builder e); (expr builder e2) |]
+    "divisible" builder
+    | SFunCall ("power", [e;e2])->
+    L.build_call power_func [| (expr builder e); (expr builder e2) |]
+    "power" builder
+    | SFunCall ("ascii", [e]) ->
+    L.build_call ascii_func [| (expr builder e) |]
+    "ascii" builder
     | SFunCall ("very_bad_get_head", [e])
     -> let arg = (expr builder e) in
        L.build_call very_bad_get_head_func [| arg |]

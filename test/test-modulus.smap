@@ -1,0 +1,9 @@
+int main() {
+
+    int x = 1073741669;
+    int y = 82595514;
+    int z = modulus_operation(x,y);
+
+    print(z);
+
+}

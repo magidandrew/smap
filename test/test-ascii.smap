@@ -1,0 +1,10 @@
+int main() {
+
+    string x = "a";
+    int ascii_values = ascii(x);
+
+    print(ascii_values);
+
+    return 0;
+
+}

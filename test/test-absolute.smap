@@ -1,0 +1,10 @@
+int main() {
+
+    int p = 200;
+    int q = (-200);
+    int r = absolute(p);
+    int s = absolute(q);
+    print(s);
+    
+
+}
