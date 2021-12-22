@@ -1,3 +1,4 @@
+//ToDo: Implement the code for enigma-commercial
 //Used: i,j,k,l,m
 //ToDo: Change the rotor_shift tushar pushed
 int character_location(list int x,int y){
@@ -66,6 +67,49 @@ int my_modulus_result(int base) {
     return modulus_results;
 }
 
+int rotor_direction_output(int input_output_char_loc,list int rotor_one_input_direct,list int rotor_one_output_direct,list int rotor_two_input_direct,list int rotor_two_output_direct,list int rotor_three_input_direct,list int rotor_three_output_direct){
+		
+        int index_reverse = 0;
+		int characher_location_holder=input_output_char_loc;
+		int characher_location_holder_two = 0;
+		list int reflector= [0,1,2,3,4,5,6,3,8,9,10,6,12,10,12,8,4,1,5,19,2,21,21,9,0,19];
+
+		
+        //Getting character on rotor3 input tray
+        characher_location_holder=character_location(rotor_three_input_direct,rotor_three_output_direct[characher_location_holder]);
+            
+        //Getting character on rotor2 input tray
+        characher_location_holder=character_location(rotor_two_input_direct,rotor_two_output_direct[characher_location_holder]);
+            
+        //Getting character on rotor1 input tray
+        characher_location_holder=character_location(rotor_one_input_direct,rotor_one_output_direct[characher_location_holder]);
+            
+        //Getting the reflected elment and the other reflected value
+        
+        for(index_reverse=0;index_reverse<26;index_reverse=index_reverse+1){
+            if(characher_location_holder==index_reverse){
+                    
+            }
+            else{
+                if(reflector[characher_location_holder]==reflector[index_reverse]){
+                    characher_location_holder_two=index_reverse;
+                }
+            }
+        }
+        //Getting character on rotor1 output tray
+        characher_location_holder=character_location(rotor_one_output_direct,rotor_one_input_direct[characher_location_holder_two]);
+        //Getting character on rotor2 output tray
+        characher_location_holder=character_location(rotor_two_output_direct,rotor_two_input_direct[characher_location_holder]);
+        //Getting character on rotor3 output tray
+        //characher_location_holder=character_location(rotor_three_output_direct,rotor_three_input_direct[characher_location_holder]);
+        //Cipher Character
+		return characher_location_holder;
+		
+		
+}
+
+
+
 list int encryption_decryption(list int rotor_one_e_input,list int rotor_one_e_output,list int rotor_two_e_input,list int rotor_two_e_output,list int rotor_three_e_input,list int rotor_three_e_output, list int text, int length_input_text){
 	
 	int modulus_result = 0;
@@ -108,7 +152,9 @@ list int encryption_decryption(list int rotor_one_e_input,list int rotor_one_e_o
 
         }
 
-        //print(char_loc_holder);
+
+        char_loc_holder=rotor_direction_output(char_loc_holder,rotor_one_e_input,rotor_one_e_output,rotor_two_e_input,rotor_two_e_output,rotor_three_e_input,rotor_three_e_output);
+
 
     }
 
@@ -175,38 +221,9 @@ int main() {
     input_text = initialize_input_text(messagez,input_text);
 
     //ToDo: Initialize the encryption_decryption function
-    print("Rotor One: ");
-    print(rotor_one_in);
-    print("Rotor Two: ");
-    print(rotor_two_in);
-    print("Rotor Three: ");
-    print(rotor_three_in);
-
-    print("Rotor One Out: ");
-    print(rotor_one_out);
-    print("Rotor Two Out: ");
-    print(rotor_two_out);
-    print("Rotor Three Out: ");
-    print(rotor_three_out);
     
     temp = encryption_decryption(rotor_one_in,rotor_one_out,rotor_two_in,rotor_two_out,rotor_three_in,rotor_three_out,input_text,length_input);
 
-    print(temp);
-    
-
-    print("Rotor One: ");
-    print(rotor_one_in);
-    print("Rotor Two: ");
-    print(rotor_two_in);
-    print("Rotor Three: ");
-    print(rotor_three_in);
-
-    print("Rotor One Out: ");
-    print(rotor_one_out);
-    print("Rotor Two Out: ");
-    print(rotor_two_out);
-    print("Rotor Three Out: ");
-    print(rotor_three_out);
 
 
     return 0;
