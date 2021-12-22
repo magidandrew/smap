@@ -169,7 +169,7 @@ let translate (globals, functions) =
   let ascii_t: L.lltype = L.function_type i32_t [| L.pointer_type list_t |] in
   let ascii_func : L.llvalue = L.declare_function "ascii" ascii_t the_module in
 
-  let int_to_char_t: L.lltype = L.function_type str [| i32_t|] in
+  let int_to_char_t: L.lltype = L.function_type (L.pointer_type list_t) [| i32_t|] in
   let int_to_char_func : L.llvalue = L.declare_function "int_to_char" int_to_char_t the_module in
 
   let corresponding_int_t: L.lltype = L.function_type i32_t [| L.pointer_type list_t;i32_t |] in

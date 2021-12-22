@@ -92,12 +92,12 @@ int ascii(list* x) {
 }
 
 
-char* int_to_char(int x) {
+list* int_to_char(int x) {
     
-    char z = x;
-	char *str = malloc(2);
-	str[0] = z;
-	str[1] = '\0';
+    char* z = malloc(1);
+	*z = x;
+	list *str = malloc(sizeof(struct list));
+	push_back(str,z);
     return str;
 }
 

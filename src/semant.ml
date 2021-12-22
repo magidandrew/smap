@@ -103,7 +103,7 @@ let check(globals, functions) =
                                               ("divisible", [Int]);
                                               ("power", [Int]);
                                               ("characterLocation", [Int]);
-                                              ("int_to_char", [String]);
+                                              ("int_to_char", [Int]);
                                               ("stringReverse", [Void]);
                                               ("very_bad_get_head",[Int]);
                                               ("init_list", [Int]);
