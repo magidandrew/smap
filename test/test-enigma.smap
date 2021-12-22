@@ -171,6 +171,7 @@ list int encryption_decryption(list int rotor_one_e_input,list int rotor_one_e_o
 
 int main() {
 
+
     int final_output_counter = 0;
     int location_on_initialization_array = 0;
     int plugboard_input_count = 0;
