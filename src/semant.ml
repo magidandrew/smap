@@ -91,6 +91,7 @@ let check(globals, functions) =
     in
     List.fold_left add_bind StringMap.empty [ ("testMakeStruct", [Void]);
                                               ("bad_add_head", [Int]);
+                                              ("corresponding_char", [Void]);
                                               ("message_to_int_list", [Void]);
                                               ("stringLength", [Int]);
                                               ("corresponding_int", [Int]);

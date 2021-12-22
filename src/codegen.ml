@@ -131,6 +131,9 @@ let translate (globals, functions) =
   let printstr_t: L.lltype = L.function_type i32_t [| L.pointer_type i8_t |] in
   let printstr_func : L.llvalue = L.declare_function "printstr" printstr_t the_module in
 
+  let corresponding_char_t: L.lltype = L.function_type i32_t [| i32_t |] in
+  let corresponding_char_func : L.llvalue = L.declare_function "corresponding_char" corresponding_char_t the_module in
+
   let printb_t: L.lltype = L.function_type i32_t [| i1_t |] in
   let printb_func : L.llvalue = L.declare_function "printb" printb_t the_module in
 
@@ -494,6 +497,9 @@ let translate (globals, functions) =
     | SFunCall ("stringLength", [e]) ->
        L.build_call stringLength_func [| (expr builder e) |]
        "stringLength" builder
+    | SFunCall ("corresponding_char", [e]) ->
+       L.build_call corresponding_char_func [| (expr builder e) |]
+       "corresponding_char" builder
     | SFunCall ("corresponding_int", [e;e2]) ->
     L.build_call corresponding_int_func [| (expr builder e);(expr builder e2) |]
     "corresponding_int" builder

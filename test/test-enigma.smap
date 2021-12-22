@@ -171,6 +171,7 @@ list int encryption_decryption(list int rotor_one_e_input,list int rotor_one_e_o
 
 int main() {
 
+    int final_output_counter = 0;
     int location_on_initialization_array = 0;
     int plugboard_input_count = 0;
     list int temp = [1];
@@ -231,8 +232,12 @@ int main() {
 
     //ToDo: Initialize the encryption_decryption function
     temp = encryption_decryption(rotor_one_in,rotor_one_out,rotor_two_in,rotor_two_out,rotor_three_in,rotor_three_out,input_text,length_input);
-
-    print(temp);
+    print("Output text: ");
+    for(final_output_counter=0;final_output_counter<length_input;final_output_counter=final_output_counter+1) {
+        corresponding_char(temp[final_output_counter]);
+    }
+    
+    
 
 
     return 0;

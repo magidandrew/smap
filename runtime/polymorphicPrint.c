@@ -46,6 +46,14 @@ int corresponding_int(char* x, int index) {
 	return ascii_val - 65;
 }
 
+void corresponding_char(int number) {
+
+	char element = (number + 65);
+
+	printf("%c", element);
+
+}
+
 
 int modulus_operation(int x, int y) {
 	return x%y;
