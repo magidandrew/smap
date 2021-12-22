@@ -77,13 +77,16 @@ int rotor_direction_output(int input_output_char_loc,list int rotor_one_input_di
 		
         //Getting character on rotor3 input tray
         characher_location_holder=character_location(rotor_three_input_direct,rotor_three_output_direct[characher_location_holder]);
-            
+        
+
         //Getting character on rotor2 input tray
         characher_location_holder=character_location(rotor_two_input_direct,rotor_two_output_direct[characher_location_holder]);
             
         //Getting character on rotor1 input tray
         characher_location_holder=character_location(rotor_one_input_direct,rotor_one_output_direct[characher_location_holder]);
-            
+
+        //Verified till above
+        
         //Getting the reflected elment and the other reflected value
         
         for(index_reverse=0;index_reverse<26;index_reverse=index_reverse+1){
@@ -96,12 +99,13 @@ int rotor_direction_output(int input_output_char_loc,list int rotor_one_input_di
                 }
             }
         }
+        
         //Getting character on rotor1 output tray
         characher_location_holder=character_location(rotor_one_output_direct,rotor_one_input_direct[characher_location_holder_two]);
         //Getting character on rotor2 output tray
         characher_location_holder=character_location(rotor_two_output_direct,rotor_two_input_direct[characher_location_holder]);
         //Getting character on rotor3 output tray
-        //characher_location_holder=character_location(rotor_three_output_direct,rotor_three_input_direct[characher_location_holder]);
+        characher_location_holder=character_location(rotor_three_output_direct,rotor_three_input_direct[characher_location_holder]);
         //Cipher Character
 		return characher_location_holder;
 		
@@ -121,6 +125,7 @@ list int encryption_decryption(list int rotor_one_e_input,list int rotor_one_e_o
 	int text_len = length_input_text;
     int loop_counter_e_d = 0;
     list int input_output_char = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25];
+    list int cipher_output_character = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1];
 
     
     for(loop_counter_e_d=0;loop_counter_e_d<text_len;loop_counter_e_d=loop_counter_e_d+1) {
@@ -128,12 +133,12 @@ list int encryption_decryption(list int rotor_one_e_input,list int rotor_one_e_o
         char_loc_holder = character_location_status(input_output_char, text[loop_counter_e_d]);
         rotor_shift(rotor_three_e_input,1);
         rotor_shift(rotor_three_e_output,1);
+        
         count_rotor_three = count_rotor_three + 1;
         
         if(count_rotor_three>0) {
             modulus_result = my_modulus_result(count_rotor_three);
             if(modulus_result == 0) {
-                print(modulus_result);
                 rotor_shift(rotor_two_e_input,1);
 			    rotor_shift(rotor_two_e_output,1);
                 count_rotor_two = count_rotor_two + 1;
@@ -154,13 +159,12 @@ list int encryption_decryption(list int rotor_one_e_input,list int rotor_one_e_o
 
 
         char_loc_holder=rotor_direction_output(char_loc_holder,rotor_one_e_input,rotor_one_e_output,rotor_two_e_input,rotor_two_e_output,rotor_three_e_input,rotor_three_e_output);
-
+        
+        cipher_output_character[loop_counter_e_d]=input_output_char[char_loc_holder];
 
     }
 
-
-
-	return rotor_one_e_input;
+	return cipher_output_character;
 	
 }
 
@@ -197,33 +201,38 @@ int main() {
     //For Rotor - I
     location_on_initialization_array=character_location(rotor_one_in,key[0]);
     rotor_one_in = rotor_shift(rotor_one_in,location_on_initialization_array);
+    
 
     location_on_initialization_array=character_location(rotor_one_out,ring_setting[0]);
     rotor_one_out = rotor_shift(rotor_one_out,location_on_initialization_array);
     
+    
     //For Rotor - II
     location_on_initialization_array=character_location(rotor_two_in,key[1]);
     rotor_two_in = rotor_shift(rotor_two_in,location_on_initialization_array);
+    
 
     location_on_initialization_array=character_location(rotor_two_out,ring_setting[1]);
     rotor_two_out = rotor_shift(rotor_two_out,location_on_initialization_array);
+    
 
     //For Rotor - III
     location_on_initialization_array=character_location(rotor_three_in,key[2]);
     rotor_three_in = rotor_shift(rotor_three_in,location_on_initialization_array);
-
+    
     location_on_initialization_array=character_location(rotor_three_out,ring_setting[2]);
     rotor_three_out = rotor_shift(rotor_three_out,location_on_initialization_array);
+
     
 
     //ToDo: Initialize the message
-
     input_text = initialize_input_text(messagez,input_text);
 
+
     //ToDo: Initialize the encryption_decryption function
-    
     temp = encryption_decryption(rotor_one_in,rotor_one_out,rotor_two_in,rotor_two_out,rotor_three_in,rotor_three_out,input_text,length_input);
 
+    print(temp);
 
 
     return 0;
