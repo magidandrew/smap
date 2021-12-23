@@ -83,13 +83,10 @@ smap.native :
 clean2 :
 	ocamlbuild -clean
 	rm -rf testall.log ocamlllvm *.diff
-<<<<<<< HEAD
 
 c_deps: list.o prob.o
 
 c_tests: prob list clearscreen
-=======
->>>>>>> 0400a558ae66d434a6e4360ee5966335c58e1eaa
 
 # Testing the "printbig" example
 list.o:
@@ -113,7 +110,6 @@ prob: list.o runtime/prob.c
 printbig : printbig.c
 	cc -o printbig -DBUILD_TEST printbig.c
 
-<<<<<<< HEAD
 polymorphicPrint.o :
 	$(CC) $(CFLAGS) -c -o polymorphicPrint.o runtime/polymorphicPrint.c
 
@@ -122,13 +118,11 @@ testMakeStruct.o :
 
 ncurses.o :
 	$(CC) $(CFLAGS) -c -o ncurses.o runtime/ncurses.c
-=======
 printstr : printstr.c
 	cc -o printstr -DBUILD_TEST printstr.c
 
 printstr.o : printstr.c
 	cc -c printstr.c
->>>>>>> 0400a558ae66d434a6e4360ee5966335c58e1eaa
 
 # Building the tarball
 
