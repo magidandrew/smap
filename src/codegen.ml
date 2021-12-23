@@ -382,13 +382,8 @@ let translate (globals, functions) =
        | A.String
        -> L.build_call list_length_func [| p' |]
        "list_length" builder
-<<<<<<< HEAD
        |_ 
        -> raise (Failure("semant should have caught this misuse of .length! "^A.string_of_typ_name (fst p))) )
-=======
-       |_
-       -> raise (Failure("semant should have caught this misuse of .length!"^A.string_of_typ_name (fst p))) )
->>>>>>> f9523789b8380951dbef2dfb19d28387a67ed4c1
     | SListElement (listId,index,rest)
     -> let eltType = fst index in
        (match eltType with
