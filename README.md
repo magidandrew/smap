@@ -31,7 +31,7 @@ To test compiler *and keep intermediate files*:
     
     ./testall.sh -k
 
-   To run example smap programs:
+   To run example smap programs (which are located in the examples folder):
    
 
     ./runExample.sh <exampleProgramName>
