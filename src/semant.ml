@@ -170,7 +170,7 @@ let check(globals, functions) =
           List -> ([Int],SLength(p'))
         | Prob -> ([Int],SLength(p'))
         | String -> ([Int],SLength(p'))
-        | _ -> raise( Failure ("length is only supported for prob and list type")))
+        | _ -> raise( Failure ("length is only supported for prob and list type"^string_of_typ_name(fst p'))))
     | ProbColon (lhs, rhs) -> 
       let lhs' = check_expr lhs
       and rhs' = check_expr rhs in
@@ -250,6 +250,9 @@ let check(globals, functions) =
     | Noexpr -> ([],SNoexpr)
     | List_lit (elts) ->
       let checked_elts = (List.map check_expr elts) in (*make sure each elt type checks on its own*)
+      if (List.length elts) = 0
+      then ([],SList_lit([]))
+      else
       let rep =  fst (List.hd checked_elts) in (*take type of the first elt arbitrarily *)
       let same = snd (List.fold_left 
                   (fun acc (ty,elt) -> (ty, ((fst acc = ty) && (snd acc))))
@@ -283,11 +286,16 @@ let check(globals, functions) =
     | Assign (e1, op, e2) as ex->
         let lhs = check_expr e1
         and rhs = check_expr e2 in
-        if ((fst lhs) = (fst rhs))
-        then (fst lhs, SAssign (lhs, op, rhs))
-        else raise (Failure ("type of  " ^ string_of_typ_name (fst lhs) ^
-                             " does not match type " ^ string_of_typ_name (fst rhs) ^
-                             " in " ^ string_of_expr ex))
+        (match rhs with
+            (typs, SList_lit ([]))
+            -> (fst lhs, SAssign (lhs, op, (fst lhs, SList_lit([]))))
+          |_
+          ->
+          if ((fst lhs) = (fst rhs))
+          then (fst lhs, SAssign (lhs, op, rhs))
+          else raise (Failure ("type of  " ^ string_of_typ_name (fst lhs) ^
+                              " does not match type " ^ string_of_typ_name (fst rhs) ^
+                              " in " ^ string_of_expr ex)))
     | Binop(e1, op, e2) as e ->
         let (t1, e1') = check_expr e1
         and (t2, e2') = check_expr e2 in
@@ -378,6 +386,7 @@ let check(globals, functions) =
 
   (* rule for checking/transforming an function AST node *)
   let typeCheck_func func =
+    let _ = enterScope scope in
     let checkedFormals = List.map check_formal func.formals in
     let checkedLocals = List.map check_local func.locals in
     let initLocals = List.map (fun (Some a) -> SExpr a)
@@ -386,6 +395,7 @@ let check(globals, functions) =
     in
     (* add initialization of locals to front of body *)
     let checkedBody = initLocals @(List.map check_stmt func.body) in
+    let _ = exitScope scope in
     {
             styp_name = func.typ_name;
             sfname = func.fname;

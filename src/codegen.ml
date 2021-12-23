@@ -24,21 +24,6 @@ let translate (globals, functions) =
   (* Create the LLVM compilation module into which we will generate code *)
   let the_module = L.create_module context "Smap" in
 
-  (*
-  For reference - delete before committing!!!
-  typedef struct list{
-    void **data;
-    int capacity;
-    int size;
-  } list;
-
-  typedef struct prob {
-    list probs;
-    list vals;
-    int length;
-} prob;
-*)
-
   let i32_t = L.i32_type context (* 32 bit integer *)
   and i8_t = L.i8_type context   (* 8 bit integer *)
   and i1_t = L.i1_type context   (* 1 bit integer *)
@@ -346,8 +331,11 @@ let translate (globals, functions) =
        | A.List 
        -> L.build_call list_length_func [| p' |]
        "list_length" builder
+       | A.String
+       -> L.build_call list_length_func [| p' |]
+       "list_length" builder
        |_ 
-       -> raise (Failure("semant should have caught this misuse of .length!")) )
+       -> raise (Failure("semant should have caught this misuse of .length!"^A.string_of_typ_name (fst p))) )
     | SListElement (listId,index,rest)
     -> let eltType = fst index in
        (match eltType with
@@ -372,7 +360,8 @@ let translate (globals, functions) =
     ->  let e1' = expr builder e1
         and toAdd = match fst e2 with
                     (A.List::t) 
-                    -> expr builder e2
+                    -> let elt = expr builder e2 in
+                    L.build_bitcast elt (L.pointer_type i8_t) "eltAsPtr" builder
                     | _ 
                     -> allocInitElt e2
         in let _ = L.build_call push_front_func [| e1'; toAdd |]
@@ -381,7 +370,8 @@ let translate (globals, functions) =
     ->  let e1' = expr builder e1
         and toAdd = match fst e2 with
                     (A.List::t) 
-                    -> expr builder e2
+                    -> let elt = expr builder e2 in
+                    L.build_bitcast elt (L.pointer_type i8_t) "eltAsPtr" builder 
                     | _ 
                     -> allocInitElt e2
         in let _ = L.build_call push_back_func [| e1'; toAdd |]
