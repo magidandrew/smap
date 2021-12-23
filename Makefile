@@ -86,14 +86,20 @@ clean2 :
 
 c_deps: list.o prob.o
 
-c_tests: prob list
+c_tests: prob list clearscreen
 
 # Testing the "printbig" example
 list.o:
 	$(CC) $(CFLAGS) -c -o list.o runtime/list.c $(LIBS)
 
 list: list.o runtime/list.c
-	$(CC) $(CFLAGS) -o list -DBUILD_TEST $(LIBS)
+	$(CC) $(CFLAGS) -o list -DBUILD_TEST runtime/list.c $(LIBS)
+
+clearscreen.o:
+	$(CC) $(CFLAGS) -c -o clearscreen.o runtime/clearscreen.c $(LIBS)
+
+clearscreen: clearscreen.o runtime/clearscreen.c
+	$(CC) $(CFLAGS) -o clearscreen -DBUILD_TEST runtime/clearscreen.c $(LIBS)
 
 prob.o:
 	$(CC) $(CFLAGS) -c -o prob.o runtime/prob.c $(LIBS)
