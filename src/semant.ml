@@ -104,6 +104,7 @@ let check(globals, functions) =
                                               ("power", [Int]);
                                               ("characterLocation", [Int]);
                                               ("int_to_char", [Int]);
+                                              ("key_test",[Int]);
                                               ("stringReverse", [Void]);
                                               ("very_bad_get_head",[Int]);
                                               ("init_list", [Int]);

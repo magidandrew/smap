@@ -6,6 +6,10 @@
 // {
 // 	puts(str);
 // }
+int all[17576][3];
+int first = 0;
+int l = 0;
+	
 void printb(int x)
 {
 	if(x){
@@ -44,6 +48,39 @@ void corresponding_char(int number) {
 	printf("%c", element);
 
 }
+
+char current_char(int number) {
+	char element = (number + 65);
+	return element;
+}
+
+void initialize_potential_settings() {
+	for(int i=0;i<26;i++){
+		for(int j=0;j<26;j++){
+			for(int k=0;k<26;k++){
+				all[l][0] = i;
+				all[l][1] = j;
+				all[l][2] = k;
+				l++;
+			}
+		}
+	}
+}
+
+int key_test(int number, int index) {
+
+	if(first==0) {
+		initialize_potential_settings();
+		first=first+1;
+		
+	}
+	
+
+	return all[number][index];
+		
+	
+}
+
 
 
 int modulus_operation(int x, int y) {

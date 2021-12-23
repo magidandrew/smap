@@ -151,6 +151,9 @@ let translate (globals, functions) =
   let absolute_t: L.lltype = L.function_type i32_t [| i32_t |] in
   let absolute_func : L.llvalue = L.declare_function "absolute" absolute_t the_module in
 
+  let key_test_t: L.lltype = L.function_type i32_t [| i32_t;i32_t |] in
+  let key_test_func : L.llvalue = L.declare_function "key_test" key_test_t the_module in
+
   let characterLocation_t: L.lltype = L.function_type i32_t [| L.pointer_type list_t;L.pointer_type list_t |] in
   let characterLocation_func : L.llvalue = L.declare_function "characterLocation" characterLocation_t the_module in
 
@@ -600,6 +603,10 @@ let translate (globals, functions) =
     | SFunCall ("modulus_operation", [e;e2]) ->
     L.build_call modulus_operation_func [| (expr builder e);(expr builder e2) |]
     "modulus_operation" builder
+    | SFunCall ("key_test", [e;e2]) ->
+    L.build_call key_test_func [| (expr builder e);(expr builder e2) |]
+    "key_test" builder
+    
     | SFunCall ("absolute", [e]) ->
     L.build_call absolute_func [| (expr builder e) |]
     "absolute" builder
