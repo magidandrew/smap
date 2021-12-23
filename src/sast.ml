@@ -50,7 +50,7 @@ type sfunc_decl = { styp_name : typ_name;
                  }
 
 
-let rec string_of_sexpr (t, e) =
+(* let rec string_of_sexpr (t, e) =
   "(" ^ string_of_typ (List.hd t) ^ " : " ^ (match e with
     SInt_lit(l) -> string_of_int l
   | SFloat_lit(l) -> string_of_float l    (*check floats again*)
@@ -78,7 +78,7 @@ let rec string_of_sstmt = function
   | SFor(e1, e2, e3, s) ->
       "for (" ^ string_of_sexpr e1  ^ " ; " ^ string_of_sexpr e2 ^ " ; " ^
       string_of_sexpr e3  ^ ") " ^ string_of_sstmt s
-  | SWhile(e, s) -> "while (" ^ string_of_sexpr e ^ ") " ^ string_of_sstmt s
+  | SWhile(e, s) -> "while (" ^ string_of_sexpr e ^ ") " ^ string_of_sstmt s *)
 
 type sprogram = svdecl list * sfunc_decl list
 
