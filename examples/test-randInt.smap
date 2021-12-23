@@ -1,0 +1,4 @@
+int main (){
+prob int x = [0.4, 0.4, 0.2] : [1,2,4];
+print(x!);
+}

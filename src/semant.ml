@@ -59,16 +59,16 @@ let exitScope tbl =
 
 let print_scope tbl =
   let asScopeList = (ScopeHash.fold (fun kn dn acc -> (kn,dn)::acc) tbl []) in
-  let printBind nm typs acc = acc^" ("^nm^")," in
+  let printBind nm _typs acc = acc^" ("^nm^")," in
   let printBindings s = StringHash.fold printBind s "" in
-  let asBindList = List.map (fun (k,v)-> printBindings v) asScopeList in
+  let asBindList = List.map (fun (_k,v)-> printBindings v) asScopeList in
   List.fold_left (fun a acc -> a^acc) "" asBindList
 (*                                                                       *)
 (* _____________________________________________________________________ *)
 
 let check(globals, functions) =
 
-  let check_binds (kind : string) (binds : vdecl list) =
+  let _check_binds (kind : string) (binds : vdecl list) =
     List.iter (function
     (Vdecl(([Void],b), (_))) -> raise (Failure ("illegal void " ^ kind ^ " " ^ b))
       | _ -> ()) binds;
@@ -142,19 +142,22 @@ let check(globals, functions) =
   (* Define rules for the type checking *)
 
   (***************** list type checking helpers ************************)
-  (* let getEltType lst:typ_name = 
-    let rec eatList (h::t) = 
-      if (h = List) 
-      then eatList t 
-      else (h::t)     
+  (* let getEltType lst:typ_name =
+    let rec eatList (h::t) =
+      if (h = List)
+      then eatList t
+      else (h::t)
     in
     eatList lst
   in *)
-  let getEltType lst:typ_name = 
-    let eatList (h::t) = 
-      if (h = List) 
-      then t 
-      else (h::t)     
+  let getEltType lst:typ_name =
+    let eatList lst =
+      match lst with
+      | [] -> raise(Failure "empty list in eatList")
+      |(h::t) ->
+      if (h = List)
+      then t
+      else (h::t)
     in
     eatList lst
   in
@@ -165,12 +168,12 @@ let check(globals, functions) =
       FunCall (fname,args) ->
       let theFunc = find_func fname in
       (theFunc.typ_name, SFunCall(fname, (List.map check_expr args)))
-    | String_lit s -> 
+    | String_lit s ->
       let len = String.length s in
-       let rec explode i m str acc = 
+       let rec explode i m str acc =
         if i = m then acc
-        else let c = (String.get str i) in 
-        c::(explode (i+1) m str acc) in 
+        else let c = (String.get str i) in
+        c::(explode (i+1) m str acc) in
        let chars = explode 0 len s [] in
        let toCharNode c = ([Char],SChar_lit c) in
        let asList = ([List;Char], SList_lit(List.map toCharNode chars)) in
@@ -179,18 +182,18 @@ let check(globals, functions) =
     | Char_lit c -> ([Char],SChar_lit c)
     | Int_lit num -> ([Int], SInt_lit num)
     | Float_lit flt -> ([Float], SFloat_lit flt)
-    | Length p 
+    | Length p
     -> let p' = check_expr p in
       (match List.hd (fst p') with
           List -> ([Int],SLength(p'))
         | Prob -> ([Int],SLength(p'))
         | String -> ([Int],SLength(p'))
-        | _ -> raise( Failure ("length is only supported for prob and list type")))
-    | ProbColon (lhs, rhs) -> 
+        | _ -> raise( Failure ("length is only supported for prob and list type"^string_of_typ_name(fst p'))))
+    | ProbColon (lhs, rhs) ->
       let lhs' = check_expr lhs
       and rhs' = check_expr rhs in
       if (fst lhs') = [List;Float]
-      then if List.hd (fst rhs') = List 
+      then if List.hd (fst rhs') = List
            then (getEltType (fst rhs'),(SProbColon (lhs',rhs')))
            else raise( Failure ("RHS of prob type must be a list"))
       else raise( Failure ("LHS of prob type must be a list of floats. Found "^string_of_typ_name (fst lhs')^" instead"))
@@ -199,21 +202,25 @@ let check(globals, functions) =
                     (match (result) with
                       []
                       -> raise (Failure ("Semant: Could not find identifier "^s^" in tbl "^(print_scope scope)))
-                      | [String] 
-                      -> let check_index = 
-                         (fun ty (Index i) ->
-                         let v = check_expr i in
-                         if fst v = [Int] then (ty,SIndex(v))
-                         else raise (Failure ("index must be of type int but it's"^ string_of_typ_name (fst v))) )
+                      | [String]
+                      -> let check_index =
+                         (fun ty theExpr ->
+                          match theExpr with
+                            (Index i) ->
+                                    (let v = check_expr i in
+                                    if fst v = [Int] then (ty,SIndex(v))
+                                    else raise (Failure ("index must be of type int but it's"^ string_of_typ_name (fst v)))
+                                    )
+                            | _-> raise(Failure("wrong expr inside check_index")))
                          in
                          let checked = List.map (check_index [Char]) (e1::rest) in
                          let e1' = List.hd checked
-                         and rest' = List.tl checked in 
+                         and rest' = List.tl checked in
                          ([Char], SListElement (([Char],SId(s)),e1',rest'))
                       | typs
                       ->  if (List.hd typs) != List
                           then raise( Failure ("Cannot use bracket syntax on non list-type"))
-                          else 
+                          else
                             (*********************************)
                             let rec check_index2 ty indicies =
                               match indicies with
@@ -224,31 +231,33 @@ let check(globals, functions) =
                               let recurse = check_index2 (List.tl ty) rest in
                               if fst v = [Int] then ((ty,SIndex(v))::recurse)
                               else raise (Failure ("index must be of type int but it's"^ string_of_typ_name (fst v)))
+                              | _ -> raise(Failure "check_index2 not matched")
                             in
                             let checkers = check_index2 (List.tl typs) (e1::rest) in
-                            let e1' = List.hd checkers 
+                            let e1' = List.hd checkers
                             and rest' = List.tl checkers in
                             let inner = fst (List.hd (List.rev checkers)) in
-                            let res = (inner, SListElement ((inner,SId(s)),e1',rest')) in res)
+                            let res = (inner, SListElement ((inner,SId(s)),e1',rest')) in res
                             (********************************)
                             (* let check_index = (fun ty (Index i) ->
                               let v = check_expr i in
                               if fst v = [Int] then (ty,SIndex(v))
                               else raise (Failure ("index must be of type int but it's"^ string_of_typ_name (fst v))) )
                             in
-                            
+
                             let eltType = getEltType typs in
                             let checked = List.map (check_index eltType) (e1::rest) in
                             let e1' = List.hd checked
                             and rest' = List.tl checked in
                             (eltType, SListElement ((eltType,SId(s)),e1',rest')) ) *)
+                       )
     | ListAddHead (e1, e2)
     -> let e1' = check_expr e1
        and e2' = check_expr e2 in
         (match e1' with
-          (typs,SId(s))
+          (_typs,SId(_s))
           -> (fst e1',SListAddHead(e1',e2'))
-          | (typs, SListElement(_,_,_))
+          | (_typs, SListElement(_,_,_))
           -> (fst e1',SListAddHead(e1',e2'))
           | _
           -> raise( Failure ("Cannot use push-front syntax on non list-type")))
@@ -256,18 +265,21 @@ let check(globals, functions) =
       let e1' = check_expr e1
        and e2' = check_expr e2 in
         (match e1' with
-          (typs,SId(s))
+          (_typs,SId(_s))
           -> (fst e1',SListAddTail(e1',e2'))
-          | (typs, SListElement(_,_,_))
+          | (_typs, SListElement(_,_,_))
           -> (fst e1',SListAddTail(e1',e2'))
           | _
           -> raise( Failure ("Cannot use push-front syntax on non list-type")))
     | Noexpr -> ([],SNoexpr)
     | List_lit (elts) ->
       let checked_elts = (List.map check_expr elts) in (*make sure each elt type checks on its own*)
+      if (List.length elts) = 0
+      then ([],SList_lit([]))
+      else
       let rep =  fst (List.hd checked_elts) in (*take type of the first elt arbitrarily *)
-      let same = snd (List.fold_left 
-                  (fun acc (ty,elt) -> (ty, ((fst acc = ty) && (snd acc))))
+      let same = snd (List.fold_left
+                  (fun acc (ty,_elt) -> (ty, ((fst acc = ty) && (snd acc))))
                   (rep, true) checked_elts) in
       if (same) (*make sure elts in list are all of the same type*)
       then (List::rep, SList_lit(checked_elts))
@@ -276,7 +288,7 @@ let check(globals, functions) =
            e.g. "list prob prob int x" is not valid
           *)
       else
-         let typs = List.fold_left (fun acc (ty,_)-> acc^", "^string_of_typ_name ty) "\n[ " 
+         let typs = List.fold_left (fun acc (ty,_)-> acc^", "^string_of_typ_name ty) "\n[ "
           checked_elts in
          raise (Failure ("Semant: Elements of a list must all be the same type. "^typs^" ]"))
     | Id str -> let result = (findVar scope str) in
@@ -298,11 +310,16 @@ let check(globals, functions) =
     | Assign (e1, op, e2) as ex->
         let lhs = check_expr e1
         and rhs = check_expr e2 in
-        if ((fst lhs) = (fst rhs))
-        then (fst lhs, SAssign (lhs, op, rhs))
-        else raise (Failure ("type of  " ^ string_of_typ_name (fst lhs) ^
-                             " does not match type " ^ string_of_typ_name (fst rhs) ^
-                             " in " ^ string_of_expr ex))
+        (match rhs with
+            (_typs, SList_lit ([]))
+            -> (fst lhs, SAssign (lhs, op, (fst lhs, SList_lit([]))))
+          |_
+          ->
+          if ((fst lhs) = (fst rhs))
+          then (fst lhs, SAssign (lhs, op, rhs))
+          else raise (Failure ("type of  " ^ string_of_typ_name (fst lhs) ^
+                              " does not match type " ^ string_of_typ_name (fst rhs) ^
+                              " in " ^ string_of_expr ex)))
     | Binop(e1, op, e2) as e ->
         let (t1, e1') = check_expr e1
         and (t2, e2') = check_expr e2 in
@@ -350,7 +367,7 @@ let check(globals, functions) =
   in
 
   (* extract local vars that were declared and initialized in the same line*)
-  let check_for_init_local (Vdecl((typs,nm)as binding,e)) = match e with
+  let check_for_init_local (Vdecl((typs,nm)as _binding,e)) = match e with
      Noexpr -> None
     | init -> Some (typs,SAssign((typs,SId nm),Equal,check_expr init))
 
@@ -393,14 +410,19 @@ let check(globals, functions) =
 
   (* rule for checking/transforming an function AST node *)
   let typeCheck_func func =
+    let _ = enterScope scope in
     let checkedFormals = List.map check_formal func.formals in
     let checkedLocals = List.map check_local func.locals in
-    let initLocals = List.map (fun (Some a) -> SExpr a)
+    let initLocals = List.map (fun thing ->
+                                  match thing with
+                                  (Some a) -> SExpr a
+                                  | _ -> raise(Failure "initLocals not matched"))
                     ( List.filter (fun a -> match a with None -> false |_->true)
                     (List.map check_for_init_local func.locals) )
     in
     (* add initialization of locals to front of body *)
     let checkedBody = initLocals @(List.map check_stmt func.body) in
+    let _ = exitScope scope in
     {
             styp_name = func.typ_name;
             sfname = func.fname;

@@ -99,6 +99,7 @@ int get_length(prob *p) { return p->length; }
 
 // returns a value based on the probability distribution
 char *peek(prob *p) {
+    // seed rng
     double rnd = precision(drand48(), PROB_PRECISION);
 
     #ifdef debug

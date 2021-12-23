@@ -6,48 +6,38 @@
 
   
 
-Building the compiler with dune:  
-
-    dune build src/smap.exe
-
-Building compiler without dune:
-
   
 
-    make clean    
-    make smap
-
-  
-
-To test compiler:
-
-  
+To test compiler:  
 
     make clean
+    
     make all
+    
     ./testall.sh
 
   
+To test compiler with a single file:
+
+    ./testfile.sh <filePath>
 
 To test compiler *and keep intermediate files*:
 
-  
+   
 
     make clean
+    
     make all
+    
     ./testall.sh -k
 
-  
+   To run example smap programs:
+   
 
-#################################################
-
-  
+    ./runExample.sh <exampleProgramName>
 
 ## Hello World Milestone
 
-  
-
-  
 
 Currently our test input file is test-hello.smap in the test folder.
 
@@ -55,17 +45,14 @@ Currently our test input file is test-hello.smap in the test folder.
 
 ### Compiler Structure Overview
 
-  
-
 smap.ml is the front end of our compiler.
-
-  
 
 1. It sucks in test-hello.smap,
 
-  
 
 2. runs it through the scanner (producing tokens),
+
+  
 
   
 
@@ -73,7 +60,11 @@ smap.ml is the front end of our compiler.
 
   
 
+  
+
 4. runs output of parser through semantic analyzer (producing SAST),
+
+  
 
   
 
@@ -81,7 +72,11 @@ smap.ml is the front end of our compiler.
 
   
 
+  
+
 6. finally, runs output of codegenerator through LLVM compiler to produce a test-hello.smap.exe file.
+
+  
 
   
 
@@ -89,7 +84,11 @@ smap.ml is the front end of our compiler.
 
   
 
+  
+
 1. Scanner: scanner.mll
+
+  
 
   
 
@@ -97,7 +96,11 @@ smap.ml is the front end of our compiler.
 
   
 
+  
+
 4. Semantic Analyzer: semant.ml, sast.ml
+
+  
 
   
 

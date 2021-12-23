@@ -6,7 +6,4 @@ int main() {
 	elif (x == 5) {
 		print(42);
 	}
-	elif (x == 4) {
-		print(24);
-	}
 }

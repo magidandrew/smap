@@ -11,35 +11,11 @@ source_filename = "Smap"
 
 declare i32 @printstr(i8*)
 
-declare i32 @corresponding_char(i32)
-
 declare i32 @printchar(i8)
 
 declare i32 @print_list_char(%list*)
 
 declare i32 @printb(i1)
-
-declare i32 @stringLength(%list*)
-
-declare i32 @stringReverse(%list*)
-
-declare i32 @absolute(i32)
-
-declare i32 @characterLocation(%list*, %list*)
-
-declare i32 @isCompDivisible(i32)
-
-declare i32 @divisible(i32, i32)
-
-declare i32 @power(i32, i32)
-
-declare i32 @ceilFloat(double)
-
-declare i32 @ascii(%list*)
-
-declare %list* @int_to_char(i32)
-
-declare i32 @corresponding_int(%list*, i32)
 
 declare { i8*, i32 } @testMakeStruct(i8*, i32)
 
@@ -58,8 +34,6 @@ declare i32 @init_prob(%prob*, %list*, %list*, ...)
 declare i8* @peek(%prob*, ...)
 
 declare i32 @list_length(%list*, ...)
-
-declare i32 @modulus_operation(i32, i32, ...)
 
 declare i32 @get_length(%prob*, ...)
 

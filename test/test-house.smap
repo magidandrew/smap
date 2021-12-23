@@ -1,0 +1,81 @@
+int println_str_list(list list char l){
+    int i = 0;
+    for(i; i< l.length; i = i+1){
+       println(l[i]);
+    }
+}
+
+int min (int a, int b)
+{
+    int result = 0;
+    if (a < b){
+       result = a;
+    }
+    result = b;
+    return (result);
+}
+
+list char overlap(list char top, list char bottom){
+    list char over = "";
+    int len = min(top.length, bottom.length);
+    int lineLen = 0;
+    int i = 0;
+    int j = 0;
+    // if top is clear, then bottom.
+    // otherwise, top.
+    for(i; i < len; i = i + 1){
+        if(top[i] == ' ')
+        {
+           over[>] =  bottom[i];
+        }
+        else{
+            over[>] = top[i];
+        }
+    }
+    return(over);
+}
+
+int main(){
+    int i;
+    int k;
+    list list char x = ["______________________",
+                        "                      ",
+                        "                (O)   ",
+                        "    _u__              ",
+                        "   /____\             ",
+                        "   |[][]|             ",
+                        "^^^|[]..|^^^^^^^^^^^^^",
+                        "^^^'--'''^^^^^^^^^^^^^",
+                        "^^^^^^^^^^^^^^^^^^^^^^"];
+    list char sky =   "             ";
+
+    printScene(x,sky);
+
+    return(0);
+}
+
+void spin() {
+    int sp;
+    for(sp = 0; sp < 1000000000; sp = sp + 1) {}
+}
+
+int buildSky(list char theSky){
+   int j = 0;
+   prob char particle = [0.2,0.2,0.6] : ['*','o',' '];
+   for(j=0; j < theSky.length; j=j+1){
+        theSky[j] = particle!;
+    }
+}
+
+
+int printScene(list list char fg, list char bg){
+    int k = 0;
+    int i = 0;
+     for(k=0; k < 10; k = k + 1){
+       for(i=0;i < fg.length; i=i+1){
+        buildSky(bg);
+        println( overlap(fg[i],bg));
+       }
+        spin();
+    }
+}
