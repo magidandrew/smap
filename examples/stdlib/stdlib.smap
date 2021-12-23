@@ -1,4 +1,36 @@
-int testFunc(){
-    return(0);
+int println_str_list(list list char l){
+    int i = 0;
+    for(i; i< l.length; i = i+1){
+       println(l[i]);
+    }
 }
 
+int min (int a, int b)
+{
+    int result = 0;
+    if (a < b){
+       result = a;
+    }
+    result = b;
+    return (result);
+}
+
+list char overlap(list char top, list char bottom){
+    list char over = "";
+    int len = min(top.length, bottom.length);
+    int lineLen = 0;
+    int i = 0;
+    int j = 0;
+    // if top is clear, then bottom.
+    // otherwise, top.
+    for(i; i < len; i = i + 1){
+        if(top[i] == ' ')
+        {
+           over[>] =  bottom[i];
+        }
+        else{
+            over[>] = top[i];
+        }
+    }
+    return(over);
+}
